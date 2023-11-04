@@ -1,0 +1,20 @@
+server:
+  http:
+    addr: 0.0.0.0:8000
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9000
+    timeout: 1s
+data:
+  orm:
+    dsn: root:root@tcp(127.0.0.1:3306)/test
+    active: 50
+    idle: 150
+    idle_timeout: 25s
+  redis:
+    addr: 127.0.0.1:6379
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+  memory_cache:
+    default_expiration: 5m
+    cleanup_interval: 10m
