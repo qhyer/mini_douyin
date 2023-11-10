@@ -26,14 +26,20 @@ func NewPassportUseCase(repo PassportRepo, logger log.Logger) *PassportUsecase {
 	}
 }
 
-func (u *PassportUsecase) CreateUser(ctx context.Context, user *do.User) error {
+func (u *PassportUsecase) CreateUser(ctx context.Context, user *do.User) (uid int64, err error) {
+	uid = int64(0)
+	user.ID = uid
 	pwd := []byte(user.Password)
 	hashedPassword, err := bcrypt.GenerateFromPassword(pwd, bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	user.EncryptedPassword = string(hashedPassword)
-	return u.repo.CreateUser(ctx, user)
+	err = u.repo.CreateUser(ctx, user)
+	if err != nil {
+		return 0, err
+	}
+	return user.ID, nil
 }
 
 func (u *PassportUsecase) VerifyPassword(ctx context.Context, user *do.User) (verified bool, uid int64, err error) {

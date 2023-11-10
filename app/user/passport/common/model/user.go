@@ -6,6 +6,7 @@ import (
 )
 
 type User struct {
+	gorm.Model
 	ID                int64          `json:"id" gorm:"primaryKey;column:id"`
 	Name              string         `json:"name" gorm:"column:name"`
 	EncryptedPassword string         `json:"encrypted_password" gorm:"column:password"`

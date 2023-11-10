@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package api.relation.v1;
 
+option go_package = "douyin/api/server/v1;v1";
+
 service Relation {
   rpc RelationAction(douyin_relation_action_request) returns (douyin_relation_action_response);
   rpc FollowList(douyin_relation_follow_list_request) returns (douyin_relation_follow_list_response);

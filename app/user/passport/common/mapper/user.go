@@ -1,9 +1,9 @@
 package mapper
 
 import (
+	dto "douyin/api/user/passport/service/v1"
 	do "douyin/app/user/passport/common/entity"
 	po "douyin/app/user/passport/common/model"
-	vo "douyin/app/user/passport/service/api/v1"
 )
 
 func UserFromPO(u *po.User) (us *do.User, err error) {
@@ -14,14 +14,10 @@ func UserFromPO(u *po.User) (us *do.User, err error) {
 		BackgroundImage: "https://lf6-cdn-tos.douyinstatic.com/obj/venus/pc-theme/spring/20230411-162827.jpeg",
 		Signature:       "暂无个性签名",
 	}
-	err = us.Validate()
-	if err != nil {
-		return nil, err
-	}
 	return us, nil
 }
 
-func UsersFromPO(us []*po.User) (dos []*do.User, err error) {
+func UserFromPOs(us []*po.User) (dos []*do.User, err error) {
 	for _, u := range us {
 		us, err := UserFromPO(u)
 		if err != nil {
@@ -41,8 +37,8 @@ func UserToPO(u *do.User) (us *po.User, err error) {
 	return us, nil
 }
 
-func UserToVO(u *do.User) (us *vo.UserInfo, err error) {
-	us = &vo.UserInfo{
+func UserToDTO(u *do.User) (us *dto.UserInfo, err error) {
+	us = &dto.UserInfo{
 		Id:              u.ID,
 		Name:            u.Name,
 		Avatar:          &u.Avatar,
@@ -52,14 +48,13 @@ func UserToVO(u *do.User) (us *vo.UserInfo, err error) {
 	return us, nil
 }
 
-func UsersToVO(us []*do.User) (vos []*vo.UserInfo, err error) {
+func UserToDTOs(us []*do.User) (dtos []*dto.UserInfo, err error) {
 	for _, u := range us {
-		us, err := UserToVO(u)
+		us, err := UserToDTO(u)
 		if err != nil {
 			return nil, err
 		}
-		vos = append(vos, us)
+		dtos = append(dtos, us)
 	}
-	return vos, nil
-
+	return dtos, nil
 }

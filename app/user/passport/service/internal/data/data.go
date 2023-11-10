@@ -11,7 +11,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewPassportRepo)
+var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewPassportRepo)
 
 // Data .
 type Data struct {
@@ -20,16 +20,24 @@ type Data struct {
 }
 
 // NewData .
-func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, orm *gorm.DB, rds *redis.Client, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{db: orm.NewMySQL(&orm.Config{
+	return &Data{db: orm, redis: rds}, cleanup, nil
+}
+
+func NewOrm(c *conf.Data) *gorm.DB {
+	return orm.NewMySQL(&orm.Config{
 		DSN:         c.GetOrm().GetDSN(),
 		Active:      int(c.GetOrm().GetActive()),
 		Idle:        int(c.GetOrm().GetIdle()),
 		IdleTimeout: c.GetOrm().GetIdleTimeout().AsDuration(),
-	}), redis: rdb.NewRedis(&rdb.Config{
+	})
+}
+
+func NewRedis(c *conf.Data) *redis.Client {
+	return rdb.NewRedis(&rdb.Config{
 		Name:         c.GetRedis().GetName(),
 		Network:      c.GetRedis().GetNetwork(),
 		Addr:         c.GetRedis().GetAddr(),
@@ -37,5 +45,5 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 		DialTimeout:  c.GetRedis().GetDialTimeout().AsDuration(),
 		ReadTimeout:  c.GetRedis().GetReadTimeout().AsDuration(),
 		WriteTimeout: c.GetRedis().GetWriteTimeout().AsDuration(),
-	})}, cleanup, nil
+	})
 }

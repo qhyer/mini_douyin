@@ -1,7 +1,7 @@
 package server
 
 import (
-	v1 "douyin/app/user/passport/service/api/v1"
+	"douyin/api/user/passport/service/v1"
 	"douyin/app/user/passport/service/internal/conf"
 	"douyin/app/user/passport/service/internal/service"
 

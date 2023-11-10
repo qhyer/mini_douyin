@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package api.seq.v1;
+
+option go_package = "douyin/api/seq/v1;v1";
+
+service Seq {
+  rpc GetID (GetIDRequest) returns (GetIDResponse);
+  rpc UpdateMaxSeq (UpdateMaxSeqRequest) returns (UpdateMaxSeqResponse);
+}
+
+message GetIDRequest {
+  int64 businessId = 1;
+}
+
+message GetIDResponse {
+  int64 ID = 1;
+  bool is_ok = 2;
+}
+
+message UpdateMaxSeqRequest {
+  int64 businessId = 1;
+  int64 seq = 2;
+  int64 step = 3;
+}
+
+message UpdateMaxSeqResponse {
+  bool is_ok = 1;
+}
+
+message Business {
+  int64 id = 1;
+  int64 lastTime = 2;
+  int64 step = 3;
+  int64 curSeq = 4;
+  int64 maxSeq = 5;
+  int64 updateTime = 6;
+  int64 createTime = 7;
+}

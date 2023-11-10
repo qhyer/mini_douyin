@@ -1,0 +1,48 @@
+syntax="proto3";
+
+package api.favorite.v1;
+
+option go_package = "douyin/api/favorite/v1;v1";
+
+service Favorite {
+  rpc FavoriteAction(DouyinFavoriteActionRequest) returns (DouyinFavoriteActionResponse);
+  rpc GetUserFavoriteVideoIdList(GetUserFavoriteListRequest) returns (GetUserFavoriteListResponse);
+  rpc GetFavoriteVideoIdListByVideoIds(GetFavoriteListByVideoIdsRequest) returns (GetFavoriteListByVideoIdsResponse); // check用户是否喜欢列表中的视频
+}
+
+
+message DouyinFavoriteActionRequest {
+  int64 user_id = 1; // 用户id
+  int64 video_id = 2; // 视频id
+  int32 action_type = 3; // 1-点赞，2-取消点赞
+}
+
+message DouyinFavoriteActionResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+}
+
+
+message GetUserFavoriteListRequest {
+  int64 user_id = 1; // 用户id
+}
+
+message GetUserFavoriteListResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  repeated Video video_list = 3; // 用户点赞视频列表
+}
+
+message GetFavoriteListByVideoIdsRequest {
+  repeated int64 video_ids = 1; // 视频id列表
+}
+
+message GetFavoriteListByVideoIdsResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  repeated Video video_list = 3; // 视频点赞列表
+}
+
+message Video {
+  int64 id = 1; // 视频唯一标识
+}

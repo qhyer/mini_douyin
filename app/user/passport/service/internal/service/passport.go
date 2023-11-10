@@ -2,13 +2,12 @@ package service
 
 import (
 	"context"
+	v1 "douyin/api/user/passport/service/v1"
 	do "douyin/app/user/passport/common/entity"
 	"douyin/app/user/passport/common/mapper"
 	"douyin/app/user/passport/service/internal/biz"
 	"douyin/common/ecode"
 	"douyin/common/jwt"
-
-	v1 "douyin/app/user/passport/service/api/v1"
 )
 
 type PassportService struct {
@@ -23,9 +22,7 @@ func NewPassportService(uc *biz.PassportUsecase) *PassportService {
 }
 
 func (s *PassportService) Register(ctx context.Context, req *v1.DouyinUserRegisterRequest) (*v1.DouyinUserRegisterResponse, error) {
-	uid := int64(0)
-	err := s.uc.CreateUser(ctx, &do.User{
-		ID:       uid,
+	uid, err := s.uc.CreateUser(ctx, &do.User{
 		Name:     req.GetUsername(),
 		Password: req.GetPassword(),
 	})
@@ -96,27 +93,47 @@ func (s *PassportService) Login(ctx context.Context, req *v1.DouyinUserLoginRequ
 func (s *PassportService) GetInfo(ctx context.Context, req *v1.DouyinGetUserInfoRequest) (*v1.DouyinGetUserInfoResponse, error) {
 	user, err := s.uc.GetUserByID(ctx, req.GetUserId())
 	if err != nil {
-		return nil, err
+		err := ecode.ConvertErr(err)
+		return &v1.DouyinGetUserInfoResponse{
+			StatusCode: err.ErrCode,
+			StatusMsg:  &err.ErrMsg,
+		}, nil
 	}
-	userInfo, err := mapper.UserToVO(user)
+	userInfo, err := mapper.UserToDTO(user)
 	if err != nil {
-		return nil, err
+		err := ecode.ConvertErr(err)
+		return &v1.DouyinGetUserInfoResponse{
+			StatusCode: err.ErrCode,
+			StatusMsg:  &err.ErrMsg,
+		}, nil
 	}
 	return &v1.DouyinGetUserInfoResponse{
-		Info: userInfo,
+		StatusCode: ecode.Success.ErrCode,
+		StatusMsg:  &ecode.Success.ErrMsg,
+		Info:       userInfo,
 	}, nil
 }
 
 func (s *PassportService) MGetInfo(ctx context.Context, req *v1.DouyinMultipleGetUserInfoRequest) (*v1.DouyinMultipleGetUserInfoResponse, error) {
 	users, err := s.uc.MGetUserByID(ctx, req.GetUserIds())
 	if err != nil {
-		return nil, err
+		err := ecode.ConvertErr(err)
+		return &v1.DouyinMultipleGetUserInfoResponse{
+			StatusCode: err.ErrCode,
+			StatusMsg:  &err.ErrMsg,
+		}, nil
 	}
-	userInfos, err := mapper.UsersToVO(users)
+	userInfos, err := mapper.UserToDTOs(users)
 	if err != nil {
-		return nil, err
+		err := ecode.ConvertErr(err)
+		return &v1.DouyinMultipleGetUserInfoResponse{
+			StatusCode: err.ErrCode,
+			StatusMsg:  &err.ErrMsg,
+		}, nil
 	}
 	return &v1.DouyinMultipleGetUserInfoResponse{
-		Infos: userInfos,
+		StatusCode: ecode.Success.ErrCode,
+		StatusMsg:  &ecode.Success.ErrMsg,
+		Infos:      userInfos,
 	}, nil
 }

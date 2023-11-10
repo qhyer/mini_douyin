@@ -1,0 +1,60 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "douyin/app/user/passport/server/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+}
+
+message Server {
+  message HTTP {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  HTTP http = 1;
+  GRPC grpc = 2;
+}
+
+message Data {
+  message Orm {
+    string DSN = 1;
+    int32 active = 2;
+    int32 idle = 3;
+    google.protobuf.Duration idle_timeout = 4;
+  }
+  message Redis {
+    string name = 1;
+    string network = 2;
+    string addr = 3;
+    string password = 4;
+    google.protobuf.Duration dial_timeout = 5;
+    google.protobuf.Duration read_timeout = 6;
+    google.protobuf.Duration write_timeout = 7;
+  }
+  message Minio {
+    string endpoint = 1;
+    string access_key_id = 2;
+    string secret_access_key = 3;
+  }
+  message Pulsar {
+    string addr = 1;
+    int32 port = 2;
+    string token = 3;
+    google.protobuf.Duration connection_timeout = 4;
+    google.protobuf.Duration operation_timeout = 5;
+  }
+  Orm orm = 1;
+  Redis redis = 2;
+  Minio minio = 3;
+  Pulsar pulsar = 4;
+}

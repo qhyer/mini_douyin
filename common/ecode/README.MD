@@ -37,6 +37,6 @@ Code 代码从 1001001 开始，10000 以下为保留 code.
 
 ```go
 if err := os.Chdir("/root"); err != nil {
-    log.Errorf("change dir failed: %v", err)
+    log.Errorf("change directory failed: %v", err)
 }
 ```

@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package api.publish.v1;
+
+option go_package = "douyin/api/publish/v1;v1";
+
+service Publish {
+  rpc PublishVideo(PublishActionRequest) returns (PublishActionResponse);
+  rpc GetUserPublishedVideoList(GetUserPublishedVideoListRequest) returns (GetUserPublishedVideoListResponse);
+  rpc GetPublishedVideoByLatestTime(GetPublishedVideoByLatestTimeRequest) returns (GetPublishedVideoByLatestTimeResponse);
+  rpc GetVideoInfoByVideoIds(GetVideoInfoRequest) returns (GetVideoInfoResponse);
+  rpc MGetVideoInfoByVideoIds(MGetVideoInfoRequest) returns (MGetVideoInfoResponse);
+}
+
+message PublishActionRequest {
+  int64 userId = 1; // 用户id
+  bytes data = 2; // 视频数据
+  string title = 3; // 视频标题
+}
+
+message PublishActionResponse {
+  int32 statusCode = 1; // 状态码，0-成功，其他值-失败
+  optional string statusMsg = 2; // 返回状态描述
+}
+
+message GetUserPublishedVideoListRequest {
+  int64 userId = 1; // 用户id
+}
+
+message GetUserPublishedVideoListResponse {
+  int32 statusCode = 1; // 状态码，0-成功，其他值-失败
+  optional string statusMsg = 2; // 返回状态描述
+  repeated VideoInfo videoList = 3; // 视频列表
+}
+
+message GetPublishedVideoByLatestTimeRequest {
+  int64 userId = 1; // 用户id
+  int64 latestTime = 2; // 最新时间
+  int32 limit = 3; // 限制条数
+}
+
+message GetPublishedVideoByLatestTimeResponse {
+  int32 statusCode = 1; // 状态码，0-成功，其他值-失败
+  optional string statusMsg = 2; // 返回状态描述
+  repeated VideoInfo videoList = 3; // 视频列表
+}
+
+message GetVideoInfoRequest {
+  int64 videoId = 1; // 视频id
+}
+
+message GetVideoInfoResponse {
+  int32 statusCode = 1; // 状态码，0-成功，其他值-失败
+  optional string statusMsg = 2; // 返回状态描述
+  VideoInfo videoList = 3; // 视频列表
+}
+
+message MGetVideoInfoRequest {
+  repeated int64 videoIds = 1; // 视频id列表
+}
+
+message MGetVideoInfoResponse {
+  int32 statusCode = 1; // 状态码，0-成功，其他值-失败
+  optional string statusMsg = 2; // 返回状态描述
+  repeated VideoInfo videoList = 3; // 视频列表
+}
+
+message VideoInfo {
+  int64 id = 1; // 视频id
+  int64 authorId = 2; // 作者id
+  string title = 3; // 视频标题
+  string coverUrl = 4; // 视频封面url
+  string playUrl = 5; // 视频播放url
+  int64 createTime = 6; // 视频创建时间
+}
