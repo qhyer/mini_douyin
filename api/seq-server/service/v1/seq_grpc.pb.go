@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Seq_GetID_FullMethodName        = "/api.seq.v1.Seq/GetID"
-	Seq_UpdateMaxSeq_FullMethodName = "/api.seq.v1.Seq/UpdateMaxSeq"
+	Seq_GetID_FullMethodName        = "/service.seq.v1.Seq/GetID"
+	Seq_UpdateMaxSeq_FullMethodName = "/service.seq.v1.Seq/UpdateMaxSeq"
 )
 
 // SeqClient is the client API for Seq service.
@@ -129,7 +129,7 @@ func _Seq_UpdateMaxSeq_Handler(srv interface{}, ctx context.Context, dec func(in
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Seq_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.seq.v1.Seq",
+	ServiceName: "service.seq.v1.Seq",
 	HandlerType: (*SeqServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

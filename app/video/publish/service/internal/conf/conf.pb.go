@@ -748,34 +748,34 @@ func file_conf_proto_rawDescGZIP() []byte {
 
 var file_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_conf_proto_goTypes = []interface{}{
-	(*Bootstrap)(nil),           // 0: kratos.api.Bootstrap
-	(*Server)(nil),              // 1: kratos.api.Server
-	(*Data)(nil),                // 2: kratos.api.Data
-	(*Server_HTTP)(nil),         // 3: kratos.api.Server.HTTP
-	(*Server_GRPC)(nil),         // 4: kratos.api.Server.GRPC
-	(*Data_Orm)(nil),            // 5: kratos.api.Data.Orm
-	(*Data_Redis)(nil),          // 6: kratos.api.Data.Redis
-	(*Data_Minio)(nil),          // 7: kratos.api.Data.Minio
-	(*Data_Pulsar)(nil),         // 8: kratos.api.Data.Pulsar
+	(*Bootstrap)(nil),           // 0: kratos.service.Bootstrap
+	(*Server)(nil),              // 1: kratos.service.Server
+	(*Data)(nil),                // 2: kratos.service.Data
+	(*Server_HTTP)(nil),         // 3: kratos.service.Server.HTTP
+	(*Server_GRPC)(nil),         // 4: kratos.service.Server.GRPC
+	(*Data_Orm)(nil),            // 5: kratos.service.Data.Orm
+	(*Data_Redis)(nil),          // 6: kratos.service.Data.Redis
+	(*Data_Minio)(nil),          // 7: kratos.service.Data.Minio
+	(*Data_Pulsar)(nil),         // 8: kratos.service.Data.Pulsar
 	(*durationpb.Duration)(nil), // 9: google.protobuf.Duration
 }
 var file_conf_proto_depIdxs = []int32{
-	1,  // 0: kratos.api.Bootstrap.server:type_name -> kratos.api.Server
-	2,  // 1: kratos.api.Bootstrap.data:type_name -> kratos.api.Data
-	3,  // 2: kratos.api.Server.http:type_name -> kratos.api.Server.HTTP
-	4,  // 3: kratos.api.Server.grpc:type_name -> kratos.api.Server.GRPC
-	5,  // 4: kratos.api.Data.orm:type_name -> kratos.api.Data.Orm
-	6,  // 5: kratos.api.Data.redis:type_name -> kratos.api.Data.Redis
-	7,  // 6: kratos.api.Data.minio:type_name -> kratos.api.Data.Minio
-	8,  // 7: kratos.api.Data.pulsar:type_name -> kratos.api.Data.Pulsar
-	9,  // 8: kratos.api.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	9,  // 9: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	9,  // 10: kratos.api.Data.Orm.idle_timeout:type_name -> google.protobuf.Duration
-	9,  // 11: kratos.api.Data.Redis.dial_timeout:type_name -> google.protobuf.Duration
-	9,  // 12: kratos.api.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	9,  // 13: kratos.api.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	9,  // 14: kratos.api.Data.Pulsar.connection_timeout:type_name -> google.protobuf.Duration
-	9,  // 15: kratos.api.Data.Pulsar.operation_timeout:type_name -> google.protobuf.Duration
+	1,  // 0: kratos.service.Bootstrap.server:type_name -> kratos.service.Server
+	2,  // 1: kratos.service.Bootstrap.data:type_name -> kratos.service.Data
+	3,  // 2: kratos.service.Server.http:type_name -> kratos.service.Server.HTTP
+	4,  // 3: kratos.service.Server.grpc:type_name -> kratos.service.Server.GRPC
+	5,  // 4: kratos.service.Data.orm:type_name -> kratos.service.Data.Orm
+	6,  // 5: kratos.service.Data.redis:type_name -> kratos.service.Data.Redis
+	7,  // 6: kratos.service.Data.minio:type_name -> kratos.service.Data.Minio
+	8,  // 7: kratos.service.Data.pulsar:type_name -> kratos.service.Data.Pulsar
+	9,  // 8: kratos.service.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	9,  // 9: kratos.service.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	9,  // 10: kratos.service.Data.Orm.idle_timeout:type_name -> google.protobuf.Duration
+	9,  // 11: kratos.service.Data.Redis.dial_timeout:type_name -> google.protobuf.Duration
+	9,  // 12: kratos.service.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	9,  // 13: kratos.service.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	9,  // 14: kratos.service.Data.Pulsar.connection_timeout:type_name -> google.protobuf.Duration
+	9,  // 15: kratos.service.Data.Pulsar.operation_timeout:type_name -> google.protobuf.Duration
 	16, // [16:16] is the sub-list for method output_type
 	16, // [16:16] is the sub-list for method input_type
 	16, // [16:16] is the sub-list for extension type_name

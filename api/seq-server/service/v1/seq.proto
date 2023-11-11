@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api.seq.v1;
 
-option go_package = "douyin/api/seq/v1;v1";
+option go_package = "douyin/service/seq/v1;v1";
 
 service Seq {
   rpc GetID (GetIDRequest) returns (GetIDResponse);

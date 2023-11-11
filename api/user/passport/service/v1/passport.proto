@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api.passport.v1;
 
-option go_package = "douyin/api/passport/v1;v1";
+option go_package = "douyin/service/passport/v1;v1";
 
 service Passport {
   rpc Register(DouyinUserRegisterRequest) returns (DouyinUserRegisterResponse);

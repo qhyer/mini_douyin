@@ -1,7 +1,7 @@
 package entity
 
 const (
-	FavoriteActionAdd = iota
+	FavoriteActionAdd = iota + 1
 	FavoriteActionDelete
 )
 

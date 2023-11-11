@@ -19,11 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Publish_PublishVideo_FullMethodName                  = "/api.publish.v1.Publish/PublishVideo"
-	Publish_GetUserPublishedVideoList_FullMethodName     = "/api.publish.v1.Publish/GetUserPublishedVideoList"
-	Publish_GetPublishedVideoByLatestTime_FullMethodName = "/api.publish.v1.Publish/GetPublishedVideoByLatestTime"
-	Publish_GetVideoInfoByVideoIds_FullMethodName        = "/api.publish.v1.Publish/GetVideoInfoByVideoIds"
-	Publish_MGetVideoInfoByVideoIds_FullMethodName       = "/api.publish.v1.Publish/MGetVideoInfoByVideoIds"
+	Publish_PublishVideo_FullMethodName                    = "/api.publish.v1.Publish/PublishVideo"
+	Publish_GetUserPublishedVideoList_FullMethodName       = "/api.publish.v1.Publish/GetUserPublishedVideoList"
+	Publish_GetPublishedVideoByLatestTime_FullMethodName   = "/api.publish.v1.Publish/GetPublishedVideoByLatestTime"
+	Publish_GetVideoInfoByVideoIds_FullMethodName          = "/api.publish.v1.Publish/GetVideoInfoByVideoIds"
+	Publish_MGetVideoInfoByVideoIds_FullMethodName         = "/api.publish.v1.Publish/MGetVideoInfoByVideoIds"
+	Publish_CountUserPublishedVideoByUserId_FullMethodName = "/api.publish.v1.Publish/CountUserPublishedVideoByUserId"
 )
 
 // PublishClient is the client API for Publish service.
@@ -35,6 +36,7 @@ type PublishClient interface {
 	GetPublishedVideoByLatestTime(ctx context.Context, in *GetPublishedVideoByLatestTimeRequest, opts ...grpc.CallOption) (*GetPublishedVideoByLatestTimeResponse, error)
 	GetVideoInfoByVideoIds(ctx context.Context, in *GetVideoInfoRequest, opts ...grpc.CallOption) (*GetVideoInfoResponse, error)
 	MGetVideoInfoByVideoIds(ctx context.Context, in *MGetVideoInfoRequest, opts ...grpc.CallOption) (*MGetVideoInfoResponse, error)
+	CountUserPublishedVideoByUserId(ctx context.Context, in *CountUserPublishedVideoByUserIdRequest, opts ...grpc.CallOption) (*CountUserPublishedVideoByUserIdResponse, error)
 }
 
 type publishClient struct {
@@ -90,6 +92,15 @@ func (c *publishClient) MGetVideoInfoByVideoIds(ctx context.Context, in *MGetVid
 	return out, nil
 }
 
+func (c *publishClient) CountUserPublishedVideoByUserId(ctx context.Context, in *CountUserPublishedVideoByUserIdRequest, opts ...grpc.CallOption) (*CountUserPublishedVideoByUserIdResponse, error) {
+	out := new(CountUserPublishedVideoByUserIdResponse)
+	err := c.cc.Invoke(ctx, Publish_CountUserPublishedVideoByUserId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PublishServer is the server API for Publish service.
 // All implementations must embed UnimplementedPublishServer
 // for forward compatibility
@@ -99,6 +110,7 @@ type PublishServer interface {
 	GetPublishedVideoByLatestTime(context.Context, *GetPublishedVideoByLatestTimeRequest) (*GetPublishedVideoByLatestTimeResponse, error)
 	GetVideoInfoByVideoIds(context.Context, *GetVideoInfoRequest) (*GetVideoInfoResponse, error)
 	MGetVideoInfoByVideoIds(context.Context, *MGetVideoInfoRequest) (*MGetVideoInfoResponse, error)
+	CountUserPublishedVideoByUserId(context.Context, *CountUserPublishedVideoByUserIdRequest) (*CountUserPublishedVideoByUserIdResponse, error)
 	mustEmbedUnimplementedPublishServer()
 }
 
@@ -120,6 +132,9 @@ func (UnimplementedPublishServer) GetVideoInfoByVideoIds(context.Context, *GetVi
 }
 func (UnimplementedPublishServer) MGetVideoInfoByVideoIds(context.Context, *MGetVideoInfoRequest) (*MGetVideoInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MGetVideoInfoByVideoIds not implemented")
+}
+func (UnimplementedPublishServer) CountUserPublishedVideoByUserId(context.Context, *CountUserPublishedVideoByUserIdRequest) (*CountUserPublishedVideoByUserIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CountUserPublishedVideoByUserId not implemented")
 }
 func (UnimplementedPublishServer) mustEmbedUnimplementedPublishServer() {}
 
@@ -224,6 +239,24 @@ func _Publish_MGetVideoInfoByVideoIds_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Publish_CountUserPublishedVideoByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CountUserPublishedVideoByUserIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PublishServer).CountUserPublishedVideoByUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Publish_CountUserPublishedVideoByUserId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PublishServer).CountUserPublishedVideoByUserId(ctx, req.(*CountUserPublishedVideoByUserIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Publish_ServiceDesc is the grpc.ServiceDesc for Publish service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -250,6 +283,10 @@ var Publish_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MGetVideoInfoByVideoIds",
 			Handler:    _Publish_MGetVideoInfoByVideoIds_Handler,
+		},
+		{
+			MethodName: "CountUserPublishedVideoByUserId",
+			Handler:    _Publish_CountUserPublishedVideoByUserId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	po "douyin/app/video/favorite/common/model"
+	"douyin/app/video/favorite/service/internal/biz"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
@@ -24,16 +25,21 @@ type FavoriteRepo struct {
 	log  *log.Helper
 }
 
-func NewFavoriteRepo(data *Data, logger log.Logger) *FavoriteRepo {
+func NewFavoriteRepo(data *Data, logger log.Logger) biz.FavoriteRepo {
 	return &FavoriteRepo{
 		data: data,
 		log:  log.NewHelper(logger),
 	}
 }
 
-func (r *FavoriteRepo) FavoriteVideo(ctx context.Context, userId int64, videoId int64) error {
-	// TODO send favorite to mq
-	return nil
+func (r *FavoriteRepo) IsUserFavoriteVideoList(ctx context.Context, userId int64, videoIds []int64) ([]bool, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (r *FavoriteRepo) FavoriteVideo(ctx context.Context, userId int64, videoId int64, action int) error {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (r *FavoriteRepo) GetFavoriteVideoIdListByUserId(ctx context.Context, userId int64) ([]int64, error) {

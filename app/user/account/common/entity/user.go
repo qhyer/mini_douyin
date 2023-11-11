@@ -12,4 +12,6 @@ type User struct {
 	TotalFavorited  int64  `json:"total_favorited"`
 	WorkCount       int64  `json:"work_count"`
 	FavoriteCount   int64  `json:"favorite_count"`
+	Message         string `json:"message"`
+	MsgType         int64  `json:"msg_type"`
 }

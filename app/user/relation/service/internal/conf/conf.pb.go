@@ -513,26 +513,26 @@ func file_conf_conf_proto_rawDescGZIP() []byte {
 
 var file_conf_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_conf_conf_proto_goTypes = []interface{}{
-	(*Bootstrap)(nil),           // 0: kratos.api.Bootstrap
-	(*Server)(nil),              // 1: kratos.api.Server
-	(*Data)(nil),                // 2: kratos.api.Data
-	(*Server_HTTP)(nil),         // 3: kratos.api.Server.HTTP
-	(*Server_GRPC)(nil),         // 4: kratos.api.Server.GRPC
-	(*Data_Database)(nil),       // 5: kratos.api.Data.Database
-	(*Data_Redis)(nil),          // 6: kratos.api.Data.Redis
+	(*Bootstrap)(nil),           // 0: kratos.service.Bootstrap
+	(*Server)(nil),              // 1: kratos.service.Server
+	(*Data)(nil),                // 2: kratos.service.Data
+	(*Server_HTTP)(nil),         // 3: kratos.service.Server.HTTP
+	(*Server_GRPC)(nil),         // 4: kratos.service.Server.GRPC
+	(*Data_Database)(nil),       // 5: kratos.service.Data.Database
+	(*Data_Redis)(nil),          // 6: kratos.service.Data.Redis
 	(*durationpb.Duration)(nil), // 7: google.protobuf.Duration
 }
 var file_conf_conf_proto_depIdxs = []int32{
-	1,  // 0: kratos.api.Bootstrap.server:type_name -> kratos.api.Server
-	2,  // 1: kratos.api.Bootstrap.data:type_name -> kratos.api.Data
-	3,  // 2: kratos.api.Server.http:type_name -> kratos.api.Server.HTTP
-	4,  // 3: kratos.api.Server.grpc:type_name -> kratos.api.Server.GRPC
-	5,  // 4: kratos.api.Data.database:type_name -> kratos.api.Data.Database
-	6,  // 5: kratos.api.Data.redis:type_name -> kratos.api.Data.Redis
-	7,  // 6: kratos.api.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	7,  // 7: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	7,  // 8: kratos.api.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	7,  // 9: kratos.api.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	1,  // 0: kratos.service.Bootstrap.server:type_name -> kratos.service.Server
+	2,  // 1: kratos.service.Bootstrap.data:type_name -> kratos.service.Data
+	3,  // 2: kratos.service.Server.http:type_name -> kratos.service.Server.HTTP
+	4,  // 3: kratos.service.Server.grpc:type_name -> kratos.service.Server.GRPC
+	5,  // 4: kratos.service.Data.database:type_name -> kratos.service.Data.Database
+	6,  // 5: kratos.service.Data.redis:type_name -> kratos.service.Data.Redis
+	7,  // 6: kratos.service.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	7,  // 7: kratos.service.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	7,  // 8: kratos.service.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	7,  // 9: kratos.service.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
 	10, // [10:10] is the sub-list for method output_type
 	10, // [10:10] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name

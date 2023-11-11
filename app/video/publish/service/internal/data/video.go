@@ -6,6 +6,7 @@ import (
 	do "douyin/app/video/publish/common/entity"
 	"douyin/app/video/publish/common/mapper"
 	po "douyin/app/video/publish/common/model"
+	"douyin/app/video/publish/service/internal/biz"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/minio/minio-go/v7"
@@ -17,8 +18,12 @@ var videoCacheKey = func(vid int64) string {
 	return fmt.Sprintf("VIDEO_INFO_%d", vid)
 }
 
-var UserPublishedVidListCacheKey = func(uid int64) string {
+var userPublishedVidListCacheKey = func(uid int64) string {
 	return fmt.Sprintf("USER_PUB_VID_LIST_%d", uid)
+}
+
+var userPublishedVidCountCacheKey = func(uid int64) string {
+	return fmt.Sprintf("USER_PUB_VID_COUNT_%d", uid)
 }
 
 var videoCacheExpiration = 3 * time.Minute
@@ -32,24 +37,24 @@ type VideoRepo struct {
 	log  *log.Helper
 }
 
-func NewVideoRepo(data *Data, logger log.Logger) *VideoRepo {
+func NewVideoRepo(data *Data, logger log.Logger) biz.VideoRepo {
 	return &VideoRepo{
 		data: data,
 		log:  log.NewHelper(logger),
 	}
 }
 
-func (r *VideoRepo) GetPublishedVideosByUserId(ctx context.Context, authorId int64) ([]*do.Video, error) {
-	vids, err := r.getUserPublishedVidListFromCache(ctx, authorId, 0, 0)
+func (r *VideoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64, offset int, limit int) ([]*do.Video, error) {
+	vids, err := r.getUserPublishedVidListFromCache(ctx, userId, 0, 0)
 	if err != nil {
 		if err != redis.Nil {
 			log.Errorf("redis error: %v", err)
 		}
 		vs := make([]*po.Video, 0)
-		if err := r.data.db.WithContext(ctx).Table(publishTableName).Where("author_id = ?", authorId).Find(&vs).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(publishTableName).Where("user_id = ?", userId).Offset(offset).Limit(limit).Find(&vs).Error; err != nil {
 			return nil, err
 		}
-		if err := r.setUserPublishedVidListCache(ctx, authorId, vs); err != nil {
+		if err := r.setUserPublishedVidListCache(ctx, userId, vs); err != nil {
 			return nil, err
 		}
 		vids = make([]int64, 0, len(vs))
@@ -123,6 +128,24 @@ func (r *VideoRepo) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Vide
 	return result, nil
 }
 
+func (r *VideoRepo) CountUserPublishedVideoByUserId(ctx context.Context, userId int64) (int64, error) {
+	res, err := r.getUserPublishedVidCountFromCache(ctx, userId)
+	if err != nil {
+		if err != redis.Nil {
+			log.Errorf("redis error: %v", err)
+		}
+		var count int64
+		if err := r.data.db.WithContext(ctx).Table(publishTableName).Where("user_id = ?", userId).Count(&count).Error; err != nil {
+			return 0, err
+		}
+		if err := r.setUserPublishedVidCountCache(ctx, userId, count); err != nil {
+			return 0, err
+		}
+		return count, nil
+	}
+	return res, nil
+}
+
 func (r *VideoRepo) setVideoCache(ctx context.Context, video *po.Video) error {
 	return r.data.redis.Set(ctx, videoCacheKey(video.ID), video, videoCacheExpiration).Err()
 }
@@ -178,11 +201,11 @@ func (r *VideoRepo) setUserPublishedVidListCache(ctx context.Context, uid int64,
 			Member: video.ID,
 		})
 	}
-	return r.data.redis.ZAdd(ctx, UserPublishedVidListCacheKey(uid), vids...).Err()
+	return r.data.redis.ZAdd(ctx, userPublishedVidListCacheKey(uid), vids...).Err()
 }
 
 func (r *VideoRepo) getUserPublishedVidListFromCache(ctx context.Context, uid int64, offset int, limit int) ([]int64, error) {
-	data, err := r.data.redis.ZRevRangeWithScores(ctx, UserPublishedVidListCacheKey(uid), int64(offset), int64(offset+limit-1)).Result()
+	data, err := r.data.redis.ZRevRangeWithScores(ctx, userPublishedVidListCacheKey(uid), int64(offset), int64(offset+limit-1)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -191,6 +214,14 @@ func (r *VideoRepo) getUserPublishedVidListFromCache(ctx context.Context, uid in
 		vids = append(vids, item.Member.(int64))
 	}
 	return vids, nil
+}
+
+func (r *VideoRepo) getUserPublishedVidCountFromCache(ctx context.Context, uid int64) (int64, error) {
+	return r.data.redis.Get(ctx, userPublishedVidCountCacheKey(uid)).Int64()
+}
+
+func (r *VideoRepo) setUserPublishedVidCountCache(ctx context.Context, uid int64, count int64) error {
+	return r.data.redis.Set(ctx, userPublishedVidCountCacheKey(uid), count, videoCacheExpiration).Err()
 }
 
 func (r *VideoRepo) UploadVideo(ctx context.Context, data []byte, objectName string) error {

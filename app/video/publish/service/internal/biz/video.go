@@ -12,6 +12,7 @@ type VideoRepo interface {
 	GetVideoById(ctx context.Context, id int64) (*do.Video, error)
 	MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Video, error)
 	UploadVideo(ctx context.Context, data []byte, objectName string) error
+	CountUserPublishedVideoByUserId(ctx context.Context, userId int64) (int64, error)
 }
 
 type VideoUsecase struct {
@@ -50,4 +51,8 @@ func (u *VideoUsecase) GetVideoById(ctx context.Context, id int64) (*do.Video, e
 
 func (u *VideoUsecase) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Video, error) {
 	return u.repo.MGetVideoByIds(ctx, ids)
+}
+
+func (u *VideoUsecase) CountUserPublishedVideoByUserId(ctx context.Context, userId int64) (int64, error) {
+	return u.repo.CountUserPublishedVideoByUserId(ctx, userId)
 }

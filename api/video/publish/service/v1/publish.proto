@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api.publish.v1;
 
-option go_package = "douyin/api/publish/v1;v1";
+option go_package = "douyin/service/publish/v1;v1";
 
 service Publish {
   rpc PublishVideo(PublishActionRequest) returns (PublishActionResponse);
@@ -10,6 +10,7 @@ service Publish {
   rpc GetPublishedVideoByLatestTime(GetPublishedVideoByLatestTimeRequest) returns (GetPublishedVideoByLatestTimeResponse);
   rpc GetVideoInfoByVideoIds(GetVideoInfoRequest) returns (GetVideoInfoResponse);
   rpc MGetVideoInfoByVideoIds(MGetVideoInfoRequest) returns (MGetVideoInfoResponse);
+  rpc CountUserPublishedVideoByUserId(CountUserPublishedVideoByUserIdRequest) returns (CountUserPublishedVideoByUserIdResponse);
 }
 
 message PublishActionRequest {
@@ -63,6 +64,16 @@ message MGetVideoInfoResponse {
   int32 statusCode = 1; // 状态码，0-成功，其他值-失败
   optional string statusMsg = 2; // 返回状态描述
   repeated VideoInfo videoList = 3; // 视频列表
+}
+
+message CountUserPublishedVideoByUserIdRequest {
+  int64 userId = 1; // 用户id
+}
+
+message CountUserPublishedVideoByUserIdResponse {
+  int32 statusCode = 1; // 状态码，0-成功，其他值-失败
+  optional string statusMsg = 2; // 返回状态描述
+  int64 count = 3; // 视频数量
 }
 
 message VideoInfo {

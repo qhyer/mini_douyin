@@ -17,7 +17,7 @@ func NewSeqService(uc *biz.SeqUsecase) *SeqService {
 }
 
 func (s *SeqService) GetID(ctx context.Context, req *v1.GetIDRequest) (*v1.GetIDResponse, error) {
-	id, err := s.uc.GetID(ctx)
+	id, err := s.uc.GetID()
 	if err != nil {
 		return &v1.GetIDResponse{
 			ID:   0,

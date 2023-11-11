@@ -4,9 +4,9 @@ import (
 	"context"
 	"douyin/app/seq-server/common/entity"
 	"douyin/app/seq-server/internal/conf"
-	"douyin/common/directory"
 	"douyin/common/ecode"
 	"douyin/common/network"
+	os1 "douyin/common/os"
 	"fmt"
 	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/v2/log"
@@ -68,7 +68,7 @@ func NewSeqUsecase(repo SeqRepo, etcdCli *clientv3.Client, conf *conf.Bootstrap,
 	return s
 }
 
-func (u *SeqUsecase) GetID(ctx context.Context) (int64, error) {
+func (u *SeqUsecase) GetID() (int64, error) {
 	u.mu.Lock()
 	defer u.mu.Unlock()
 	ts := u.timeGen()
@@ -128,7 +128,7 @@ func (u *SeqUsecase) init() bool {
 	u.snowflakeEtcdHolder.Port = strings.Split(u.conf.GetServer().GetHttp().GetAddr(), ":")[1]
 	u.snowflakeEtcdHolder.EtcdAddressNode = fmt.Sprintf("%s/%s-0", pathForever, u.snowflakeEtcdHolder.ListenAddress)
 	prefixEtcdPath = "/snowflake/" + u.conf.Server.GetServerName()
-	propPath = filepath.Join(directory.GetCurrentAbPath(), u.conf.Server.GetServerName()) +
+	propPath = filepath.Join(os1.GetCurrentAbPath(), u.conf.Server.GetServerName()) +
 		"/leafconf/" + u.snowflakeEtcdHolder.Port + "/workerID.toml"
 	pathForever = prefixEtcdPath + "/forever"
 	u.log.Infof("workerID local cache file path : %s", propPath)

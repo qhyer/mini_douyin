@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"douyin/app/seq-server/internal/biz"
 	"github.com/go-kratos/kratos/v2/log"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -11,7 +12,7 @@ type SeqRepo struct {
 	log  *log.Helper
 }
 
-func NewSeqRepo(data *Data, logger log.Logger) *SeqRepo {
+func NewSeqRepo(data *Data, logger log.Logger) biz.SeqRepo {
 	return &SeqRepo{
 		data: data,
 		log:  log.NewHelper(logger),

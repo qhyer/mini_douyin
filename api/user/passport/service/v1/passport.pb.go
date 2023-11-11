@@ -702,27 +702,27 @@ func file_passport_proto_rawDescGZIP() []byte {
 
 var file_passport_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_passport_proto_goTypes = []interface{}{
-	(*DouyinUserRegisterRequest)(nil),         // 0: api.passport.v1.DouyinUserRegisterRequest
-	(*DouyinUserRegisterResponse)(nil),        // 1: api.passport.v1.DouyinUserRegisterResponse
-	(*DouyinUserLoginRequest)(nil),            // 2: api.passport.v1.DouyinUserLoginRequest
-	(*DouyinUserLoginResponse)(nil),           // 3: api.passport.v1.DouyinUserLoginResponse
-	(*DouyinGetUserInfoRequest)(nil),          // 4: api.passport.v1.DouyinGetUserInfoRequest
-	(*DouyinGetUserInfoResponse)(nil),         // 5: api.passport.v1.DouyinGetUserInfoResponse
-	(*DouyinMultipleGetUserInfoRequest)(nil),  // 6: api.passport.v1.DouyinMultipleGetUserInfoRequest
-	(*DouyinMultipleGetUserInfoResponse)(nil), // 7: api.passport.v1.DouyinMultipleGetUserInfoResponse
-	(*UserInfo)(nil),                          // 8: api.passport.v1.UserInfo
+	(*DouyinUserRegisterRequest)(nil),         // 0: service.passport.v1.DouyinUserRegisterRequest
+	(*DouyinUserRegisterResponse)(nil),        // 1: service.passport.v1.DouyinUserRegisterResponse
+	(*DouyinUserLoginRequest)(nil),            // 2: service.passport.v1.DouyinUserLoginRequest
+	(*DouyinUserLoginResponse)(nil),           // 3: service.passport.v1.DouyinUserLoginResponse
+	(*DouyinGetUserInfoRequest)(nil),          // 4: service.passport.v1.DouyinGetUserInfoRequest
+	(*DouyinGetUserInfoResponse)(nil),         // 5: service.passport.v1.DouyinGetUserInfoResponse
+	(*DouyinMultipleGetUserInfoRequest)(nil),  // 6: service.passport.v1.DouyinMultipleGetUserInfoRequest
+	(*DouyinMultipleGetUserInfoResponse)(nil), // 7: service.passport.v1.DouyinMultipleGetUserInfoResponse
+	(*UserInfo)(nil),                          // 8: service.passport.v1.UserInfo
 }
 var file_passport_proto_depIdxs = []int32{
-	8, // 0: api.passport.v1.DouyinGetUserInfoResponse.info:type_name -> api.passport.v1.UserInfo
-	8, // 1: api.passport.v1.DouyinMultipleGetUserInfoResponse.infos:type_name -> api.passport.v1.UserInfo
-	0, // 2: api.passport.v1.Passport.Register:input_type -> api.passport.v1.DouyinUserRegisterRequest
-	2, // 3: api.passport.v1.Passport.Login:input_type -> api.passport.v1.DouyinUserLoginRequest
-	4, // 4: api.passport.v1.Passport.GetInfo:input_type -> api.passport.v1.DouyinGetUserInfoRequest
-	6, // 5: api.passport.v1.Passport.MGetInfo:input_type -> api.passport.v1.DouyinMultipleGetUserInfoRequest
-	1, // 6: api.passport.v1.Passport.Register:output_type -> api.passport.v1.DouyinUserRegisterResponse
-	3, // 7: api.passport.v1.Passport.Login:output_type -> api.passport.v1.DouyinUserLoginResponse
-	5, // 8: api.passport.v1.Passport.GetInfo:output_type -> api.passport.v1.DouyinGetUserInfoResponse
-	7, // 9: api.passport.v1.Passport.MGetInfo:output_type -> api.passport.v1.DouyinMultipleGetUserInfoResponse
+	8, // 0: service.passport.v1.DouyinGetUserInfoResponse.info:type_name -> service.passport.v1.UserInfo
+	8, // 1: service.passport.v1.DouyinMultipleGetUserInfoResponse.infos:type_name -> service.passport.v1.UserInfo
+	0, // 2: service.passport.v1.Passport.Register:input_type -> service.passport.v1.DouyinUserRegisterRequest
+	2, // 3: service.passport.v1.Passport.Login:input_type -> service.passport.v1.DouyinUserLoginRequest
+	4, // 4: service.passport.v1.Passport.GetInfo:input_type -> service.passport.v1.DouyinGetUserInfoRequest
+	6, // 5: service.passport.v1.Passport.MGetInfo:input_type -> service.passport.v1.DouyinMultipleGetUserInfoRequest
+	1, // 6: service.passport.v1.Passport.Register:output_type -> service.passport.v1.DouyinUserRegisterResponse
+	3, // 7: service.passport.v1.Passport.Login:output_type -> service.passport.v1.DouyinUserLoginResponse
+	5, // 8: service.passport.v1.Passport.GetInfo:output_type -> service.passport.v1.DouyinGetUserInfoResponse
+	7, // 9: service.passport.v1.Passport.MGetInfo:output_type -> service.passport.v1.DouyinMultipleGetUserInfoResponse
 	6, // [6:10] is the sub-list for method output_type
 	2, // [2:6] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

@@ -386,17 +386,17 @@ func file_seq_proto_rawDescGZIP() []byte {
 
 var file_seq_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_seq_proto_goTypes = []interface{}{
-	(*GetIDRequest)(nil),         // 0: api.seq.v1.GetIDRequest
-	(*GetIDResponse)(nil),        // 1: api.seq.v1.GetIDResponse
-	(*UpdateMaxSeqRequest)(nil),  // 2: api.seq.v1.UpdateMaxSeqRequest
-	(*UpdateMaxSeqResponse)(nil), // 3: api.seq.v1.UpdateMaxSeqResponse
-	(*Business)(nil),             // 4: api.seq.v1.Business
+	(*GetIDRequest)(nil),         // 0: service.seq.v1.GetIDRequest
+	(*GetIDResponse)(nil),        // 1: service.seq.v1.GetIDResponse
+	(*UpdateMaxSeqRequest)(nil),  // 2: service.seq.v1.UpdateMaxSeqRequest
+	(*UpdateMaxSeqResponse)(nil), // 3: service.seq.v1.UpdateMaxSeqResponse
+	(*Business)(nil),             // 4: service.seq.v1.Business
 }
 var file_seq_proto_depIdxs = []int32{
-	0, // 0: api.seq.v1.Seq.GetID:input_type -> api.seq.v1.GetIDRequest
-	2, // 1: api.seq.v1.Seq.UpdateMaxSeq:input_type -> api.seq.v1.UpdateMaxSeqRequest
-	1, // 2: api.seq.v1.Seq.GetID:output_type -> api.seq.v1.GetIDResponse
-	3, // 3: api.seq.v1.Seq.UpdateMaxSeq:output_type -> api.seq.v1.UpdateMaxSeqResponse
+	0, // 0: service.seq.v1.Seq.GetID:input_type -> service.seq.v1.GetIDRequest
+	2, // 1: service.seq.v1.Seq.UpdateMaxSeq:input_type -> service.seq.v1.UpdateMaxSeqRequest
+	1, // 2: service.seq.v1.Seq.GetID:output_type -> service.seq.v1.GetIDResponse
+	3, // 3: service.seq.v1.Seq.UpdateMaxSeq:output_type -> service.seq.v1.UpdateMaxSeqResponse
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
