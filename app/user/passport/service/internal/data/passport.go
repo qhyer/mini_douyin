@@ -2,24 +2,15 @@ package data
 
 import (
 	"context"
+	"douyin/app/user/passport/common/constants"
 	do "douyin/app/user/passport/common/entity"
 	"douyin/app/user/passport/common/mapper"
 	po "douyin/app/user/passport/common/model"
 	"douyin/app/user/passport/service/internal/biz"
 	"encoding/json"
-	"fmt"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
-	"time"
 )
-
-var userCacheKey = func(uid int64) string {
-	return fmt.Sprintf("USER_%d", uid)
-}
-
-var userCacheExpiration = 3 * time.Minute
-
-var passportTableName = "passport"
 
 type passportRepo struct {
 	data *Data
@@ -38,12 +29,12 @@ func (r *passportRepo) CreateUser(ctx context.Context, user *do.User) error {
 	if err != nil {
 		return err
 	}
-	return r.data.db.WithContext(ctx).Table(passportTableName).Create(poUser).Error
+	return r.data.db.WithContext(ctx).Table(constants.PassportTableName).Create(poUser).Error
 }
 
 func (r *passportRepo) GetUserByName(ctx context.Context, name string) (*do.User, error) {
 	user := &po.User{}
-	if err := r.data.db.WithContext(ctx).Table(passportTableName).Where("name = ?", name).First(user).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Table(constants.PassportTableName).Where("name = ?", name).First(user).Error; err != nil {
 		return nil, err
 	}
 	us, err := mapper.UserFromPO(user)
@@ -54,7 +45,7 @@ func (r *passportRepo) GetUserByName(ctx context.Context, name string) (*do.User
 }
 
 func (r *passportRepo) GetUserById(ctx context.Context, id int64) (*do.User, error) {
-	key := userCacheKey(id)
+	key := constants.UserCacheKey(id)
 	user, err := r.getUserFromCache(ctx, key)
 	if err != nil {
 		if err != redis.Nil {
@@ -69,7 +60,7 @@ func (r *passportRepo) GetUserById(ctx context.Context, id int64) (*do.User, err
 		return us, nil
 	}
 	user = &po.User{}
-	if err := r.data.db.WithContext(ctx).Table(passportTableName).Where("id = ?", id).First(user).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Table(constants.PassportTableName).Where("id = ?", id).First(user).Error; err != nil {
 		r.log.Errorf("get user from db err: %v", err)
 		return nil, err
 	}
@@ -85,7 +76,7 @@ func (r *passportRepo) GetUserById(ctx context.Context, id int64) (*do.User, err
 func (r *passportRepo) MGetUserById(ctx context.Context, ids []int64) ([]*do.User, error) {
 	keys := make([]string, 0, len(ids))
 	for _, id := range ids {
-		keys = append(keys, userCacheKey(id))
+		keys = append(keys, constants.UserCacheKey(id))
 	}
 	users, missed, err := r.batchGetUserCache(ctx, keys)
 	if err != nil {
@@ -103,7 +94,7 @@ func (r *passportRepo) MGetUserById(ctx context.Context, ids []int64) ([]*do.Use
 	missedUsers := make([]*po.User, 0, len(missed))
 	for _, id := range missed {
 		user := &po.User{}
-		if err := r.data.db.WithContext(ctx).Table(passportTableName).Where("id = ?", id).First(user).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(constants.PassportTableName).Where("id = ?", id).First(user).Error; err != nil {
 			r.log.Errorf("get user from db err: %v", err)
 			return nil, err
 		}
@@ -162,7 +153,7 @@ func (r *passportRepo) setUserCache(ctx context.Context, user *po.User, key stri
 		r.log.Errorf("marshal user err: %v", err)
 		return
 	}
-	if err := r.data.redis.Set(ctx, key, bytes, userCacheExpiration).Err(); err != nil {
+	if err := r.data.redis.Set(ctx, key, bytes, constants.UserCacheExpiration).Err(); err != nil {
 		r.log.Errorf("set user cache err: %v", err)
 		return
 	}
@@ -171,13 +162,13 @@ func (r *passportRepo) setUserCache(ctx context.Context, user *po.User, key stri
 func (r *passportRepo) batchSetUserCache(ctx context.Context, users []*po.User) {
 	pipe := r.data.redis.Pipeline()
 	for _, user := range users {
-		key := userCacheKey(user.ID)
+		key := constants.UserCacheKey(user.ID)
 		bytes, err := json.Marshal(user)
 		if err != nil {
 			r.log.Errorf("marshal user err: %v", err)
 			continue
 		}
-		pipe.Set(ctx, key, bytes, userCacheExpiration)
+		pipe.Set(ctx, key, bytes, constants.UserCacheExpiration)
 	}
 	if _, err := pipe.Exec(ctx); err != nil {
 		r.log.Errorf("batch set user cache err: %v", err)

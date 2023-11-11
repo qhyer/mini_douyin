@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	constants2 "douyin/app/video/favorite/common/constants"
 	po "douyin/app/video/favorite/common/model"
 	"douyin/app/video/favorite/service/internal/biz"
 	"fmt"
@@ -11,14 +12,6 @@ import (
 	"strconv"
 	"time"
 )
-
-var favoriteTableName = "favorite"
-
-var userFavoriteListCacheKey = func(uid int64) string {
-	return fmt.Sprintf("USER_FAV_LIST:%d", uid)
-}
-
-var userFavoriteListCacheExpiration = 3 * time.Minute
 
 type FavoriteRepo struct {
 	data *Data
@@ -33,8 +26,7 @@ func NewFavoriteRepo(data *Data, logger log.Logger) biz.FavoriteRepo {
 }
 
 func (r *FavoriteRepo) IsUserFavoriteVideoList(ctx context.Context, userId int64, videoIds []int64) ([]bool, error) {
-	//TODO implement me
-	panic("implement me")
+
 }
 
 func (r *FavoriteRepo) FavoriteVideo(ctx context.Context, userId int64, videoId int64, action int) error {
@@ -49,7 +41,7 @@ func (r *FavoriteRepo) GetFavoriteVideoIdListByUserId(ctx context.Context, userI
 			log.Errorf("redis error: %v", err)
 		}
 		favs := make([]*po.Favorite, 0)
-		if err := r.data.db.WithContext(ctx).Table(favoriteTableName).Where("user_id = ?", userId).Order("updated_at desc").Find(&favs).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(constants2.FavoriteTableName).Where("user_id = ?", userId).Order("updated_at desc").Find(&favs).Error; err != nil {
 			return nil, err
 		}
 		if err := r.setUserFavoriteVideoIdListCache(ctx, userId, favs); err != nil {
@@ -64,13 +56,13 @@ func (r *FavoriteRepo) GetFavoriteVideoIdListByUserId(ctx context.Context, userI
 }
 
 func (r *FavoriteRepo) IsUserFavoriteVideo(ctx context.Context, userId int64, videoId int64) (bool, error) {
-	res := r.data.redis.ZScore(ctx, userFavoriteListCacheKey(userId), strconv.FormatInt(videoId, 10))
+	res := r.data.redis.ZScore(ctx, constants2.UserFavoriteListCacheKey(userId), strconv.FormatInt(videoId, 10))
 	if err := res.Err(); err != nil {
 		if err != redis.Nil {
 			log.Errorf("redis error: %v", err)
 		}
 		var count int64
-		if err := r.data.db.WithContext(ctx).Table(favoriteTableName).Where("user_id = ? and video_id = ?", userId, videoId).Count(&count).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(constants2.FavoriteTableName).Where("user_id = ? and video_id = ?", userId, videoId).Count(&count).Error; err != nil {
 			return false, err
 		}
 		return count > 0, nil
@@ -80,14 +72,14 @@ func (r *FavoriteRepo) IsUserFavoriteVideo(ctx context.Context, userId int64, vi
 
 func (r *FavoriteRepo) setUserFavoriteVideoIdListCache(ctx context.Context, userId int64, favs []*po.Favorite) error {
 	pipe := r.data.redis.TxPipeline()
-	key := userFavoriteListCacheKey(userId)
+	key := constants2.UserFavoriteListCacheKey(userId)
 	for _, v := range favs {
 		pipe.ZAdd(ctx, key, redis.Z{
 			Score:  float64(v.UpdatedAt.UnixMilli()),
 			Member: v.VideoId,
 		})
 	}
-	pipe.Expire(ctx, key, userFavoriteListCacheExpiration)
+	pipe.Expire(ctx, key, constants2.UserFavoriteListCacheExpiration)
 	if _, err := pipe.Exec(ctx); err != nil {
 		return err
 	}
@@ -95,7 +87,7 @@ func (r *FavoriteRepo) setUserFavoriteVideoIdListCache(ctx context.Context, user
 }
 
 func (r *FavoriteRepo) getUserFavoriteVideoIdListCache(ctx context.Context, userId int64) ([]int64, error) {
-	res, err := r.data.redis.ZRevRangeByScore(ctx, userFavoriteListCacheKey(userId), &redis.ZRangeBy{
+	res, err := r.data.redis.ZRevRangeByScore(ctx, constants2.UserFavoriteListCacheKey(userId), &redis.ZRangeBy{
 		Min: "0",
 		Max: fmt.Sprintf("%d", time.Now().UnixMilli()),
 	}).Result()

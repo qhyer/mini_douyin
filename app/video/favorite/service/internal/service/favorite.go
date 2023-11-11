@@ -33,7 +33,7 @@ func (s *FavoriteService) FavoriteAction(ctx context.Context, req *v1.DouyinFavo
 	}, nil
 }
 
-func (s *FavoriteService) GetUserFavoriteList(ctx context.Context, req *v1.GetUserFavoriteListRequest) (*v1.GetUserFavoriteListResponse, error) {
+func (s *FavoriteService) GetUserFavoriteVideoIdList(ctx context.Context, req *v1.GetUserFavoriteListRequest) (*v1.GetUserFavoriteListResponse, error) {
 	favoriteVideoIdList, err := s.uc.GetFavoriteVideoIdListByUserId(ctx, req.GetUserId())
 	if err != nil {
 		err := ecode.ConvertErr(err)

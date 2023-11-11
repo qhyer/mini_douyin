@@ -8,6 +8,8 @@ service Favorite {
   rpc FavoriteAction(DouyinFavoriteActionRequest) returns (DouyinFavoriteActionResponse);
   rpc GetUserFavoriteVideoIdList(GetUserFavoriteListRequest) returns (GetUserFavoriteListResponse);
   rpc GetFavoriteStatusByUserIdAndVideoIds(GetFavoriteStatusByUserIdAndVideoIdsRequest) returns (GetFavoriteStatusByUserIdAndVideoIdsResponse); // check用户是否喜欢列表中的视频
+  rpc CountVideoFavoriteByUserId(CountVideoFavoriteByUserIdRequest) returns (CountVideoFavoriteByUserIdResponse);
+  rpc CountVideoFavoritedByUserId(CountVideoFavoritedByUserIdRequest) returns (CountVideoFavoritedByUserIdResponse);
 }
 
 
@@ -42,4 +44,24 @@ message GetFavoriteStatusByUserIdAndVideoIdsResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
   repeated bool is_favorite_list = 3; // 点赞状态列表
+}
+
+message CountVideoFavoriteByUserIdRequest {
+  int64 user_id = 1; // 用户id
+}
+
+message CountVideoFavoriteByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  int64 count = 3; // 点赞视频总数
+}
+
+message CountVideoFavoritedByUserIdRequest {
+  int64 user_id = 1; // 用户id
+}
+
+message CountVideoFavoritedByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  int64 count = 3; // 视频被点赞总数
 }
