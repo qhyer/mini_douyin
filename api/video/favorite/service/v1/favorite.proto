@@ -10,6 +10,7 @@ service Favorite {
   rpc GetFavoriteStatusByUserIdAndVideoIds(GetFavoriteStatusByUserIdAndVideoIdsRequest) returns (GetFavoriteStatusByUserIdAndVideoIdsResponse); // check用户是否喜欢列表中的视频
   rpc CountVideoFavoriteByUserId(CountVideoFavoriteByUserIdRequest) returns (CountVideoFavoriteByUserIdResponse);
   rpc CountVideoFavoritedByUserId(CountVideoFavoritedByUserIdRequest) returns (CountVideoFavoritedByUserIdResponse);
+  rpc CountFavoritedByVideoId(CountFavoritedByVideoIdRequest) returns (CountFavoritedByVideoIdResponse);
 }
 
 
@@ -61,6 +62,16 @@ message CountVideoFavoritedByUserIdRequest {
 }
 
 message CountVideoFavoritedByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  int64 count = 3; // 视频被点赞总数
+}
+
+message CountFavoritedByVideoIdRequest {
+  int64 video_id = 1; // 视频id
+}
+
+message CountFavoritedByVideoIdResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
   int64 count = 3; // 视频被点赞总数

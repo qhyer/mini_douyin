@@ -14,19 +14,19 @@ import (
 	"time"
 )
 
-type VideoRepo struct {
+type videoRepo struct {
 	data *Data
 	log  *log.Helper
 }
 
 func NewVideoRepo(data *Data, logger log.Logger) biz.VideoRepo {
-	return &VideoRepo{
+	return &videoRepo{
 		data: data,
 		log:  log.NewHelper(logger),
 	}
 }
 
-func (r *VideoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64, offset int, limit int) ([]*do.Video, error) {
+func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64, offset int, limit int) ([]*do.Video, error) {
 	vids, err := r.getUserPublishedVidListFromCache(ctx, userId, 0, 0)
 	if err != nil {
 		if err != redis.Nil {
@@ -51,7 +51,7 @@ func (r *VideoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64
 	return videos, nil
 }
 
-func (r *VideoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTime int64, limit int) ([]*do.Video, error) {
+func (r *videoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTime int64, limit int) ([]*do.Video, error) {
 	vids := make([]int64, limit)
 	if err := r.data.db.WithContext(ctx).Table(constants.PublishTableName).Where("created_at < ?", time.Unix(latestTime, 0)).Order("created_at desc").Limit(limit).Pluck("id", &vids).Error; err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (r *VideoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTi
 	return videos, nil
 }
 
-func (r *VideoRepo) GetVideoById(ctx context.Context, id int64) (*do.Video, error) {
+func (r *videoRepo) GetVideoById(ctx context.Context, id int64) (*do.Video, error) {
 	video, err := r.getVideoFromCache(ctx, id)
 	if err != nil {
 		if err != redis.Nil {
@@ -84,7 +84,7 @@ func (r *VideoRepo) GetVideoById(ctx context.Context, id int64) (*do.Video, erro
 	return vs, nil
 }
 
-func (r *VideoRepo) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Video, error) {
+func (r *videoRepo) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Video, error) {
 	videos, missed, err := r.batchGetVideoFromCache(ctx, ids)
 	if err != nil {
 		log.Errorf("redis error: %v", err)
@@ -110,7 +110,7 @@ func (r *VideoRepo) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Vide
 	return result, nil
 }
 
-func (r *VideoRepo) CountUserPublishedVideoByUserId(ctx context.Context, userId int64) (int64, error) {
+func (r *videoRepo) CountUserPublishedVideoByUserId(ctx context.Context, userId int64) (int64, error) {
 	res, err := r.getUserPublishedVidCountFromCache(ctx, userId)
 	if err != nil {
 		if err != redis.Nil {
@@ -128,11 +128,11 @@ func (r *VideoRepo) CountUserPublishedVideoByUserId(ctx context.Context, userId 
 	return res, nil
 }
 
-func (r *VideoRepo) setVideoCache(ctx context.Context, video *po.Video) error {
+func (r *videoRepo) setVideoCache(ctx context.Context, video *po.Video) error {
 	return r.data.redis.Set(ctx, constants.VideoCacheKey(video.ID), video, constants.VideoCacheExpiration).Err()
 }
 
-func (r *VideoRepo) batchSetVideoCache(ctx context.Context, videos []*po.Video) error {
+func (r *videoRepo) batchSetVideoCache(ctx context.Context, videos []*po.Video) error {
 	pipe := r.data.redis.Pipeline()
 	for _, video := range videos {
 		pipe.Set(ctx, constants.VideoCacheKey(video.ID), video, constants.VideoCacheExpiration)
@@ -141,7 +141,7 @@ func (r *VideoRepo) batchSetVideoCache(ctx context.Context, videos []*po.Video) 
 	return err
 }
 
-func (r *VideoRepo) getVideoFromCache(ctx context.Context, vid int64) (*po.Video, error) {
+func (r *videoRepo) getVideoFromCache(ctx context.Context, vid int64) (*po.Video, error) {
 	video := &po.Video{}
 	err := r.data.redis.Get(ctx, constants.VideoCacheKey(vid)).Scan(video)
 	if err != nil {
@@ -150,7 +150,7 @@ func (r *VideoRepo) getVideoFromCache(ctx context.Context, vid int64) (*po.Video
 	return video, nil
 }
 
-func (r *VideoRepo) batchGetVideoFromCache(ctx context.Context, vids []int64) (videos []*po.Video, missed []int64, err error) {
+func (r *videoRepo) batchGetVideoFromCache(ctx context.Context, vids []int64) (videos []*po.Video, missed []int64, err error) {
 	pipe := r.data.redis.Pipeline()
 	for _, vid := range vids {
 		pipe.Get(ctx, constants.VideoCacheKey(vid))
@@ -175,7 +175,7 @@ func (r *VideoRepo) batchGetVideoFromCache(ctx context.Context, vids []int64) (v
 	return videos, missed, nil
 }
 
-func (r *VideoRepo) setUserPublishedVidListCache(ctx context.Context, uid int64, videos []*po.Video) error {
+func (r *videoRepo) setUserPublishedVidListCache(ctx context.Context, uid int64, videos []*po.Video) error {
 	vids := make([]redis.Z, 0, len(videos))
 	for _, video := range videos {
 		vids = append(vids, redis.Z{
@@ -186,7 +186,7 @@ func (r *VideoRepo) setUserPublishedVidListCache(ctx context.Context, uid int64,
 	return r.data.redis.ZAdd(ctx, constants.UserPublishedVidListCacheKey(uid), vids...).Err()
 }
 
-func (r *VideoRepo) getUserPublishedVidListFromCache(ctx context.Context, uid int64, offset int, limit int) ([]int64, error) {
+func (r *videoRepo) getUserPublishedVidListFromCache(ctx context.Context, uid int64, offset int, limit int) ([]int64, error) {
 	data, err := r.data.redis.ZRevRangeWithScores(ctx, constants.UserPublishedVidListCacheKey(uid), int64(offset), int64(offset+limit-1)).Result()
 	if err != nil {
 		return nil, err
@@ -198,20 +198,20 @@ func (r *VideoRepo) getUserPublishedVidListFromCache(ctx context.Context, uid in
 	return vids, nil
 }
 
-func (r *VideoRepo) getUserPublishedVidCountFromCache(ctx context.Context, uid int64) (int64, error) {
+func (r *videoRepo) getUserPublishedVidCountFromCache(ctx context.Context, uid int64) (int64, error) {
 	return r.data.redis.Get(ctx, constants.UserPublishedVidCountCacheKey(uid)).Int64()
 }
 
-func (r *VideoRepo) setUserPublishedVidCountCache(ctx context.Context, uid int64, count int64) error {
+func (r *videoRepo) setUserPublishedVidCountCache(ctx context.Context, uid int64, count int64) error {
 	return r.data.redis.Set(ctx, constants.UserPublishedVidCountCacheKey(uid), count, constants.VideoCacheExpiration).Err()
 }
 
-func (r *VideoRepo) UploadVideo(ctx context.Context, data []byte, objectName string) error {
+func (r *videoRepo) UploadVideo(ctx context.Context, data []byte, objectName string) error {
 	_, err := r.putObject(ctx, constants.VideoBucketName, objectName, data)
 	return err
 }
 
-func (r *VideoRepo) putObject(ctx context.Context, bucketName, objectName string, data []byte) (info minio.UploadInfo, err error) {
+func (r *videoRepo) putObject(ctx context.Context, bucketName, objectName string, data []byte) (info minio.UploadInfo, err error) {
 	reader := bytes.NewReader(data)
 	return r.data.minio.PutObject(ctx, bucketName, objectName, reader, int64(len(data)), minio.PutObjectOptions{
 		ContentType: "application/octet-stream",

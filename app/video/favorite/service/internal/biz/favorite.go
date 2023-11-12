@@ -14,6 +14,7 @@ type FavoriteRepo interface {
 	FavoriteVideo(ctx context.Context, userId int64, videoId int64, action int) error
 	CountVideoFavoriteByUserId(ctx context.Context, userId int64) (int64, error)
 	CountVideoFavoritedByUserId(ctx context.Context, userId int64) (int64, error)
+	CountFavoritedByVideoId(ctx context.Context, videoId int64) (int64, error)
 }
 
 type FavoriteUsecase struct {
@@ -62,6 +63,10 @@ func (uc *FavoriteUsecase) CountVideoFavoriteByUserId(ctx context.Context, userI
 
 func (uc *FavoriteUsecase) CountVideoFavoritedByUserId(ctx context.Context, userId int64) (int64, error) {
 	return uc.repo.CountVideoFavoritedByUserId(ctx, userId)
+}
+
+func (uc *FavoriteUsecase) CountVideoFavoritedByVideoId(ctx context.Context, videoId int64) (int64, error) {
+	return uc.repo.CountFavoritedByVideoId(ctx, videoId)
 }
 
 func (uc *FavoriteUsecase) addFavorite(ctx context.Context, userId int64, videoId int64) error {

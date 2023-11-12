@@ -66,3 +66,54 @@ func (s *FavoriteService) GetFavoriteStatusByUserIdAndVideoIds(ctx context.Conte
 		IsFavoriteList: isFavoriteList,
 	}, nil
 }
+
+func (s *FavoriteService) CountVideoFavoriteByUserId(ctx context.Context, req *v1.CountVideoFavoriteByUserIdRequest) (*v1.CountVideoFavoriteByUserIdResponse, error) {
+	count, err := s.uc.CountVideoFavoriteByUserId(ctx, req.GetUserId())
+	if err != nil {
+		err := ecode.ConvertErr(err)
+		return &v1.CountVideoFavoriteByUserIdResponse{
+			StatusCode: err.ErrCode,
+			StatusMsg:  &err.ErrMsg,
+		}, nil
+	}
+
+	return &v1.CountVideoFavoriteByUserIdResponse{
+		StatusCode: ecode.Success.ErrCode,
+		StatusMsg:  &ecode.Success.ErrMsg,
+		Count:      count,
+	}, nil
+}
+
+func (s *FavoriteService) CountVideoFavoritedByUserId(ctx context.Context, req *v1.CountVideoFavoritedByUserIdRequest) (*v1.CountVideoFavoritedByUserIdResponse, error) {
+	count, err := s.uc.CountVideoFavoritedByUserId(ctx, req.GetUserId())
+	if err != nil {
+		err := ecode.ConvertErr(err)
+		return &v1.CountVideoFavoritedByUserIdResponse{
+			StatusCode: err.ErrCode,
+			StatusMsg:  &err.ErrMsg,
+		}, nil
+	}
+
+	return &v1.CountVideoFavoritedByUserIdResponse{
+		StatusCode: ecode.Success.ErrCode,
+		StatusMsg:  &ecode.Success.ErrMsg,
+		Count:      count,
+	}, nil
+}
+
+func (s *FavoriteService) CountFavoritedByVideoId(ctx context.Context, req *v1.CountFavoritedByVideoIdRequest) (*v1.CountFavoritedByVideoIdResponse, error) {
+	count, err := s.uc.CountVideoFavoritedByVideoId(ctx, req.GetVideoId())
+	if err != nil {
+		err := ecode.ConvertErr(err)
+		return &v1.CountFavoritedByVideoIdResponse{
+			StatusCode: err.ErrCode,
+			StatusMsg:  &err.ErrMsg,
+		}, nil
+	}
+
+	return &v1.CountFavoritedByVideoIdResponse{
+		StatusCode: ecode.Success.ErrCode,
+		StatusMsg:  &ecode.Success.ErrMsg,
+		Count:      count,
+	}, nil
+}
