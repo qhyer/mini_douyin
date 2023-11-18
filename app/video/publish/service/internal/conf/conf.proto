@@ -46,15 +46,11 @@ message Data {
     string access_key_id = 2;
     string secret_access_key = 3;
   }
-  message Pulsar {
-    string addr = 1;
-    int32 port = 2;
-    string token = 3;
-    google.protobuf.Duration connection_timeout = 4;
-    google.protobuf.Duration operation_timeout = 5;
+  message Kafka {
+    repeated string addr = 1;
   }
   Orm orm = 1;
   Redis redis = 2;
   Minio minio = 3;
-  Pulsar pulsar = 4;
+  Kafka kafka = 4;
 }

@@ -5,7 +5,8 @@ import (
 	rdb "douyin/common/cache/redis"
 	"douyin/common/database/orm"
 	minio1 "douyin/common/minio"
-	"github.com/apache/pulsar-client-go/pulsar"
+	"douyin/common/queue/kafka"
+	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 	"github.com/minio/minio-go/v7"
@@ -14,22 +15,22 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewVideoRepo)
+var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewKafka, NewVideoRepo)
 
 // Data .
 type Data struct {
-	db     *gorm.DB
-	redis  *redis.Client
-	minio  *minio.Client
-	pulsar *pulsar.Client
+	db    *gorm.DB
+	redis *redis.Client
+	minio *minio.Client
+	kafka sarama.SyncProducer
 }
 
 // NewData .
-func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Client, kafka sarama.SyncProducer, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{db: orm, redis: redis, minio: minio}, cleanup, nil
+	return &Data{db: orm, redis: redis, minio: minio, kafka: kafka}, cleanup, nil
 }
 
 func NewOrm(c *conf.Data) *gorm.DB {
@@ -58,5 +59,11 @@ func NewMinio(c *conf.Data) *minio.Client {
 		EndPoint:        c.GetMinio().GetEndpoint(),
 		AccessKeyID:     c.GetMinio().GetAccessKeyId(),
 		SecretAccessKey: c.GetMinio().GetSecretAccessKey(),
+	})
+}
+
+func NewKafka(c *conf.Data) sarama.SyncProducer {
+	return kafka.NewKafkaSyncProducer(&kafka.Config{
+		Addr: c.GetKafka().GetAddr(),
 	})
 }

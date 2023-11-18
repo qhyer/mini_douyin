@@ -23,16 +23,20 @@ const (
 	Relation_GetFollowListByUserId_FullMethodName     = "/api.relation.v1.Relation/GetFollowListByUserId"
 	Relation_GetFollowerListByUserId_FullMethodName   = "/api.relation.v1.Relation/GetFollowerListByUserId"
 	Relation_GetUserFriendListByUserId_FullMethodName = "/api.relation.v1.Relation/GetUserFriendListByUserId"
+	Relation_CountFollowByUserId_FullMethodName       = "/api.relation.v1.Relation/CountFollowByUserId"
+	Relation_CountFollowerByUserId_FullMethodName     = "/api.relation.v1.Relation/CountFollowerByUserId"
 )
 
 // RelationClient is the client API for Relation service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RelationClient interface {
-	RelationAction(ctx context.Context, in *DouyinRelationActionRequest, opts ...grpc.CallOption) (*DouyinRelationActionResponse, error)
+	RelationAction(ctx context.Context, in *RelationActionRequest, opts ...grpc.CallOption) (*RelationActionResponse, error)
 	GetFollowListByUserId(ctx context.Context, in *GetFollowListByUserIdRequest, opts ...grpc.CallOption) (*GetFollowListByUserIdResponse, error)
 	GetFollowerListByUserId(ctx context.Context, in *GetFollowerListByUserIdRequest, opts ...grpc.CallOption) (*GetFollowerListByUserIdResponse, error)
 	GetUserFriendListByUserId(ctx context.Context, in *GetFriendListByUserIdRequest, opts ...grpc.CallOption) (*GetFriendListByUserIdResponse, error)
+	CountFollowByUserId(ctx context.Context, in *CountFollowByUserIdRequest, opts ...grpc.CallOption) (*CountFollowByUserIdResponse, error)
+	CountFollowerByUserId(ctx context.Context, in *CountFollowerByUserIdRequest, opts ...grpc.CallOption) (*CountFollowerByUserIdResponse, error)
 }
 
 type relationClient struct {
@@ -43,8 +47,8 @@ func NewRelationClient(cc grpc.ClientConnInterface) RelationClient {
 	return &relationClient{cc}
 }
 
-func (c *relationClient) RelationAction(ctx context.Context, in *DouyinRelationActionRequest, opts ...grpc.CallOption) (*DouyinRelationActionResponse, error) {
-	out := new(DouyinRelationActionResponse)
+func (c *relationClient) RelationAction(ctx context.Context, in *RelationActionRequest, opts ...grpc.CallOption) (*RelationActionResponse, error) {
+	out := new(RelationActionResponse)
 	err := c.cc.Invoke(ctx, Relation_RelationAction_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -79,14 +83,34 @@ func (c *relationClient) GetUserFriendListByUserId(ctx context.Context, in *GetF
 	return out, nil
 }
 
+func (c *relationClient) CountFollowByUserId(ctx context.Context, in *CountFollowByUserIdRequest, opts ...grpc.CallOption) (*CountFollowByUserIdResponse, error) {
+	out := new(CountFollowByUserIdResponse)
+	err := c.cc.Invoke(ctx, Relation_CountFollowByUserId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *relationClient) CountFollowerByUserId(ctx context.Context, in *CountFollowerByUserIdRequest, opts ...grpc.CallOption) (*CountFollowerByUserIdResponse, error) {
+	out := new(CountFollowerByUserIdResponse)
+	err := c.cc.Invoke(ctx, Relation_CountFollowerByUserId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RelationServer is the server API for Relation service.
 // All implementations must embed UnimplementedRelationServer
 // for forward compatibility
 type RelationServer interface {
-	RelationAction(context.Context, *DouyinRelationActionRequest) (*DouyinRelationActionResponse, error)
+	RelationAction(context.Context, *RelationActionRequest) (*RelationActionResponse, error)
 	GetFollowListByUserId(context.Context, *GetFollowListByUserIdRequest) (*GetFollowListByUserIdResponse, error)
 	GetFollowerListByUserId(context.Context, *GetFollowerListByUserIdRequest) (*GetFollowerListByUserIdResponse, error)
 	GetUserFriendListByUserId(context.Context, *GetFriendListByUserIdRequest) (*GetFriendListByUserIdResponse, error)
+	CountFollowByUserId(context.Context, *CountFollowByUserIdRequest) (*CountFollowByUserIdResponse, error)
+	CountFollowerByUserId(context.Context, *CountFollowerByUserIdRequest) (*CountFollowerByUserIdResponse, error)
 	mustEmbedUnimplementedRelationServer()
 }
 
@@ -94,7 +118,7 @@ type RelationServer interface {
 type UnimplementedRelationServer struct {
 }
 
-func (UnimplementedRelationServer) RelationAction(context.Context, *DouyinRelationActionRequest) (*DouyinRelationActionResponse, error) {
+func (UnimplementedRelationServer) RelationAction(context.Context, *RelationActionRequest) (*RelationActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RelationAction not implemented")
 }
 func (UnimplementedRelationServer) GetFollowListByUserId(context.Context, *GetFollowListByUserIdRequest) (*GetFollowListByUserIdResponse, error) {
@@ -105,6 +129,12 @@ func (UnimplementedRelationServer) GetFollowerListByUserId(context.Context, *Get
 }
 func (UnimplementedRelationServer) GetUserFriendListByUserId(context.Context, *GetFriendListByUserIdRequest) (*GetFriendListByUserIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserFriendListByUserId not implemented")
+}
+func (UnimplementedRelationServer) CountFollowByUserId(context.Context, *CountFollowByUserIdRequest) (*CountFollowByUserIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CountFollowByUserId not implemented")
+}
+func (UnimplementedRelationServer) CountFollowerByUserId(context.Context, *CountFollowerByUserIdRequest) (*CountFollowerByUserIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CountFollowerByUserId not implemented")
 }
 func (UnimplementedRelationServer) mustEmbedUnimplementedRelationServer() {}
 
@@ -120,7 +150,7 @@ func RegisterRelationServer(s grpc.ServiceRegistrar, srv RelationServer) {
 }
 
 func _Relation_RelationAction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DouyinRelationActionRequest)
+	in := new(RelationActionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -132,7 +162,7 @@ func _Relation_RelationAction_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: Relation_RelationAction_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RelationServer).RelationAction(ctx, req.(*DouyinRelationActionRequest))
+		return srv.(RelationServer).RelationAction(ctx, req.(*RelationActionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -191,6 +221,42 @@ func _Relation_GetUserFriendListByUserId_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Relation_CountFollowByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CountFollowByUserIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RelationServer).CountFollowByUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Relation_CountFollowByUserId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RelationServer).CountFollowByUserId(ctx, req.(*CountFollowByUserIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Relation_CountFollowerByUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CountFollowerByUserIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RelationServer).CountFollowerByUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Relation_CountFollowerByUserId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RelationServer).CountFollowerByUserId(ctx, req.(*CountFollowerByUserIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Relation_ServiceDesc is the grpc.ServiceDesc for Relation service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -213,6 +279,14 @@ var Relation_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserFriendListByUserId",
 			Handler:    _Relation_GetUserFriendListByUserId_Handler,
+		},
+		{
+			MethodName: "CountFollowByUserId",
+			Handler:    _Relation_CountFollowByUserId_Handler,
+		},
+		{
+			MethodName: "CountFollowerByUserId",
+			Handler:    _Relation_CountFollowerByUserId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -29,12 +29,17 @@ func (r *passportRepo) CreateUser(ctx context.Context, user *do.User) error {
 	if err != nil {
 		return err
 	}
-	return r.data.db.WithContext(ctx).Table(constants.PassportTableName).Create(poUser).Error
+	err = r.data.db.WithContext(ctx).Table(constants.PassportTableName).Create(poUser).Error
+	if err != nil {
+		r.log.Errorf("create user err: %v", err)
+	}
+	return err
 }
 
 func (r *passportRepo) GetUserByName(ctx context.Context, name string) (*do.User, error) {
 	user := &po.User{}
 	if err := r.data.db.WithContext(ctx).Table(constants.PassportTableName).Where("name = ?", name).First(user).Error; err != nil {
+		r.log.Errorf("get user from db err: %v", err)
 		return nil, err
 	}
 	us, err := mapper.UserFromPO(user)
@@ -92,13 +97,9 @@ func (r *passportRepo) MGetUserById(ctx context.Context, ids []int64) ([]*do.Use
 		return us, nil
 	}
 	missedUsers := make([]*po.User, 0, len(missed))
-	for _, id := range missed {
-		user := &po.User{}
-		if err := r.data.db.WithContext(ctx).Table(constants.PassportTableName).Where("id = ?", id).First(user).Error; err != nil {
-			r.log.Errorf("get user from db err: %v", err)
-			return nil, err
-		}
-		missedUsers = append(missedUsers, user)
+	if err := r.data.db.WithContext(ctx).Table(constants.PassportTableName).Where("id in (?)", missed).Find(&missedUsers).Error; err != nil {
+		r.log.Errorf("get user from db err: %v", err)
+		return nil, err
 	}
 	r.batchSetUserCache(ctx, missedUsers)
 	users = append(users, missedUsers...)
@@ -113,6 +114,7 @@ func (r *passportRepo) MGetUserById(ctx context.Context, ids []int64) ([]*do.Use
 func (r *passportRepo) getUserFromCache(ctx context.Context, key string) (*po.User, error) {
 	result, err := r.data.redis.Get(ctx, key).Result()
 	if err != nil {
+		r.log.Errorf("get user from cache err: %v", err)
 		return nil, err
 	}
 	user := &po.User{}
@@ -129,6 +131,7 @@ func (r *passportRepo) batchGetUserCache(ctx context.Context, keys []string) (re
 	}
 	results, err := pipe.Exec(ctx)
 	if err != nil {
+		r.log.Errorf("batch get user cache err: %v", err)
 		return nil, keys, err
 	}
 	res = make([]*po.User, 0, len(keys))
@@ -140,7 +143,8 @@ func (r *passportRepo) batchGetUserCache(ctx context.Context, keys []string) (re
 		}
 		user := &po.User{}
 		if err := json.Unmarshal([]byte(result.(*redis.StringCmd).Val()), user); err != nil {
-			return nil, keys, err
+			missed = append(missed, keys[i])
+			continue
 		}
 		res = append(res, user)
 	}

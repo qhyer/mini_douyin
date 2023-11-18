@@ -5,11 +5,12 @@ package api.comment.v1;
 option go_package = "douyin/service/comment/v1;v1";
 
 service Comment {
-  rpc CommentAction(DouyinCommentActionRequest) returns (DouyinCommentActionResponse);
-  rpc GetCommentListByVideoId(DouyinGetCommentListByVideoIdRequest) returns (DouyinGetCommentListByVideoIdResponse);
+  rpc CommentAction(CommentActionRequest) returns (CommentActionResponse);
+  rpc GetCommentListByVideoId(GetCommentListByVideoIdRequest) returns (GetCommentListByVideoIdResponse);
+  rpc CountCommentByVideoId(CountCommentByVideoIdRequest) returns (CountCommentByVideoIdResponse);
 }
 
-message DouyinCommentActionRequest {
+message CommentActionRequest {
   int64 user_id = 1; // 用户id
   int64 video_id = 2; // 视频id
   int32 action_type = 3; // 1-发布评论，2-删除评论
@@ -17,20 +18,30 @@ message DouyinCommentActionRequest {
   optional int64 comment_id = 5; // 要删除的评论id，在action_type=2的时候使用
 }
 
-message DouyinCommentActionResponse {
+message CommentActionResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
   optional CommentInfo comment = 3; // 评论成功返回评论内容，不需要重新拉取整个列表
 }
 
-message DouyinGetCommentListByVideoIdRequest {
+message GetCommentListByVideoIdRequest {
   int64 video_id = 1; // 视频id
 }
 
-message DouyinGetCommentListByVideoIdResponse {
+message GetCommentListByVideoIdResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
   repeated CommentInfo comment_list = 3; // 评论列表
+}
+
+message CountCommentByVideoIdRequest {
+  int64 video_id = 1; // 视频id
+}
+
+message CountCommentByVideoIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  int64 comment_count = 3; // 评论总数
 }
 
 message CommentInfo {

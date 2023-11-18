@@ -16,13 +16,13 @@ type PassportRepo interface {
 
 type PassportUsecase struct {
 	repo PassportRepo
-	log  *log.Logger
+	log  *log.Helper
 }
 
 func NewPassportUseCase(repo PassportRepo, logger log.Logger) *PassportUsecase {
 	return &PassportUsecase{
 		repo: repo,
-		log:  &logger,
+		log:  log.NewHelper(logger),
 	}
 }
 

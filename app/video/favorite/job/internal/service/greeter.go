@@ -4,7 +4,7 @@ import (
 	"context"
 
 	v1 "douyin/api/helloworld/v1"
-	"douyin/app/video/comment/service/internal/biz"
+	"douyin/app/video/favorite/job/internal/biz"
 )
 
 // GreeterService is a greeter service.

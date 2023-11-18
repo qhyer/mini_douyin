@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"douyin/app/user/relation/service/internal/biz"
 
 	v1 "douyin/api/helloworld/v1"
+	"douyin/app/user/relation/job/internal/biz"
 )
 
 // GreeterService is a greeter service.

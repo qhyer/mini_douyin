@@ -2,18 +2,21 @@ syntax = "proto3";
 
 package api.chat.v1;
 
+option go_package = "douyin/service/chat/v1;v1";
+
 service Chat {
   rpc ChatAction(DouyinChatActionRequest) returns (DouyinChatActionResponse);
-  rpc MessageList(DouyinMessageListRequest) returns (DouyinMessageListResponse);
+  rpc GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime(GetMessageListByMyUserIdAndHisUserIdAndPreMsgTimeRequest) returns (GetMessageListByMyUserIdAndHisUserIdAndPreMsgTimeResponse);
+  rpc GetLatestMsgByMyUserIdAndHisUserId(GetLatestMsgByMyUserIdAndHisUserIdRequest) returns (GetLatestMsgByMyUserIdAndHisUserIdResponse);
 }
 
-message DouyinMessageListRequest {
+message GetMessageListByMyUserIdAndHisUserIdAndPreMsgTimeRequest {
   int64 user_id = 1; // 当前用户id
   int64 to_user_id = 2; // 对方用户id
   int64 pre_msg_time = 3; // 上次最新消息的时间
 }
 
-message DouyinMessageListResponse {
+message GetMessageListByMyUserIdAndHisUserIdAndPreMsgTimeResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
   repeated Message message_list = 3; // 消息列表
@@ -29,6 +32,17 @@ message DouyinChatActionRequest {
 message DouyinChatActionResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
+}
+
+message GetLatestMsgByMyUserIdAndHisUserIdRequest {
+  int64 user_id = 1; // 当前用户id
+  int64 to_user_id = 2; // 对方用户id
+}
+
+message GetLatestMsgByMyUserIdAndHisUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  optional Message message = 3; // 最新消息
 }
 
 message Message {

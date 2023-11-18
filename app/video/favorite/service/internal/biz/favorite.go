@@ -11,7 +11,7 @@ type FavoriteRepo interface {
 	GetFavoriteVideoIdListByUserId(ctx context.Context, userId int64) ([]int64, error)
 	IsUserFavoriteVideo(ctx context.Context, userId int64, videoId int64) (bool, error)
 	IsUserFavoriteVideoList(ctx context.Context, userId int64, videoIds []int64) ([]bool, error)
-	FavoriteVideo(ctx context.Context, userId int64, videoId int64, action int) error
+	FavoriteVideo(ctx context.Context, fav *do.Favorite) error
 	CountVideoFavoriteByUserId(ctx context.Context, userId int64) (int64, error)
 	CountVideoFavoritedByUserId(ctx context.Context, userId int64) (int64, error)
 	CountFavoritedByVideoId(ctx context.Context, videoId int64) (int64, error)
@@ -26,23 +26,15 @@ func NewFavoriteUsecase(repo FavoriteRepo, logger log.Logger) *FavoriteUsecase {
 	return &FavoriteUsecase{repo: repo, log: log.NewHelper(logger)}
 }
 
-func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, userId int64, videoId int64, action int) error {
-	isFavorite, err := uc.repo.IsUserFavoriteVideo(ctx, userId, videoId)
+func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, fav *do.Favorite) error {
+	if fav.Type != do.FavoriteActionAdd && fav.Type != do.FavoriteActionDelete {
+		return ecode.ParamErr
+	}
+	err := uc.repo.FavoriteVideo(ctx, fav)
 	if err != nil {
 		return err
 	}
-	if action == do.FavoriteActionAdd {
-		if isFavorite {
-			return ecode.FavoriteRecordAlreadyExistErr
-		}
-		return uc.addFavorite(ctx, userId, videoId)
-	} else if action == do.FavoriteActionDelete {
-		if !isFavorite {
-			return ecode.FavoriteRecordNotExistErr
-		}
-		return uc.deleteFavorite(ctx, userId, videoId)
-	}
-	return ecode.ParamErr
+	return nil
 }
 
 func (uc *FavoriteUsecase) GetFavoriteVideoIdListByUserId(ctx context.Context, userId int64) ([]int64, error) {
@@ -67,20 +59,4 @@ func (uc *FavoriteUsecase) CountVideoFavoritedByUserId(ctx context.Context, user
 
 func (uc *FavoriteUsecase) CountVideoFavoritedByVideoId(ctx context.Context, videoId int64) (int64, error) {
 	return uc.repo.CountFavoritedByVideoId(ctx, videoId)
-}
-
-func (uc *FavoriteUsecase) addFavorite(ctx context.Context, userId int64, videoId int64) error {
-	err := uc.repo.FavoriteVideo(ctx, userId, videoId, do.FavoriteActionAdd)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (uc *FavoriteUsecase) deleteFavorite(ctx context.Context, userId int64, videoId int64) error {
-	err := uc.repo.FavoriteVideo(ctx, userId, videoId, do.FavoriteActionDelete)
-	if err != nil {
-		return err
-	}
-	return nil
 }

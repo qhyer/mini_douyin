@@ -2,7 +2,8 @@ package data
 
 import (
 	"context"
-	"douyin/app/user/relation/service/internal/biz"
+
+	"douyin/app/video/comment/job/internal/biz"
 
 	"github.com/go-kratos/kratos/v2/log"
 )

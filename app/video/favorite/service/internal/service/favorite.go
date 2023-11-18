@@ -3,8 +3,10 @@ package service
 import (
 	"context"
 	"douyin/api/video/favorite/service/v1"
+	do "douyin/app/video/favorite/common/entity"
 	"douyin/app/video/favorite/service/internal/biz"
 	"douyin/common/ecode"
+	"time"
 )
 
 type FavoriteService struct {
@@ -18,7 +20,12 @@ func NewFavoriteService(uc *biz.FavoriteUsecase) *FavoriteService {
 }
 
 func (s *FavoriteService) FavoriteAction(ctx context.Context, req *v1.DouyinFavoriteActionRequest) (*v1.DouyinFavoriteActionResponse, error) {
-	err := s.uc.FavoriteAction(ctx, req.GetUserId(), req.GetVideoId(), int(req.GetActionType()))
+	err := s.uc.FavoriteAction(ctx, &do.Favorite{
+		Type:      do.FavoriteActionType(req.GetActionType()),
+		UserId:    req.GetUserId(),
+		VideoId:   req.GetVideoId(),
+		CreatedAt: time.Now(),
+	})
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.DouyinFavoriteActionResponse{

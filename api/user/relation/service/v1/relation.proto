@@ -5,19 +5,21 @@ package api.relation.v1;
 option go_package = "douyin/service/relation/v1;v1";
 
 service Relation {
-  rpc RelationAction(DouyinRelationActionRequest) returns (DouyinRelationActionResponse);
+  rpc RelationAction(RelationActionRequest) returns (RelationActionResponse);
   rpc GetFollowListByUserId(GetFollowListByUserIdRequest) returns (GetFollowListByUserIdResponse);
   rpc GetFollowerListByUserId(GetFollowerListByUserIdRequest) returns (GetFollowerListByUserIdResponse);
   rpc GetUserFriendListByUserId(GetFriendListByUserIdRequest) returns (GetFriendListByUserIdResponse);
+  rpc CountFollowByUserId(CountFollowByUserIdRequest) returns (CountFollowByUserIdResponse);
+  rpc CountFollowerByUserId(CountFollowerByUserIdRequest) returns (CountFollowerByUserIdResponse);
 }
 
-message DouyinRelationActionRequest {
+message RelationActionRequest {
   int64 user_id = 1; // 当前用户id
   int64 to_user_id = 2; // 对方用户id
   int32 action_type = 3; // 1-关注，2-取消关注
 }
 
-message DouyinRelationActionResponse {
+message RelationActionResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
 }
@@ -51,4 +53,24 @@ message GetFriendListByUserIdResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
   repeated int64 user_id_list = 3; // 用户列表
+}
+
+message CountFollowByUserIdRequest {
+  int64 user_id = 1; // 用户id
+}
+
+message CountFollowByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  int64 count = 3; // 关注数
+}
+
+message CountFollowerByUserIdRequest {
+  int64 user_id = 1; // 用户id
+}
+
+message CountFollowerByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  int64 count = 3; // 粉丝数
 }

@@ -4,36 +4,48 @@ import (
 	"context"
 	do "douyin/app/video/publish/common/entity"
 	"github.com/go-kratos/kratos/v2/log"
+	"time"
 )
 
 type VideoRepo interface {
+	CreateVideo(ctx context.Context, video *do.Video) error
 	GetPublishedVideosByUserId(ctx context.Context, userId int64, offset int, limit int) ([]*do.Video, error)
 	GetPublishedVideosByLatestTime(ctx context.Context, latestTime int64, limit int) ([]*do.Video, error)
 	GetVideoById(ctx context.Context, id int64) (*do.Video, error)
 	MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Video, error)
-	UploadVideo(ctx context.Context, data []byte, objectName string) error
+	UploadVideo(ctx context.Context, data []byte, objectName string) (string, error)
 	CountUserPublishedVideoByUserId(ctx context.Context, userId int64) (int64, error)
 }
 
 type VideoUsecase struct {
 	repo VideoRepo
-	log  *log.Logger
+	log  *log.Helper
 }
 
 func NewVideoUsecase(repo VideoRepo, logger log.Logger) *VideoUsecase {
 	return &VideoUsecase{
 		repo: repo,
-		log:  &logger,
+		log:  log.NewHelper(logger),
 	}
 }
 
 func (u *VideoUsecase) PublishVideo(ctx context.Context, video []byte, uid int64, title string) error {
-	err := u.repo.UploadVideo(ctx, video, title)
+	// TODO get seq-number
+	filename, err := u.repo.UploadVideo(ctx, video, "")
 	if err != nil {
+		u.log.Errorf("upload video error: %v", err)
 		return err
 	}
-	// TODO push 上传成功的消息到消息队列
-
+	err = u.repo.CreateVideo(ctx, &do.Video{
+		AuthorID:      uid,
+		Title:         title,
+		VideoFileName: filename,
+		CreatedAt:     time.Now(),
+	})
+	if err != nil {
+		u.log.Errorf("create video error: %v", err)
+		return err
+	}
 	return nil
 }
 

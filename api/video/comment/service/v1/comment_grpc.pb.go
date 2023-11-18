@@ -19,16 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Comment_CommentAction_FullMethodName           = "/service.comment.v1.Comment/CommentAction"
-	Comment_GetCommentListByVideoId_FullMethodName = "/service.comment.v1.Comment/GetCommentListByVideoId"
+	Comment_CommentAction_FullMethodName           = "/api.comment.v1.Comment/CommentAction"
+	Comment_GetCommentListByVideoId_FullMethodName = "/api.comment.v1.Comment/GetCommentListByVideoId"
+	Comment_CountCommentByVideoId_FullMethodName   = "/api.comment.v1.Comment/CountCommentByVideoId"
 )
 
 // CommentClient is the client API for Comment service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CommentClient interface {
-	CommentAction(ctx context.Context, in *DouyinCommentActionRequest, opts ...grpc.CallOption) (*DouyinCommentActionResponse, error)
-	GetCommentListByVideoId(ctx context.Context, in *DouyinGetCommentListByVideoIdRequest, opts ...grpc.CallOption) (*DouyinGetCommentListByVideoIdResponse, error)
+	CommentAction(ctx context.Context, in *CommentActionRequest, opts ...grpc.CallOption) (*CommentActionResponse, error)
+	GetCommentListByVideoId(ctx context.Context, in *GetCommentListByVideoIdRequest, opts ...grpc.CallOption) (*GetCommentListByVideoIdResponse, error)
+	CountCommentByVideoId(ctx context.Context, in *CountCommentByVideoIdRequest, opts ...grpc.CallOption) (*CountCommentByVideoIdResponse, error)
 }
 
 type commentClient struct {
@@ -39,8 +41,8 @@ func NewCommentClient(cc grpc.ClientConnInterface) CommentClient {
 	return &commentClient{cc}
 }
 
-func (c *commentClient) CommentAction(ctx context.Context, in *DouyinCommentActionRequest, opts ...grpc.CallOption) (*DouyinCommentActionResponse, error) {
-	out := new(DouyinCommentActionResponse)
+func (c *commentClient) CommentAction(ctx context.Context, in *CommentActionRequest, opts ...grpc.CallOption) (*CommentActionResponse, error) {
+	out := new(CommentActionResponse)
 	err := c.cc.Invoke(ctx, Comment_CommentAction_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -48,9 +50,18 @@ func (c *commentClient) CommentAction(ctx context.Context, in *DouyinCommentActi
 	return out, nil
 }
 
-func (c *commentClient) GetCommentListByVideoId(ctx context.Context, in *DouyinGetCommentListByVideoIdRequest, opts ...grpc.CallOption) (*DouyinGetCommentListByVideoIdResponse, error) {
-	out := new(DouyinGetCommentListByVideoIdResponse)
+func (c *commentClient) GetCommentListByVideoId(ctx context.Context, in *GetCommentListByVideoIdRequest, opts ...grpc.CallOption) (*GetCommentListByVideoIdResponse, error) {
+	out := new(GetCommentListByVideoIdResponse)
 	err := c.cc.Invoke(ctx, Comment_GetCommentListByVideoId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *commentClient) CountCommentByVideoId(ctx context.Context, in *CountCommentByVideoIdRequest, opts ...grpc.CallOption) (*CountCommentByVideoIdResponse, error) {
+	out := new(CountCommentByVideoIdResponse)
+	err := c.cc.Invoke(ctx, Comment_CountCommentByVideoId_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +72,9 @@ func (c *commentClient) GetCommentListByVideoId(ctx context.Context, in *DouyinG
 // All implementations must embed UnimplementedCommentServer
 // for forward compatibility
 type CommentServer interface {
-	CommentAction(context.Context, *DouyinCommentActionRequest) (*DouyinCommentActionResponse, error)
-	GetCommentListByVideoId(context.Context, *DouyinGetCommentListByVideoIdRequest) (*DouyinGetCommentListByVideoIdResponse, error)
+	CommentAction(context.Context, *CommentActionRequest) (*CommentActionResponse, error)
+	GetCommentListByVideoId(context.Context, *GetCommentListByVideoIdRequest) (*GetCommentListByVideoIdResponse, error)
+	CountCommentByVideoId(context.Context, *CountCommentByVideoIdRequest) (*CountCommentByVideoIdResponse, error)
 	mustEmbedUnimplementedCommentServer()
 }
 
@@ -70,11 +82,14 @@ type CommentServer interface {
 type UnimplementedCommentServer struct {
 }
 
-func (UnimplementedCommentServer) CommentAction(context.Context, *DouyinCommentActionRequest) (*DouyinCommentActionResponse, error) {
+func (UnimplementedCommentServer) CommentAction(context.Context, *CommentActionRequest) (*CommentActionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CommentAction not implemented")
 }
-func (UnimplementedCommentServer) GetCommentListByVideoId(context.Context, *DouyinGetCommentListByVideoIdRequest) (*DouyinGetCommentListByVideoIdResponse, error) {
+func (UnimplementedCommentServer) GetCommentListByVideoId(context.Context, *GetCommentListByVideoIdRequest) (*GetCommentListByVideoIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCommentListByVideoId not implemented")
+}
+func (UnimplementedCommentServer) CountCommentByVideoId(context.Context, *CountCommentByVideoIdRequest) (*CountCommentByVideoIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CountCommentByVideoId not implemented")
 }
 func (UnimplementedCommentServer) mustEmbedUnimplementedCommentServer() {}
 
@@ -90,7 +105,7 @@ func RegisterCommentServer(s grpc.ServiceRegistrar, srv CommentServer) {
 }
 
 func _Comment_CommentAction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DouyinCommentActionRequest)
+	in := new(CommentActionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -102,13 +117,13 @@ func _Comment_CommentAction_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: Comment_CommentAction_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommentServer).CommentAction(ctx, req.(*DouyinCommentActionRequest))
+		return srv.(CommentServer).CommentAction(ctx, req.(*CommentActionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Comment_GetCommentListByVideoId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DouyinGetCommentListByVideoIdRequest)
+	in := new(GetCommentListByVideoIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -120,7 +135,25 @@ func _Comment_GetCommentListByVideoId_Handler(srv interface{}, ctx context.Conte
 		FullMethod: Comment_GetCommentListByVideoId_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CommentServer).GetCommentListByVideoId(ctx, req.(*DouyinGetCommentListByVideoIdRequest))
+		return srv.(CommentServer).GetCommentListByVideoId(ctx, req.(*GetCommentListByVideoIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Comment_CountCommentByVideoId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CountCommentByVideoIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommentServer).CountCommentByVideoId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Comment_CountCommentByVideoId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommentServer).CountCommentByVideoId(ctx, req.(*CountCommentByVideoIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -129,7 +162,7 @@ func _Comment_GetCommentListByVideoId_Handler(srv interface{}, ctx context.Conte
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Comment_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "service.comment.v1.Comment",
+	ServiceName: "api.comment.v1.Comment",
 	HandlerType: (*CommentServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -139,6 +172,10 @@ var Comment_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCommentListByVideoId",
 			Handler:    _Comment_GetCommentListByVideoId_Handler,
+		},
+		{
+			MethodName: "CountCommentByVideoId",
+			Handler:    _Comment_CountCommentByVideoId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
