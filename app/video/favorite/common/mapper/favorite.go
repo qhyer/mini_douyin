@@ -5,8 +5,8 @@ import (
 	po "douyin/app/video/favorite/common/model"
 )
 
-func FavoriteFromPO(po *po.Favorite) (*do.Favorite, error) {
-	return &do.Favorite{
+func FavoriteFromPO(po *po.Favorite) (*do.FavoriteAction, error) {
+	return &do.FavoriteAction{
 		ID:        po.ID,
 		UserId:    po.UserId,
 		VideoId:   po.VideoId,
@@ -14,7 +14,7 @@ func FavoriteFromPO(po *po.Favorite) (*do.Favorite, error) {
 	}, nil
 }
 
-func FavoriteToPO(do *do.Favorite) (*po.Favorite, error) {
+func FavoriteToPO(do *do.FavoriteAction) (*po.Favorite, error) {
 	return &po.Favorite{
 		ID:        do.ID,
 		UserId:    do.UserId,
@@ -23,8 +23,8 @@ func FavoriteToPO(do *do.Favorite) (*po.Favorite, error) {
 	}, nil
 }
 
-func FavoriteFromPOs(pos []*po.Favorite) ([]*do.Favorite, error) {
-	var dos []*do.Favorite
+func FavoriteFromPOs(pos []*po.Favorite) ([]*do.FavoriteAction, error) {
+	var dos []*do.FavoriteAction
 	for _, p := range pos {
 		d, err := FavoriteFromPO(p)
 		if err != nil {
@@ -35,7 +35,7 @@ func FavoriteFromPOs(pos []*po.Favorite) ([]*do.Favorite, error) {
 	return dos, nil
 }
 
-func FavoriteToPOs(dos []*do.Favorite) ([]*po.Favorite, error) {
+func FavoriteToPOs(dos []*do.FavoriteAction) ([]*po.Favorite, error) {
 	var pos []*po.Favorite
 	for _, d := range dos {
 		p, err := FavoriteToPO(d)

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package api.comment.v1;
+package comment.service.v1;
 
 option go_package = "douyin/service/comment/v1;v1";
 
@@ -8,6 +8,7 @@ service Comment {
   rpc CommentAction(CommentActionRequest) returns (CommentActionResponse);
   rpc GetCommentListByVideoId(GetCommentListByVideoIdRequest) returns (GetCommentListByVideoIdResponse);
   rpc CountCommentByVideoId(CountCommentByVideoIdRequest) returns (CountCommentByVideoIdResponse);
+  rpc MCountCommentByVideoId(MCountCommentByVideoIdRequest) returns (MCountCommentByVideoIdResponse);
 }
 
 message CommentActionRequest {
@@ -42,6 +43,16 @@ message CountCommentByVideoIdResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
   int64 comment_count = 3; // 评论总数
+}
+
+message MCountCommentByVideoIdRequest {
+  repeated int64 video_id_list = 1; // 视频id列表
+}
+
+message MCountCommentByVideoIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  repeated int64 count_list = 3; // 评论总数列表
 }
 
 message CommentInfo {

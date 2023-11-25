@@ -19,12 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Publish_PublishVideo_FullMethodName                    = "/api.publish.v1.Publish/PublishVideo"
-	Publish_GetUserPublishedVideoList_FullMethodName       = "/api.publish.v1.Publish/GetUserPublishedVideoList"
-	Publish_GetPublishedVideoByLatestTime_FullMethodName   = "/api.publish.v1.Publish/GetPublishedVideoByLatestTime"
-	Publish_GetVideoInfoByVideoIds_FullMethodName          = "/api.publish.v1.Publish/GetVideoInfoByVideoIds"
-	Publish_MGetVideoInfoByVideoIds_FullMethodName         = "/api.publish.v1.Publish/MGetVideoInfoByVideoIds"
-	Publish_CountUserPublishedVideoByUserId_FullMethodName = "/api.publish.v1.Publish/CountUserPublishedVideoByUserId"
+	Publish_PublishVideo_FullMethodName                    = "/publish.service.v1.Publish/PublishVideo"
+	Publish_GetUserPublishedVideoList_FullMethodName       = "/publish.service.v1.Publish/GetUserPublishedVideoList"
+	Publish_GetPublishedVideoByLatestTime_FullMethodName   = "/publish.service.v1.Publish/GetPublishedVideoByLatestTime"
+	Publish_GetVideoInfoByVideoIds_FullMethodName          = "/publish.service.v1.Publish/GetVideoInfoByVideoIds"
+	Publish_MGetVideoInfoByVideoIds_FullMethodName         = "/publish.service.v1.Publish/MGetVideoInfoByVideoIds"
+	Publish_CountUserPublishedVideoByUserId_FullMethodName = "/publish.service.v1.Publish/CountUserPublishedVideoByUserId"
 )
 
 // PublishClient is the client API for Publish service.
@@ -261,7 +261,7 @@ func _Publish_CountUserPublishedVideoByUserId_Handler(srv interface{}, ctx conte
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Publish_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.publish.v1.Publish",
+	ServiceName: "publish.service.v1.Publish",
 	HandlerType: (*PublishServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

@@ -2,4 +2,4 @@ package constants
 
 const PublishVideoTopic string = "publish_video"
 
-const HandleCoverTopic string = "handle_cover"
+const GenCoverTopic string = "gen_cover"

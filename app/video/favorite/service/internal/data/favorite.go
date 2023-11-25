@@ -27,7 +27,8 @@ func NewFavoriteRepo(data *Data, logger log.Logger) biz.FavoriteRepo {
 	}
 }
 
-func (r *favoriteRepo) CountFavoritedByVideoId(ctx context.Context, videoId int64) (int64, error) {
+// CountVideoFavoritedByVideoId 获取视频获赞数
+func (r *favoriteRepo) CountVideoFavoritedByVideoId(ctx context.Context, videoId int64) (int64, error) {
 	count, err := r.getVideoFavoritedCountFromCache(ctx, videoId)
 	if err != nil {
 		if err != redis.Nil {
@@ -42,6 +43,7 @@ func (r *favoriteRepo) CountFavoritedByVideoId(ctx context.Context, videoId int6
 	return count, nil
 }
 
+// IsUserFavoriteVideoList 批量获取用户是否点赞视频
 func (r *favoriteRepo) IsUserFavoriteVideoList(ctx context.Context, userId int64, videoIds []int64) ([]bool, error) {
 	favs, err := r.GetFavoriteVideoIdListByUserId(ctx, userId)
 	if err != nil {
@@ -58,7 +60,8 @@ func (r *favoriteRepo) IsUserFavoriteVideoList(ctx context.Context, userId int64
 	return res, nil
 }
 
-func (r *favoriteRepo) FavoriteVideo(ctx context.Context, fav *do.Favorite) error {
+// FavoriteVideo 点赞视频
+func (r *favoriteRepo) FavoriteVideo(ctx context.Context, fav *do.FavoriteAction) error {
 	// TODO get seq-number
 	b, err := fav.MarshalJson()
 	if err != nil {
@@ -77,8 +80,9 @@ func (r *favoriteRepo) FavoriteVideo(ctx context.Context, fav *do.Favorite) erro
 	return nil
 }
 
+// GetFavoriteVideoIdListByUserId 获取用户点赞视频id列表
 func (r *favoriteRepo) GetFavoriteVideoIdListByUserId(ctx context.Context, userId int64) ([]int64, error) {
-	vids, err := r.getUserFavoriteVideoIdListCache(ctx, userId)
+	vids, err := r.getUserFavoriteVideoIdListFromCache(ctx, userId)
 	if err != nil {
 		if err != redis.Nil {
 			r.log.Errorf("redis error: %v", err)
@@ -97,6 +101,7 @@ func (r *favoriteRepo) GetFavoriteVideoIdListByUserId(ctx context.Context, userI
 	return vids, nil
 }
 
+// IsUserFavoriteVideo 判断用户是否点赞视频
 func (r *favoriteRepo) IsUserFavoriteVideo(ctx context.Context, userId int64, videoId int64) (bool, error) {
 	res := r.data.redis.ZScore(ctx, constants.UserFavoriteListCacheKey(userId), strconv.FormatInt(videoId, 10))
 	if err := res.Err(); err != nil {
@@ -112,7 +117,8 @@ func (r *favoriteRepo) IsUserFavoriteVideo(ctx context.Context, userId int64, vi
 	return res.Val() > 0, nil
 }
 
-func (r *favoriteRepo) CountVideoFavoriteByUserId(ctx context.Context, userId int64) (int64, error) {
+// CountUserFavoriteByUserId 获取用户点赞数
+func (r *favoriteRepo) CountUserFavoriteByUserId(ctx context.Context, userId int64) (int64, error) {
 	count, err := r.getUserFavoriteCountFromCache(ctx, userId)
 	if err != nil {
 		if err != redis.Nil {
@@ -126,7 +132,8 @@ func (r *favoriteRepo) CountVideoFavoriteByUserId(ctx context.Context, userId in
 	return count, nil
 }
 
-func (r *favoriteRepo) CountVideoFavoritedByUserId(ctx context.Context, userId int64) (int64, error) {
+// CountUserFavoritedByUserId 获取用户获赞数
+func (r *favoriteRepo) CountUserFavoritedByUserId(ctx context.Context, userId int64) (int64, error) {
 	count, err := r.getUserFavoritedCountFromCache(ctx, userId)
 	if err != nil {
 		if err != redis.Nil {
@@ -140,6 +147,26 @@ func (r *favoriteRepo) CountVideoFavoritedByUserId(ctx context.Context, userId i
 	return count, nil
 }
 
+// MCountVideoFavoritedByVideoId 批量获取视频获赞数
+func (r *favoriteRepo) MCountVideoFavoritedByVideoId(ctx context.Context, videoId []int64) ([]int64, error) {
+	favCntMap, missed := r.batchGetVideoFavoritedCountFromCache(ctx, videoId)
+	if len(missed) > 0 {
+		for _, v := range missed {
+			res, err := r.CountVideoFavoritedByVideoId(ctx, v)
+			// 如果没查到，设0
+			if err == nil {
+				favCntMap[v] = res
+			}
+		}
+	}
+	res := make([]int64, 0, len(videoId))
+	for _, v := range videoId {
+		res = append(res, favCntMap[v])
+	}
+	return res, nil
+}
+
+// 设置用户点赞视频列表到缓存
 func (r *favoriteRepo) setUserFavoriteVideoIdListCache(ctx context.Context, userId int64, favs []*po.Favorite) {
 	pipe := r.data.redis.TxPipeline()
 	key := constants.UserFavoriteListCacheKey(userId)
@@ -156,7 +183,8 @@ func (r *favoriteRepo) setUserFavoriteVideoIdListCache(ctx context.Context, user
 	}
 }
 
-func (r *favoriteRepo) getUserFavoriteVideoIdListCache(ctx context.Context, userId int64) ([]int64, error) {
+// 从缓存中获取用户点赞视频列表
+func (r *favoriteRepo) getUserFavoriteVideoIdListFromCache(ctx context.Context, userId int64) ([]int64, error) {
 	res, err := r.data.redis.ZRevRangeByScore(ctx, constants.UserFavoriteListCacheKey(userId), &redis.ZRangeBy{
 		Min: "0",
 		Max: fmt.Sprintf("%d", time.Now().UnixMilli()),
@@ -175,28 +203,33 @@ func (r *favoriteRepo) getUserFavoriteVideoIdListCache(ctx context.Context, user
 	return vids, nil
 }
 
+// 设置用户获赞数到缓存
 func (r *favoriteRepo) setUserFavoritedCountCache(ctx context.Context, userId int64, count int64) {
-	err := r.data.redis.Set(ctx, constants.UserVideoFavoritedCountCacheKey(userId), count, constants.UserVideoFavoritedCountCacheExpiration).Err()
+	err := r.data.redis.Set(ctx, constants.UserFavoritedCountCacheKey(userId), count, constants.UserFavoritedCountCacheExpiration).Err()
 	if err != nil {
 		r.log.Errorf("redis error: %v", err)
 	}
 }
 
+// 从redis获取用户获赞数
 func (r *favoriteRepo) getUserFavoritedCountFromCache(ctx context.Context, userId int64) (int64, error) {
-	return r.data.redis.Get(ctx, constants.UserVideoFavoritedCountCacheKey(userId)).Int64()
+	return r.data.redis.Get(ctx, constants.UserFavoritedCountCacheKey(userId)).Int64()
 }
 
+// 设置用户点赞数到缓存
 func (r *favoriteRepo) setUserFavoriteCountCache(ctx context.Context, userId int64, count int64) {
-	err := r.data.redis.Set(ctx, constants.UserVideoFavoriteCountCacheKey(userId), count, constants.UserVideoFavoriteCountCacheExpiration).Err()
+	err := r.data.redis.Set(ctx, constants.UserFavoriteCountCacheKey(userId), count, constants.UserFavoriteCountCacheExpiration).Err()
 	if err != nil {
 		r.log.Errorf("redis error: %v", err)
 	}
 }
 
+// 从缓存中获取用户点赞数
 func (r *favoriteRepo) getUserFavoriteCountFromCache(ctx context.Context, userId int64) (int64, error) {
-	return r.data.redis.Get(ctx, constants.UserVideoFavoriteCountCacheKey(userId)).Int64()
+	return r.data.redis.Get(ctx, constants.UserFavoriteCountCacheKey(userId)).Int64()
 }
 
+// 设置视频获赞数到缓存
 func (r *favoriteRepo) setVideoFavoritedCountCache(ctx context.Context, videoId int64, count int64) {
 	err := r.data.redis.Set(ctx, constants.VideoFavoritedCountCacheKey(videoId), count, constants.VideoFavoritedCountCacheExpiration).Err()
 	if err != nil {
@@ -204,6 +237,45 @@ func (r *favoriteRepo) setVideoFavoritedCountCache(ctx context.Context, videoId 
 	}
 }
 
+// 从redis中获取视频获赞数
 func (r *favoriteRepo) getVideoFavoritedCountFromCache(ctx context.Context, videoId int64) (int64, error) {
 	return r.data.redis.Get(ctx, constants.VideoFavoritedCountCacheKey(videoId)).Int64()
+}
+
+// 批量设置视频获赞数到缓存
+func (r *favoriteRepo) batchSetVideoFavoritedCountCache(ctx context.Context, videoId []int64, count []int64) {
+	pipe := r.data.redis.TxPipeline()
+	for i, v := range videoId {
+		pipe.Set(ctx, constants.VideoFavoritedCountCacheKey(v), count[i], constants.VideoFavoritedCountCacheExpiration)
+	}
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		r.log.Errorf("redis error: %v", err)
+	}
+}
+
+// 批量从redis中获取视频获赞数
+func (r *favoriteRepo) batchGetVideoFavoritedCountFromCache(ctx context.Context, videoId []int64) (favCntMap map[int64]int64, missed []int64) {
+	favCntMap = make(map[int64]int64, len(videoId))
+	missed = make([]int64, 0, len(videoId))
+	pipe := r.data.redis.TxPipeline()
+	for _, v := range videoId {
+		pipe.Get(ctx, constants.VideoFavoritedCountCacheKey(v))
+	}
+	res, err := pipe.Exec(ctx)
+	if err != nil {
+		r.log.Errorf("redis error: %v", err)
+		return favCntMap, videoId
+	}
+	for i, v := range res {
+		if v.Err() != nil {
+			if v.Err() != redis.Nil {
+				r.log.Errorf("redis error: %v", v.Err())
+			}
+			missed = append(missed, videoId[i])
+		} else {
+			favCntMap[videoId[i]], _ = v.(*redis.StringCmd).Int64()
+		}
+	}
+	return favCntMap, missed
 }

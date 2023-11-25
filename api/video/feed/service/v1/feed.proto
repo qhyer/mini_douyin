@@ -1,22 +1,51 @@
 syntax="proto3";
 
-package api.feed.v1;
+package feed.service.v1;
+
+option go_package = "douyin/service/feed/v1;v1";
 
 service Feed {
-  rpc Feed(douyin_feed_request) returns (douyin_feed_response);
+  rpc Feed(FeedRequest) returns (FeedResponse);
+  rpc GetPublishedVideoByUserId(GetPublishedVideoByUserIdRequest) returns (GetPublishedVideoByUserIdResponse);
+  rpc GetUserFavoriteVideoListByUserId(GetUserFavoriteVideoListByUserIdRequest) returns (GetUserFavoriteVideoListByUserIdResponse);
 }
 
-message douyin_feed_request {
+message FeedRequest {
   optional int64 latest_time = 1; // 可选参数，限制返回视频的最新投稿时间戳，精确到秒，不填表示当前时间
   optional int64 user_id = 2; // 可选参数，登录用户id，游客为0
 }
 
-message douyin_feed_response {
+message FeedResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
   repeated Video video_list = 3; // 视频列表
   optional int64 next_time = 4; // 本次返回的视频中，发布最早的时间，作为下次请求时的latest_time
 }
+
+message GetPublishedVideoByUserIdRequest {
+  int64 user_id = 1; // 当前用户id，游客为0
+  int64 to_user_id = 2; // 对方id
+}
+
+message GetPublishedVideoByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  repeated Video video_list = 3; // 视频列表
+}
+
+message GetUserFavoriteVideoListByUserIdRequest {
+  int64 user_id = 1; // 当前用户id，游客为0
+  int64 to_user_id = 2; // 对方id
+}
+
+message GetUserFavoriteVideoListByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  repeated Video video_list = 3; // 视频列表
+}
+
+
+
 
 message Video {
   int64 id = 1; // 视频唯一标识

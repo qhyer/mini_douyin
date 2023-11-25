@@ -21,6 +21,7 @@ func NewPassportService(uc *biz.PassportUsecase) *PassportService {
 	return &PassportService{uc: uc}
 }
 
+// Register 用户注册
 func (s *PassportService) Register(ctx context.Context, req *v1.DouyinUserRegisterRequest) (*v1.DouyinUserRegisterResponse, error) {
 	uid, err := s.uc.CreateUser(ctx, &do.User{
 		Name:     req.GetUsername(),
@@ -54,6 +55,7 @@ func (s *PassportService) Register(ctx context.Context, req *v1.DouyinUserRegist
 	}, nil
 }
 
+// Login 用户登陆
 func (s *PassportService) Login(ctx context.Context, req *v1.DouyinUserLoginRequest) (*v1.DouyinUserLoginResponse, error) {
 	verified, uid, err := s.uc.VerifyPassword(ctx, &do.User{
 		Name:     req.GetUsername(),
@@ -90,6 +92,7 @@ func (s *PassportService) Login(ctx context.Context, req *v1.DouyinUserLoginRequ
 	}
 }
 
+// GetInfo 获取用户信息
 func (s *PassportService) GetInfo(ctx context.Context, req *v1.DouyinGetUserInfoRequest) (*v1.DouyinGetUserInfoResponse, error) {
 	user, err := s.uc.GetUserByID(ctx, req.GetUserId())
 	if err != nil {
@@ -114,6 +117,7 @@ func (s *PassportService) GetInfo(ctx context.Context, req *v1.DouyinGetUserInfo
 	}, nil
 }
 
+// MGetInfo 批量获取用户信息
 func (s *PassportService) MGetInfo(ctx context.Context, req *v1.DouyinMultipleGetUserInfoRequest) (*v1.DouyinMultipleGetUserInfoResponse, error) {
 	users, err := s.uc.MGetUserByID(ctx, req.GetUserIds())
 	if err != nil {

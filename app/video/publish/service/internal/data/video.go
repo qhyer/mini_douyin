@@ -27,7 +27,8 @@ func NewVideoRepo(data *Data, logger log.Logger) biz.VideoRepo {
 	}
 }
 
-func (r *videoRepo) CreateVideo(ctx context.Context, video *do.Video) error {
+// PublishVideo 发布视频
+func (r *videoRepo) PublishVideo(ctx context.Context, video *do.Video) error {
 	// TODO get seq-number
 	b, err := video.MarshalJson()
 	if err != nil {
@@ -40,7 +41,7 @@ func (r *videoRepo) CreateVideo(ctx context.Context, video *do.Video) error {
 		Value: sarama.ByteEncoder(b),
 	})
 	msgs = append(msgs, &sarama.ProducerMessage{
-		Topic: constants.HandleCoverTopic,
+		Topic: constants.GenCoverTopic,
 		Value: sarama.ByteEncoder(b),
 	})
 	err = r.data.kafka.SendMessages(msgs)
@@ -51,6 +52,7 @@ func (r *videoRepo) CreateVideo(ctx context.Context, video *do.Video) error {
 	return nil
 }
 
+// GetPublishedVideosByUserId 获取用户发布视频列表
 func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64, offset int, limit int) ([]*do.Video, error) {
 	vids, err := r.getUserPublishedVidListFromCache(ctx, userId, 0, 0)
 	if err != nil {
@@ -58,7 +60,7 @@ func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64
 			r.log.Errorf("redis error: %v", err)
 		}
 		vs := make([]*po.Video, 0)
-		if err := r.data.db.WithContext(ctx).Table(constants.PublishTableName).Where("user_id = ?", userId).Offset(offset).Limit(limit).Find(&vs).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("user_id = ?", userId).Offset(offset).Limit(limit).Find(&vs).Error; err != nil {
 			r.log.Errorf("db error: %v", err)
 			return nil, err
 		}
@@ -75,9 +77,10 @@ func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64
 	return videos, nil
 }
 
+// GetPublishedVideosByLatestTime 获取小于某个时间的视频列表
 func (r *videoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTime int64, limit int) ([]*do.Video, error) {
 	vids := make([]int64, limit)
-	if err := r.data.db.WithContext(ctx).Table(constants.PublishTableName).Where("created_at < ?", time.Unix(latestTime, 0)).Order("created_at desc").Limit(limit).Pluck("id", &vids).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("created_at < ?", time.Unix(latestTime, 0)).Order("created_at desc").Limit(limit).Pluck("id", &vids).Error; err != nil {
 		r.log.Errorf("db error: %v", err)
 		return nil, err
 	}
@@ -88,6 +91,7 @@ func (r *videoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTi
 	return videos, nil
 }
 
+// GetVideoById 获取视频信息
 func (r *videoRepo) GetVideoById(ctx context.Context, id int64) (*do.Video, error) {
 	video, err := r.getVideoFromCache(ctx, id)
 	if err != nil {
@@ -95,7 +99,7 @@ func (r *videoRepo) GetVideoById(ctx context.Context, id int64) (*do.Video, erro
 			r.log.Errorf("redis error: %v", err)
 		}
 		video = &po.Video{}
-		if err := r.data.db.WithContext(ctx).Table(constants.PublishTableName).Where("id = ?", id).First(video).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("id = ?", id).First(video).Error; err != nil {
 			r.log.Errorf("db error: %v", err)
 			return nil, err
 		}
@@ -108,6 +112,7 @@ func (r *videoRepo) GetVideoById(ctx context.Context, id int64) (*do.Video, erro
 	return vs, nil
 }
 
+// MGetVideoByIds 批量获取视频信息
 func (r *videoRepo) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Video, error) {
 	videos, missed, err := r.batchGetVideoFromCache(ctx, ids)
 	if err != nil {
@@ -115,7 +120,7 @@ func (r *videoRepo) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Vide
 	}
 	if len(missed) > 0 {
 		missedVideos := make([]*po.Video, 0, len(missed))
-		if err := r.data.db.WithContext(ctx).Table(constants.PublishTableName).Where("id in (?)", missed).Find(&missedVideos).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("id in (?)", missed).Find(&missedVideos).Error; err != nil {
 			r.log.Errorf("db error: %v", err)
 			return nil, err
 		}
@@ -129,6 +134,7 @@ func (r *videoRepo) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Vide
 	return result, nil
 }
 
+// CountUserPublishedVideoByUserId 获取用户发布视频数量
 func (r *videoRepo) CountUserPublishedVideoByUserId(ctx context.Context, userId int64) (int64, error) {
 	res, err := r.getUserPublishedVidCountFromCache(ctx, userId)
 	if err != nil {
@@ -136,7 +142,7 @@ func (r *videoRepo) CountUserPublishedVideoByUserId(ctx context.Context, userId 
 			log.Errorf("redis error: %v", err)
 		}
 		var count int64
-		if err := r.data.db.WithContext(ctx).Table(constants.PublishTableName).Where("user_id = ?", userId).Count(&count).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(constants.PublishCountTableName(userId)).Where("user_id = ?", userId).Pluck("count", &count).Error; err != nil {
 			r.log.Errorf("db error: %v", err)
 			return 0, err
 		}
@@ -146,6 +152,7 @@ func (r *videoRepo) CountUserPublishedVideoByUserId(ctx context.Context, userId 
 	return res, nil
 }
 
+// setVideoCache 设置视频信息缓存
 func (r *videoRepo) setVideoCache(ctx context.Context, video *po.Video) {
 	err := r.data.redis.Set(ctx, constants.VideoCacheKey(video.ID), video, constants.VideoCacheExpiration).Err()
 	if err != nil {
@@ -153,6 +160,7 @@ func (r *videoRepo) setVideoCache(ctx context.Context, video *po.Video) {
 	}
 }
 
+// batchGetVideoFromCache 批量获取视频信息缓存
 func (r *videoRepo) batchSetVideoCache(ctx context.Context, videos []*po.Video) {
 	pipe := r.data.redis.Pipeline()
 	for _, video := range videos {
@@ -164,12 +172,14 @@ func (r *videoRepo) batchSetVideoCache(ctx context.Context, videos []*po.Video) 
 	}
 }
 
+// getVideoFromCache 从redis获取视频信息
 func (r *videoRepo) getVideoFromCache(ctx context.Context, vid int64) (*po.Video, error) {
 	video := &po.Video{}
 	err := r.data.redis.Get(ctx, constants.VideoCacheKey(vid)).Scan(video)
 	return video, err
 }
 
+// batchGetVideoFromCache 批量从redis获取视频信息
 func (r *videoRepo) batchGetVideoFromCache(ctx context.Context, vids []int64) (videos []*po.Video, missed []int64, err error) {
 	pipe := r.data.redis.Pipeline()
 	for _, vid := range vids {
@@ -197,6 +207,7 @@ func (r *videoRepo) batchGetVideoFromCache(ctx context.Context, vids []int64) (v
 	return videos, missed, nil
 }
 
+// setUserPublishedVidListCache 设置用户发布视频id列表缓存
 func (r *videoRepo) setUserPublishedVidListCache(ctx context.Context, uid int64, videos []*po.Video) {
 	vids := make([]redis.Z, 0, len(videos))
 	for _, video := range videos {
@@ -211,6 +222,7 @@ func (r *videoRepo) setUserPublishedVidListCache(ctx context.Context, uid int64,
 	}
 }
 
+// getUserPublishedVidListFromCache 从redis获取用户发布视频id列表
 func (r *videoRepo) getUserPublishedVidListFromCache(ctx context.Context, uid int64, offset int, limit int) ([]int64, error) {
 	data, err := r.data.redis.ZRevRangeWithScores(ctx, constants.UserPublishedVidListCacheKey(uid), int64(offset), int64(offset+limit-1)).Result()
 	if err != nil {
@@ -224,10 +236,12 @@ func (r *videoRepo) getUserPublishedVidListFromCache(ctx context.Context, uid in
 	return vids, nil
 }
 
+// getUserPublishedVidCountFromCache 从redis获取用户发布视频数量
 func (r *videoRepo) getUserPublishedVidCountFromCache(ctx context.Context, uid int64) (int64, error) {
 	return r.data.redis.Get(ctx, constants.UserPublishedVidCountCacheKey(uid)).Int64()
 }
 
+// setUserPublishedVidCountCache 设置用户发布视频数量缓存
 func (r *videoRepo) setUserPublishedVidCountCache(ctx context.Context, uid int64, count int64) {
 	err := r.data.redis.Set(ctx, constants.UserPublishedVidCountCacheKey(uid), count, constants.VideoCacheExpiration).Err()
 	if err != nil {
@@ -235,11 +249,13 @@ func (r *videoRepo) setUserPublishedVidCountCache(ctx context.Context, uid int64
 	}
 }
 
+// UploadVideo minio上传视频
 func (r *videoRepo) UploadVideo(ctx context.Context, data []byte, objectName string) (string, error) {
 	_, err := r.putObject(ctx, constants.VideoBucketName, objectName, data)
 	return objectName, err
 }
 
+// minio上传文件
 func (r *videoRepo) putObject(ctx context.Context, bucketName, objectName string, data []byte) (info minio.UploadInfo, err error) {
 	reader := bytes.NewReader(data)
 	return r.data.minio.PutObject(ctx, bucketName, objectName, reader, int64(len(data)), minio.PutObjectOptions{

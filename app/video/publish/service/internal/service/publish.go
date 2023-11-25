@@ -20,7 +20,8 @@ func NewPublishService(uc *biz.VideoUsecase) *PublishService {
 	return &PublishService{uc: uc}
 }
 
-func (s *PublishService) Publish(ctx context.Context, req *v1.PublishActionRequest) (*v1.PublishActionResponse, error) {
+// PublishVideo 发布视频
+func (s *PublishService) PublishVideo(ctx context.Context, req *v1.PublishActionRequest) (*v1.PublishActionResponse, error) {
 	err := s.uc.PublishVideo(ctx, req.GetData(), req.GetUserId(), req.GetTitle())
 	if err != nil {
 		err := ecode.ConvertErr(err)
@@ -35,6 +36,7 @@ func (s *PublishService) Publish(ctx context.Context, req *v1.PublishActionReque
 	}, nil
 }
 
+// GetPublishedVideosByUserId 获取用户发布的视频列表
 func (s *PublishService) GetPublishedVideosByUserId(ctx context.Context, req *v1.GetUserPublishedVideoListRequest) (*v1.GetUserPublishedVideoListResponse, error) {
 	videos, err := s.uc.GetPublishedVideosByUserId(ctx, req.GetUserId(), 0, 0)
 	if err != nil {
@@ -61,6 +63,7 @@ func (s *PublishService) GetPublishedVideosByUserId(ctx context.Context, req *v1
 	}, nil
 }
 
+// GetPublishedVideosByLatestTime 获取小于某个时间的视频列表
 func (s *PublishService) GetPublishedVideosByLatestTime(ctx context.Context, req *v1.GetPublishedVideoByLatestTimeRequest) (*v1.GetPublishedVideoByLatestTimeResponse, error) {
 	videos, err := s.uc.GetPublishedVideosByLatestTime(ctx, req.GetLatestTime(), videoQueryLimit)
 	if err != nil {
@@ -87,6 +90,7 @@ func (s *PublishService) GetPublishedVideosByLatestTime(ctx context.Context, req
 	}, nil
 }
 
+// GetVideoById 获取视频信息
 func (s *PublishService) GetVideoById(ctx context.Context, req *v1.GetVideoInfoRequest) (*v1.GetVideoInfoResponse, error) {
 	video, err := s.uc.GetVideoById(ctx, req.GetVideoId())
 	if err != nil {
@@ -113,6 +117,7 @@ func (s *PublishService) GetVideoById(ctx context.Context, req *v1.GetVideoInfoR
 	}, nil
 }
 
+// MGetVideoByIds 批量获取视频信息
 func (s *PublishService) MGetVideoByIds(ctx context.Context, req *v1.MGetVideoInfoRequest) (*v1.MGetVideoInfoResponse, error) {
 	videos, err := s.uc.MGetVideoByIds(ctx, req.GetVideoIds())
 	if err != nil {

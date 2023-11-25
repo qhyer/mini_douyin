@@ -5,7 +5,6 @@ import (
 	rdb "douyin/common/cache/redis"
 	"douyin/common/database/orm"
 	minio1 "douyin/common/minio"
-	"douyin/common/queue/kafka"
 	"github.com/IBM/sarama"
 	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
@@ -16,14 +15,13 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewKafka, NewVideoRepo)
+var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewVideoRepo)
 
 // Data .
 type Data struct {
 	db    *gorm.DB
 	redis *redis.Client
 	minio *minio.Client
-	kafka sarama.Consumer
 }
 
 // NewData .
@@ -31,7 +29,7 @@ func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Clien
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{db: orm, redis: redis, minio: minio, kafka: kafka}, cleanup, nil
+	return &Data{db: orm, redis: redis, minio: minio}, cleanup, nil
 }
 
 func NewOrm(c *conf.Data) *gorm.DB {
@@ -60,11 +58,5 @@ func NewMinio(c *conf.Data) *minio.Client {
 		EndPoint:        c.GetMinio().GetEndpoint(),
 		AccessKeyID:     c.GetMinio().GetAccessKeyId(),
 		SecretAccessKey: c.GetMinio().GetSecretAccessKey(),
-	})
-}
-
-func NewKafka(c *conf.Data) sarama.Consumer {
-	return kafka.NewKafkaConsumer(&kafka.Config{
-		Addr: c.GetKafka().GetAddr(),
 	})
 }

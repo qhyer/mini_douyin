@@ -26,6 +26,7 @@ func NewPassportUseCase(repo PassportRepo, logger log.Logger) *PassportUsecase {
 	}
 }
 
+// CreateUser 创建用户
 func (u *PassportUsecase) CreateUser(ctx context.Context, user *do.User) (uid int64, err error) {
 	uid = int64(0)
 	user.ID = uid
@@ -42,6 +43,7 @@ func (u *PassportUsecase) CreateUser(ctx context.Context, user *do.User) (uid in
 	return user.ID, nil
 }
 
+// VerifyPassword 验证密码
 func (u *PassportUsecase) VerifyPassword(ctx context.Context, user *do.User) (verified bool, uid int64, err error) {
 	pwd := []byte(user.Password)
 	hashedPassword, err := bcrypt.GenerateFromPassword(pwd, bcrypt.DefaultCost)
@@ -59,10 +61,12 @@ func (u *PassportUsecase) VerifyPassword(ctx context.Context, user *do.User) (ve
 	return true, us.ID, nil
 }
 
+// GetUserByID 通过id获取用户信息
 func (u *PassportUsecase) GetUserByID(ctx context.Context, id int64) (*do.User, error) {
 	return u.repo.GetUserById(ctx, id)
 }
 
+// MGetUserByID 批量获取用户信息
 func (u *PassportUsecase) MGetUserByID(ctx context.Context, ids []int64) ([]*do.User, error) {
 	return u.repo.MGetUserById(ctx, ids)
 }

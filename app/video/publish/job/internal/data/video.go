@@ -5,9 +5,12 @@ import (
 	"context"
 	"douyin/app/video/publish/common/constants"
 	do "douyin/app/video/publish/common/entity"
+	"douyin/app/video/publish/common/mapper"
+	po "douyin/app/video/publish/common/model"
 	"douyin/app/video/publish/job/internal/biz"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/minio/minio-go/v7"
+	"gorm.io/gorm"
 )
 
 type videoRepo struct {
@@ -23,16 +26,28 @@ func NewVideoRepo(data *Data, logger log.Logger) biz.VideoRepo {
 }
 
 func (r *videoRepo) BatchCreateVideo(ctx context.Context, videos []*do.Video) error {
-	err := r.data.db.WithContext(ctx).Table(constants.PublishTableName).Create(videos).Error
-	if err != nil {
-		r.log.Errorf("batch create video error: %v", err)
-		return err
-	}
-	return nil
+	// TODO
+	panic("implement me")
 }
 
 func (r *videoRepo) CreateVideo(ctx context.Context, video *do.Video) error {
-	err := r.data.db.WithContext(ctx).Table(constants.PublishTableName).Create(video).Error
+	v, err := mapper.VideoToPO(video)
+	if err != nil {
+		r.log.Errorf("mapper video to po error: %v", err)
+		return err
+	}
+	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Table(constants.PublishRecordTableName).Create(v).Error; err != nil {
+			return err
+		}
+		pubCnt := po.PublishCount{
+			UserID: v.AuthorID,
+		}
+		if err := tx.Table(constants.PublishCountTableName(v.AuthorID)).FirstOrInit(&pubCnt, pubCnt).UpdateColumn("video_count", gorm.Expr("video_count + ?", 1)).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		r.log.Errorf("create video error: %v", err)
 		return err

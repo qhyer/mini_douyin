@@ -4,7 +4,7 @@ import "time"
 
 type Video struct {
 	ID            int64     `json:"id"`
-	User          User      `json:"user"`
+	User          *User     `json:"user"`
 	PlayURL       string    `json:"play_url"`
 	CoverURL      string    `json:"cover_url"`
 	FavoriteCount int64     `json:"favorite_count"`

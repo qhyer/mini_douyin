@@ -19,9 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Chat_ChatAction_FullMethodName                                        = "/api.chat.v1.Chat/ChatAction"
-	Chat_GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime_FullMethodName = "/api.chat.v1.Chat/GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime"
-	Chat_GetLatestMsgByMyUserIdAndHisUserId_FullMethodName                = "/api.chat.v1.Chat/GetLatestMsgByMyUserIdAndHisUserId"
+	Chat_ChatAction_FullMethodName                                        = "/chat.service.v1.Chat/ChatAction"
+	Chat_GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime_FullMethodName = "/chat.service.v1.Chat/GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime"
+	Chat_GetLatestMsgByMyUserIdAndHisUserId_FullMethodName                = "/chat.service.v1.Chat/GetLatestMsgByMyUserIdAndHisUserId"
 )
 
 // ChatClient is the client API for Chat service.
@@ -162,7 +162,7 @@ func _Chat_GetLatestMsgByMyUserIdAndHisUserId_Handler(srv interface{}, ctx conte
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Chat_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.chat.v1.Chat",
+	ServiceName: "chat.service.v1.Chat",
 	HandlerType: (*ChatServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

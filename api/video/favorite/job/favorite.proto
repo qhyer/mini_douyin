@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package favorite.job.v1;
+
+
+option go_package = "api/video/favorite/job/v1;v1";
+
+
+service Favorite {
+}

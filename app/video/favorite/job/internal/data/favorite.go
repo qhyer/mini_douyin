@@ -48,7 +48,7 @@ func (r *favoriteRepo) UpdateVideoFavoritedCount(ctx context.Context, videoId in
 	return nil
 }
 
-func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.Favorite) error {
+func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.FavoriteAction) error {
 	// TODO do to po
 	err := r.data.db.WithContext(ctx).Table(constants.FavoriteVideoRecordTableName(favorite.UserId)).Create(favorite).Error
 	if err != nil {
@@ -58,7 +58,7 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.Favorite
 	return nil
 }
 
-func (r *favoriteRepo) DeleteFavorite(ctx context.Context, favorite *do.Favorite) error {
+func (r *favoriteRepo) DeleteFavorite(ctx context.Context, favorite *do.FavoriteAction) error {
 	// TODO do to po
 	err := r.data.db.WithContext(ctx).Table(constants.FavoriteVideoRecordTableName(favorite.UserId)).Where("user_id = ? and video_id = ?", favorite.UserId, favorite.VideoId).Delete(favorite).Error
 	if err != nil {
@@ -83,12 +83,12 @@ func (r *favoriteRepo) BatchUpdateVideoFavoritedCount(ctx context.Context, video
 	panic("implement me")
 }
 
-func (r *favoriteRepo) BatchCreateFavorite(ctx context.Context, favorites []*do.Favorite) error {
+func (r *favoriteRepo) BatchCreateFavorite(ctx context.Context, favorites []*do.FavoriteAction) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *favoriteRepo) BatchDeleteFavorite(ctx context.Context, favorites []*do.Favorite) error {
+func (r *favoriteRepo) BatchDeleteFavorite(ctx context.Context, favorites []*do.FavoriteAction) error {
 	//TODO implement me
 	panic("implement me")
 }

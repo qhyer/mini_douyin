@@ -24,6 +24,7 @@ func NewPassportRepo(data *Data, logger log.Logger) biz.PassportRepo {
 	}
 }
 
+// CreateUser 创建用户
 func (r *passportRepo) CreateUser(ctx context.Context, user *do.User) error {
 	poUser, err := mapper.UserToPO(user)
 	if err != nil {
@@ -36,6 +37,7 @@ func (r *passportRepo) CreateUser(ctx context.Context, user *do.User) error {
 	return err
 }
 
+// GetUserByName 通过用户名获取用户
 func (r *passportRepo) GetUserByName(ctx context.Context, name string) (*do.User, error) {
 	user := &po.User{}
 	if err := r.data.db.WithContext(ctx).Table(constants.PassportTableName).Where("name = ?", name).First(user).Error; err != nil {
@@ -49,6 +51,7 @@ func (r *passportRepo) GetUserByName(ctx context.Context, name string) (*do.User
 	return us, nil
 }
 
+// GetUserById 通过id获取用户
 func (r *passportRepo) GetUserById(ctx context.Context, id int64) (*do.User, error) {
 	key := constants.UserCacheKey(id)
 	user, err := r.getUserFromCache(ctx, key)
@@ -78,12 +81,13 @@ func (r *passportRepo) GetUserById(ctx context.Context, id int64) (*do.User, err
 	return us, nil
 }
 
+// MGetUserById 批量通过id获取用户
 func (r *passportRepo) MGetUserById(ctx context.Context, ids []int64) ([]*do.User, error) {
 	keys := make([]string, 0, len(ids))
 	for _, id := range ids {
 		keys = append(keys, constants.UserCacheKey(id))
 	}
-	users, missed, err := r.batchGetUserCache(ctx, keys)
+	users, missed, err := r.batchGetUserFromCache(ctx, keys)
 	if err != nil {
 		r.log.Errorf("batch get user cache err: %v", err)
 		return nil, err
@@ -111,6 +115,7 @@ func (r *passportRepo) MGetUserById(ctx context.Context, ids []int64) ([]*do.Use
 	return us, nil
 }
 
+// 从缓存中获取用户
 func (r *passportRepo) getUserFromCache(ctx context.Context, key string) (*po.User, error) {
 	result, err := r.data.redis.Get(ctx, key).Result()
 	if err != nil {
@@ -124,7 +129,8 @@ func (r *passportRepo) getUserFromCache(ctx context.Context, key string) (*po.Us
 	return user, nil
 }
 
-func (r *passportRepo) batchGetUserCache(ctx context.Context, keys []string) (res []*po.User, missed []string, err error) {
+// 批量从缓存中获取用户
+func (r *passportRepo) batchGetUserFromCache(ctx context.Context, keys []string) (res []*po.User, missed []string, err error) {
 	pipe := r.data.redis.Pipeline()
 	for _, key := range keys {
 		pipe.Get(ctx, key)
@@ -151,6 +157,7 @@ func (r *passportRepo) batchGetUserCache(ctx context.Context, keys []string) (re
 	return res, missed, nil
 }
 
+// 设置用户缓存
 func (r *passportRepo) setUserCache(ctx context.Context, user *po.User, key string) {
 	bytes, err := json.Marshal(user)
 	if err != nil {
@@ -163,6 +170,7 @@ func (r *passportRepo) setUserCache(ctx context.Context, user *po.User, key stri
 	}
 }
 
+// 批量设置用户缓存
 func (r *passportRepo) batchSetUserCache(ctx context.Context, users []*po.User) {
 	pipe := r.data.redis.Pipeline()
 	for _, user := range users {

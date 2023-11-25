@@ -1,20 +1,70 @@
 syntax="proto3";
 
-package api.account.v1;
+package account.service.v1;
+
+option go_package = "douyin/service/account/v1;v1";
 
 service Account {
-  rpc Info(douyin_user_request) returns (douyin_user_response);
+  rpc GetUserInfoByUserId(GetUserInfoByUserIdRequest) returns (GetUserInfoByUserIdResponse);
+  rpc MGetUserInfoByUserId(MGetUserInfoByUserIdRequest) returns (MGetUserInfoByUserIdResponse);
+  rpc GetFollowListByUserId(GetFollowListByUserIdRequest) returns (GetFollowListByUserIdResponse);
+  rpc GetFollowerListByUserId(GetFollowerListByUserIdRequest) returns (GetFollowerListByUserIdResponse);
+  rpc GetFriendListByUserId(GetFriendListByUserIdRequest) returns (GetFriendListByUserIdResponse);
 }
 
-message douyin_user_request {
+message GetUserInfoByUserIdRequest {
   int64 user_id = 1; // 当前用户id，游客为0
   int64 to_user_id = 2; // 对方用户id
 }
 
-message douyin_user_response {
+message GetUserInfoByUserIdResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
   User user = 3; // 用户信息
+}
+
+message MGetUserInfoByUserIdRequest {
+  int64 user_id = 1; // 当前用户id，游客为0
+  repeated int64 to_user_ids = 2; // 对方用户id
+}
+
+message MGetUserInfoByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  repeated User users = 3; // 用户信息
+}
+
+message GetFollowListByUserIdRequest {
+  int64 user_id = 1; // 当前用户id，游客为0
+  int64 to_user_id = 2; // 对方用户id
+}
+
+message GetFollowListByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  repeated User users = 3; // 用户信息
+}
+
+message GetFollowerListByUserIdRequest {
+  int64 user_id = 1; // 当前用户id，游客为0
+  int64 to_user_id = 2; // 对方用户id
+}
+
+message GetFollowerListByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  repeated User users = 3; // 用户信息
+}
+
+message GetFriendListByUserIdRequest {
+  int64 user_id = 1; // 当前用户id，游客为0
+  int64 to_user_id = 2; // 对方用户id
+}
+
+message GetFriendListByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  repeated User users = 3; // 用户信息
 }
 
 message User {

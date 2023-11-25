@@ -26,9 +26,10 @@ func NewCommentRepo(data *Data, logger log.Logger) biz.CommentRepo {
 	}
 }
 
-func (r *commentRepo) CommentAction(ctx context.Context, comment *do.Comment) error {
+// CommentAction 发布/删除评论
+func (r *commentRepo) CommentAction(ctx context.Context, comment *do.CommentAction) error {
 	// TODO get seq-num
-	b, err := json.Marshal(comment)
+	b, err := comment.MarshalJson()
 	if err != nil {
 		r.log.Errorf("CommentAction err:%v", err)
 		return err
@@ -45,6 +46,7 @@ func (r *commentRepo) CommentAction(ctx context.Context, comment *do.Comment) er
 	return nil
 }
 
+// GetCommentListByVideoId 获取视频的评论列表
 func (r *commentRepo) GetCommentListByVideoId(ctx context.Context, videoId int64) ([]*do.Comment, error) {
 	cacheComments, err := r.getCommentIdListFromCache(ctx, videoId)
 	if err != nil {
@@ -63,6 +65,7 @@ func (r *commentRepo) GetCommentListByVideoId(ctx context.Context, videoId int64
 	return r.batchGetCommentInfoByVideoIdAndCommentIds(ctx, videoId, cacheComments)
 }
 
+// 批量获取评论信息
 func (r *commentRepo) batchGetCommentInfoByVideoIdAndCommentIds(ctx context.Context, videoId int64, commentIds []int64) ([]*do.Comment, error) {
 	cacheComments, missed, err := r.batchGetCommentInfoFromCache(ctx, commentIds)
 	if err != nil {
@@ -82,6 +85,7 @@ func (r *commentRepo) batchGetCommentInfoByVideoIdAndCommentIds(ctx context.Cont
 
 }
 
+// CountCommentByVideoId 获取视频的评论数
 func (r *commentRepo) CountCommentByVideoId(ctx context.Context, videoId int64) (int64, error) {
 	res, err := r.getCommentCountFromCache(ctx, videoId)
 	if err != nil {
@@ -97,6 +101,7 @@ func (r *commentRepo) CountCommentByVideoId(ctx context.Context, videoId int64) 
 	return res, nil
 }
 
+// 设置视频的评论数到缓存
 func (r *commentRepo) setCommentCountCache(ctx context.Context, videoId int64, count int64) {
 	err := r.data.redis.Set(ctx, constants.CommentCountCacheKey(videoId), count, constants.CommentCountCacheExpiration).Err()
 	if err != nil {
@@ -104,10 +109,66 @@ func (r *commentRepo) setCommentCountCache(ctx context.Context, videoId int64, c
 	}
 }
 
+// 从缓存中获取视频的评论数
 func (r *commentRepo) getCommentCountFromCache(ctx context.Context, videoId int64) (int64, error) {
 	return r.data.redis.Get(ctx, constants.CommentCountCacheKey(videoId)).Int64()
 }
 
+// MCountCommentByVideoId 批量获取视频的评论数
+func (r *commentRepo) MCountCommentByVideoId(ctx context.Context, videoIds []int64) ([]int64, error) {
+	comCntMap, missed := r.batchGetCommentCountFromCache(ctx, videoIds)
+	if len(missed) > 0 {
+		for _, v := range missed {
+			res, err := r.CountCommentByVideoId(ctx, v)
+			// 如果没查到，设0
+			if err == nil {
+				comCntMap[v] = res
+			}
+		}
+	}
+	res := make([]int64, 0, len(videoIds))
+	for _, videoId := range videoIds {
+		res = append(res, comCntMap[videoId])
+	}
+	return res, nil
+}
+
+// 批量设置视频的评论数到缓存
+func (r *commentRepo) batchSetCommentCountCache(ctx context.Context, videoIds []int64, counts []int64) {
+	pipe := r.data.redis.Pipeline()
+	for i, videoId := range videoIds {
+		pipe.Set(ctx, constants.CommentCountCacheKey(videoId), counts[i], constants.CommentCountCacheExpiration)
+	}
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		r.log.Errorf("batchSetCommentCountCache err:%v", err)
+	}
+}
+
+// 批量从缓存中获取视频的评论数
+func (r *commentRepo) batchGetCommentCountFromCache(ctx context.Context, videoIds []int64) (comCntMap map[int64]int64, missed []int64) {
+	comCntMap = make(map[int64]int64, len(videoIds))
+	missed = make([]int64, 0, len(videoIds))
+	pipe := r.data.redis.Pipeline()
+	for _, videoId := range videoIds {
+		pipe.Get(ctx, constants.CommentCountCacheKey(videoId))
+	}
+	results, err := pipe.Exec(ctx)
+	if err != nil {
+		r.log.Errorf("batchGetCommentCountFromCache err:%v", err)
+		return comCntMap, videoIds
+	}
+	for i, result := range results {
+		if result.Err() != nil {
+			missed = append(missed, videoIds[i])
+			continue
+		}
+		comCntMap[videoIds[i]] = cast.ToInt64(result.(*redis.StringCmd).Val())
+	}
+	return comCntMap, missed
+}
+
+// 从缓存中获取评论信息
 func (r *commentRepo) getCommentInfoFromCache(ctx context.Context, commentId int64) (*po.Comment, error) {
 	bytes, err := r.data.redis.Get(ctx, constants.CommentInfoCacheKey(commentId)).Bytes()
 	if err != nil {
@@ -123,6 +184,7 @@ func (r *commentRepo) getCommentInfoFromCache(ctx context.Context, commentId int
 	return comment, nil
 }
 
+// 批量从缓存中获取评论信息
 func (r *commentRepo) batchGetCommentInfoFromCache(ctx context.Context, commentIds []int64) (comments []*po.Comment, missed []int64, err error) {
 	pipe := r.data.redis.Pipeline()
 	for _, commentId := range commentIds {
@@ -151,6 +213,7 @@ func (r *commentRepo) batchGetCommentInfoFromCache(ctx context.Context, commentI
 	return comments, missed, nil
 }
 
+// 批量设置评论信息到缓存
 func (r *commentRepo) batchSetCommentInfoCache(ctx context.Context, comments []*po.Comment) {
 	pipe := r.data.redis.Pipeline()
 	for _, comment := range comments {
@@ -167,6 +230,7 @@ func (r *commentRepo) batchSetCommentInfoCache(ctx context.Context, comments []*
 	}
 }
 
+// 设置视频的评论id列表到缓存
 func (r *commentRepo) setCommentIdListCache(ctx context.Context, videoId int64, comments []*po.Comment) {
 	pipe := r.data.redis.Pipeline()
 	for _, comment := range comments {
@@ -182,6 +246,7 @@ func (r *commentRepo) setCommentIdListCache(ctx context.Context, videoId int64, 
 	}
 }
 
+// 从缓存中获取评论id列表
 func (r *commentRepo) getCommentIdListFromCache(ctx context.Context, videoId int64) ([]int64, error) {
 	res, err := r.data.redis.ZRevRange(ctx, constants.CommentListCacheKey(videoId), 0, -1).Result()
 	if err != nil {

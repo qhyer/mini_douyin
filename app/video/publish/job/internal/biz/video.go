@@ -24,3 +24,19 @@ func NewVideoUsecase(repo VideoRepo, logger log.Logger) *VideoUsecase {
 		log:  log.NewHelper(logger),
 	}
 }
+
+func (uc *VideoUsecase) CreateVideo(ctx context.Context, video *do.Video) error {
+	return uc.repo.CreateVideo(ctx, video)
+}
+
+func (uc *VideoUsecase) BatchCreateVideo(ctx context.Context, videos []*do.Video) error {
+	return uc.repo.BatchCreateVideo(ctx, videos)
+}
+
+func (uc *VideoUsecase) GetVideo(ctx context.Context, objectName string) ([]byte, error) {
+	return uc.repo.GetVideo(ctx, objectName)
+}
+
+func (uc *VideoUsecase) UploadCover(ctx context.Context, data []byte, objectName string) error {
+	return uc.repo.UploadCover(ctx, data, objectName)
+}

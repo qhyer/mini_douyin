@@ -19,8 +19,9 @@ func NewFavoriteService(uc *biz.FavoriteUsecase) *FavoriteService {
 	return &FavoriteService{uc: uc}
 }
 
+// FavoriteAction 视频点赞
 func (s *FavoriteService) FavoriteAction(ctx context.Context, req *v1.DouyinFavoriteActionRequest) (*v1.DouyinFavoriteActionResponse, error) {
-	err := s.uc.FavoriteAction(ctx, &do.Favorite{
+	err := s.uc.FavoriteAction(ctx, &do.FavoriteAction{
 		Type:      do.FavoriteActionType(req.GetActionType()),
 		UserId:    req.GetUserId(),
 		VideoId:   req.GetVideoId(),
@@ -40,6 +41,7 @@ func (s *FavoriteService) FavoriteAction(ctx context.Context, req *v1.DouyinFavo
 	}, nil
 }
 
+// GetUserFavoriteVideoIdList 获取用户点赞视频列表
 func (s *FavoriteService) GetUserFavoriteVideoIdList(ctx context.Context, req *v1.GetUserFavoriteListRequest) (*v1.GetUserFavoriteListResponse, error) {
 	favoriteVideoIdList, err := s.uc.GetFavoriteVideoIdListByUserId(ctx, req.GetUserId())
 	if err != nil {
@@ -57,6 +59,7 @@ func (s *FavoriteService) GetUserFavoriteVideoIdList(ctx context.Context, req *v
 	}, nil
 }
 
+// GetFavoriteStatusByUserIdAndVideoIds 获取用户是否点赞视频
 func (s *FavoriteService) GetFavoriteStatusByUserIdAndVideoIds(ctx context.Context, req *v1.GetFavoriteStatusByUserIdAndVideoIdsRequest) (*v1.GetFavoriteStatusByUserIdAndVideoIdsResponse, error) {
 	isFavoriteList, err := s.uc.GetFavoriteStatusByUserIdAndVideoIds(ctx, req.GetUserId(), req.GetVideoIds())
 	if err != nil {
@@ -74,53 +77,75 @@ func (s *FavoriteService) GetFavoriteStatusByUserIdAndVideoIds(ctx context.Conte
 	}, nil
 }
 
-func (s *FavoriteService) CountVideoFavoriteByUserId(ctx context.Context, req *v1.CountVideoFavoriteByUserIdRequest) (*v1.CountVideoFavoriteByUserIdResponse, error) {
-	count, err := s.uc.CountVideoFavoriteByUserId(ctx, req.GetUserId())
+// CountUserFavoriteByUserId 获取用户点赞数
+func (s *FavoriteService) CountUserFavoriteByUserId(ctx context.Context, req *v1.CountUserFavoriteByUserIdRequest) (*v1.CountUserFavoriteByUserIdResponse, error) {
+	count, err := s.uc.CountUserFavoriteByUserId(ctx, req.GetUserId())
 	if err != nil {
 		err := ecode.ConvertErr(err)
-		return &v1.CountVideoFavoriteByUserIdResponse{
+		return &v1.CountUserFavoriteByUserIdResponse{
 			StatusCode: err.ErrCode,
 			StatusMsg:  &err.ErrMsg,
 		}, nil
 	}
 
-	return &v1.CountVideoFavoriteByUserIdResponse{
+	return &v1.CountUserFavoriteByUserIdResponse{
 		StatusCode: ecode.Success.ErrCode,
 		StatusMsg:  &ecode.Success.ErrMsg,
 		Count:      count,
 	}, nil
 }
 
-func (s *FavoriteService) CountVideoFavoritedByUserId(ctx context.Context, req *v1.CountVideoFavoritedByUserIdRequest) (*v1.CountVideoFavoritedByUserIdResponse, error) {
-	count, err := s.uc.CountVideoFavoritedByUserId(ctx, req.GetUserId())
+// CountUserFavoritedByUserId 获取用户被点赞数
+func (s *FavoriteService) CountUserFavoritedByUserId(ctx context.Context, req *v1.CountUserFavoritedByUserIdRequest) (*v1.CountUserFavoritedByUserIdResponse, error) {
+	count, err := s.uc.CountUserFavoritedByUserId(ctx, req.GetUserId())
 	if err != nil {
 		err := ecode.ConvertErr(err)
-		return &v1.CountVideoFavoritedByUserIdResponse{
+		return &v1.CountUserFavoritedByUserIdResponse{
 			StatusCode: err.ErrCode,
 			StatusMsg:  &err.ErrMsg,
 		}, nil
 	}
 
-	return &v1.CountVideoFavoritedByUserIdResponse{
+	return &v1.CountUserFavoritedByUserIdResponse{
 		StatusCode: ecode.Success.ErrCode,
 		StatusMsg:  &ecode.Success.ErrMsg,
 		Count:      count,
 	}, nil
 }
 
-func (s *FavoriteService) CountFavoritedByVideoId(ctx context.Context, req *v1.CountFavoritedByVideoIdRequest) (*v1.CountFavoritedByVideoIdResponse, error) {
+// CountVideoFavoritedByVideoId 获取视频被点赞数
+func (s *FavoriteService) CountVideoFavoritedByVideoId(ctx context.Context, req *v1.CountVideoFavoritedByVideoIdRequest) (*v1.CountVideoFavoritedByVideoIdResponse, error) {
 	count, err := s.uc.CountVideoFavoritedByVideoId(ctx, req.GetVideoId())
 	if err != nil {
 		err := ecode.ConvertErr(err)
-		return &v1.CountFavoritedByVideoIdResponse{
+		return &v1.CountVideoFavoritedByVideoIdResponse{
 			StatusCode: err.ErrCode,
 			StatusMsg:  &err.ErrMsg,
 		}, nil
 	}
 
-	return &v1.CountFavoritedByVideoIdResponse{
+	return &v1.CountVideoFavoritedByVideoIdResponse{
 		StatusCode: ecode.Success.ErrCode,
 		StatusMsg:  &ecode.Success.ErrMsg,
 		Count:      count,
 	}, nil
+}
+
+// MCountVideoFavoritedByVideoIds 批量获取用户点赞数
+func (s *FavoriteService) MCountVideoFavoritedByVideoIds(ctx context.Context, req *v1.MCountVideoFavoritedByVideoIdsRequest) (*v1.MCountVideoFavoritedByVideoIdsResponse, error) {
+	countList, err := s.uc.MCountVideoFavoritedByVideoId(ctx, req.GetVideoIds())
+	if err != nil {
+		err := ecode.ConvertErr(err)
+		return &v1.MCountVideoFavoritedByVideoIdsResponse{
+			StatusCode: err.ErrCode,
+			StatusMsg:  &err.ErrMsg,
+		}, nil
+	}
+
+	return &v1.MCountVideoFavoritedByVideoIdsResponse{
+		StatusCode: ecode.Success.ErrCode,
+		StatusMsg:  &ecode.Success.ErrMsg,
+		CountList:  countList,
+	}, nil
+
 }

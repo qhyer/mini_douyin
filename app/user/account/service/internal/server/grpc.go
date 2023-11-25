@@ -1,7 +1,7 @@
 package server
 
 import (
-	v1 "douyin/api/helloworld/v1"
+	v1 "douyin/api/user/account/service/v1"
 	"douyin/app/user/account/service/internal/conf"
 	"douyin/app/user/account/service/internal/service"
 

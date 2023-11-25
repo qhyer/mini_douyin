@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package api.publish.v1;
+package publish.service.v1;
 
 option go_package = "douyin/service/publish/v1;v1";
 
@@ -35,9 +35,8 @@ message GetUserPublishedVideoListResponse {
 }
 
 message GetPublishedVideoByLatestTimeRequest {
-  int64 userId = 1; // 用户id
-  int64 latestTime = 2; // 最新时间
-  int32 limit = 3; // 限制条数
+  int64 latestTime = 1; // 最新时间
+  int32 limit = 2; // 限制条数
 }
 
 message GetPublishedVideoByLatestTimeResponse {

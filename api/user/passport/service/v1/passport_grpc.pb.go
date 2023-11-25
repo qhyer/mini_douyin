@@ -19,10 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Passport_Register_FullMethodName = "/service.passport.v1.Passport/Register"
-	Passport_Login_FullMethodName    = "/service.passport.v1.Passport/Login"
-	Passport_GetInfo_FullMethodName  = "/service.passport.v1.Passport/GetInfo"
-	Passport_MGetInfo_FullMethodName = "/service.passport.v1.Passport/MGetInfo"
+	Passport_Register_FullMethodName = "/passport.service.v1.Passport/Register"
+	Passport_Login_FullMethodName    = "/passport.service.v1.Passport/Login"
+	Passport_GetInfo_FullMethodName  = "/passport.service.v1.Passport/GetInfo"
+	Passport_MGetInfo_FullMethodName = "/passport.service.v1.Passport/MGetInfo"
 )
 
 // PassportClient is the client API for Passport service.
@@ -195,7 +195,7 @@ func _Passport_MGetInfo_Handler(srv interface{}, ctx context.Context, dec func(i
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Passport_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "service.passport.v1.Passport",
+	ServiceName: "passport.service.v1.Passport",
 	HandlerType: (*PassportServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

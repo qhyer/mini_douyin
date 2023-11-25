@@ -12,7 +12,7 @@ const (
 	FavoriteActionDelete
 )
 
-type Favorite struct {
+type FavoriteAction struct {
 	ID        int64              `json:"id"`
 	Type      FavoriteActionType `json:"type"`
 	UserId    int64              `json:"user_id"`
@@ -20,10 +20,10 @@ type Favorite struct {
 	CreatedAt time.Time          `json:"created_at"`
 }
 
-func (f *Favorite) MarshalJson() ([]byte, error) {
+func (f *FavoriteAction) MarshalJson() ([]byte, error) {
 	return json.Marshal(f)
 }
 
-func (f *Favorite) UnmarshalJson(data []byte) error {
+func (f *FavoriteAction) UnmarshalJson(data []byte) error {
 	return json.Unmarshal(data, f)
 }

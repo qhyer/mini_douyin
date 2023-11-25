@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package api.passport.v1;
+package passport.service.v1;
 
 option go_package = "douyin/service/passport/v1;v1";
 

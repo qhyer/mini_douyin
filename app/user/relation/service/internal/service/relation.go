@@ -40,3 +40,7 @@ func (s *RelationService) CountFollowByUserId(ctx context.Context, req *v1.Count
 func (s *RelationService) CountFollowerByUserId(ctx context.Context, req *v1.CountFollowerByUserIdRequest) (*v1.CountFollowerByUserIdResponse, error) {
 	return &v1.CountFollowerByUserIdResponse{}, nil
 }
+
+func (s *RelationService) IsFollowByUserIds(ctx context.Context, req *v1.IsFollowByUserIdsRequest) (*v1.IsFollowByUserIdsResponse, error) {
+	return &v1.IsFollowByUserIdsResponse{}, nil
+}

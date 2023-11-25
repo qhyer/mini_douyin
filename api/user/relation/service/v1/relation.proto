@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package api.relation.v1;
+package relation.service.v1;
 
 option go_package = "douyin/service/relation/v1;v1";
 
@@ -11,6 +11,8 @@ service Relation {
   rpc GetUserFriendListByUserId(GetFriendListByUserIdRequest) returns (GetFriendListByUserIdResponse);
   rpc CountFollowByUserId(CountFollowByUserIdRequest) returns (CountFollowByUserIdResponse);
   rpc CountFollowerByUserId(CountFollowerByUserIdRequest) returns (CountFollowerByUserIdResponse);
+  rpc IsFollowByUserId(IsFollowByUserIdRequest) returns (IsFollowByUserIdResponse);
+  rpc IsFollowByUserIds(IsFollowByUserIdsRequest) returns (IsFollowByUserIdsResponse);
 }
 
 message RelationActionRequest {
@@ -73,4 +75,26 @@ message CountFollowerByUserIdResponse {
   int32 status_code = 1; // 状态码，0-成功，其他值-失败
   optional string status_msg = 2; // 返回状态描述
   int64 count = 3; // 粉丝数
+}
+
+message IsFollowByUserIdsRequest {
+  int64 user_id = 1; // 用户id
+  repeated int64 to_user_id_list = 2; // 对方用户id列表
+}
+
+message IsFollowByUserIdsResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  repeated bool is_follow_list = 3; // 是否关注列表
+}
+
+message IsFollowByUserIdRequest {
+  int64 user_id = 1; // 用户id
+  int64 to_user_id = 2; // 对方用户id
+}
+
+message IsFollowByUserIdResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  optional string status_msg = 2; // 返回状态描述
+  bool is_follow = 3; // 是否关注
 }
