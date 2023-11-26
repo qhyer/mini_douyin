@@ -2,9 +2,11 @@ package biz
 
 import (
 	"context"
+	"douyin/app/video/favorite/common/constants"
 	do "douyin/app/video/favorite/common/entity"
 	"douyin/common/ecode"
 	"github.com/go-kratos/kratos/v2/log"
+	"golang.org/x/sync/singleflight"
 )
 
 type FavoriteRepo interface {
@@ -21,10 +23,11 @@ type FavoriteRepo interface {
 type FavoriteUsecase struct {
 	repo FavoriteRepo
 	log  *log.Helper
+	sf   *singleflight.Group
 }
 
 func NewFavoriteUsecase(repo FavoriteRepo, logger log.Logger) *FavoriteUsecase {
-	return &FavoriteUsecase{repo: repo, log: log.NewHelper(logger)}
+	return &FavoriteUsecase{repo: repo, log: log.NewHelper(logger), sf: &singleflight.Group{}}
 }
 
 // FavoriteAction 点赞视频
@@ -41,7 +44,14 @@ func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, fav *do.FavoriteA
 
 // GetFavoriteVideoIdListByUserId 获取用户点赞视频id列表
 func (uc *FavoriteUsecase) GetFavoriteVideoIdListByUserId(ctx context.Context, userId int64) ([]int64, error) {
-	return uc.repo.GetFavoriteVideoIdListByUserId(ctx, userId)
+	res, err, _ := uc.sf.Do(constants.SFUserFavoriteIdListKey(userId), func() (interface{}, error) {
+		return uc.repo.GetFavoriteVideoIdListByUserId(ctx, userId)
+	})
+	if err != nil {
+		uc.log.Errorf("GetFavoriteVideoIdListByUserId error(%v)", err)
+		return nil, err
+	}
+	return res.([]int64), nil
 }
 
 // GetFavoriteStatusByUserIdAndVideoIds 批量获取用户是否点赞视频
@@ -55,17 +65,38 @@ func (uc *FavoriteUsecase) GetFavoriteStatusByUserIdAndVideoIds(ctx context.Cont
 
 // CountUserFavoriteByUserId 获取用户点赞数
 func (uc *FavoriteUsecase) CountUserFavoriteByUserId(ctx context.Context, userId int64) (int64, error) {
-	return uc.repo.CountUserFavoriteByUserId(ctx, userId)
+	res, err, _ := uc.sf.Do(constants.SFCountUserFavoriteKey(userId), func() (interface{}, error) {
+		return uc.repo.CountUserFavoriteByUserId(ctx, userId)
+	})
+	if err != nil {
+		uc.log.Errorf("CountUserFavoriteByUserId error(%v)", err)
+		return 0, err
+	}
+	return res.(int64), nil
 }
 
 // CountUserFavoritedByUserId 获取用户视频获赞数
 func (uc *FavoriteUsecase) CountUserFavoritedByUserId(ctx context.Context, userId int64) (int64, error) {
-	return uc.repo.CountUserFavoritedByUserId(ctx, userId)
+	res, err, _ := uc.sf.Do(constants.SFCountUserFavoritedKey(userId), func() (interface{}, error) {
+		return uc.repo.CountUserFavoritedByUserId(ctx, userId)
+	})
+	if err != nil {
+		uc.log.Errorf("CountUserFavoritedByUserId error(%v)", err)
+		return 0, err
+	}
+	return res.(int64), nil
 }
 
 // CountVideoFavoritedByVideoId 获取视频被点赞数
 func (uc *FavoriteUsecase) CountVideoFavoritedByVideoId(ctx context.Context, videoId int64) (int64, error) {
-	return uc.repo.CountVideoFavoritedByVideoId(ctx, videoId)
+	res, err, _ := uc.sf.Do(constants.SFCountVideoFavoritedKey(videoId), func() (interface{}, error) {
+		return uc.repo.CountVideoFavoritedByVideoId(ctx, videoId)
+	})
+	if err != nil {
+		uc.log.Errorf("CountVideoFavoritedByVideoId error(%v)", err)
+		return 0, err
+	}
+	return res.(int64), nil
 }
 
 // MCountVideoFavoritedByVideoId 批量获取视频被点赞数

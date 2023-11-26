@@ -2,14 +2,16 @@ package biz
 
 import (
 	"context"
+	"douyin/app/video/publish/common/constants"
 	do "douyin/app/video/publish/common/entity"
 	"github.com/go-kratos/kratos/v2/log"
+	"golang.org/x/sync/singleflight"
 	"time"
 )
 
 type VideoRepo interface {
 	PublishVideo(ctx context.Context, video *do.Video) error
-	GetPublishedVideosByUserId(ctx context.Context, userId int64, offset int, limit int) ([]*do.Video, error)
+	GetPublishedVideosByUserId(ctx context.Context, userId int64) ([]*do.Video, error)
 	GetPublishedVideosByLatestTime(ctx context.Context, latestTime int64, limit int) ([]*do.Video, error)
 	GetVideoById(ctx context.Context, id int64) (*do.Video, error)
 	MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Video, error)
@@ -20,12 +22,14 @@ type VideoRepo interface {
 type VideoUsecase struct {
 	repo VideoRepo
 	log  *log.Helper
+	sf   *singleflight.Group
 }
 
 func NewVideoUsecase(repo VideoRepo, logger log.Logger) *VideoUsecase {
 	return &VideoUsecase{
 		repo: repo,
 		log:  log.NewHelper(logger),
+		sf:   &singleflight.Group{},
 	}
 }
 
@@ -51,26 +55,54 @@ func (u *VideoUsecase) PublishVideo(ctx context.Context, video []byte, uid int64
 }
 
 // GetPublishedVideosByUserId 获取用户发布的视频列表
-func (u *VideoUsecase) GetPublishedVideosByUserId(ctx context.Context, userId int64, offset int, limit int) ([]*do.Video, error) {
-	return u.repo.GetPublishedVideosByUserId(ctx, userId, offset, limit)
+func (u *VideoUsecase) GetPublishedVideosByUserId(ctx context.Context, userId int64) ([]*do.Video, error) {
+	res, err, _ := u.sf.Do(constants.SFUserPublishedVideoKey(userId), func() (interface{}, error) {
+		return u.repo.GetPublishedVideosByUserId(ctx, userId)
+	})
+	if err != nil {
+		u.log.Errorf("get published videos by user id error: %v", err)
+		return nil, err
+	}
+	return res.([]*do.Video), nil
 }
 
 // GetPublishedVideosByLatestTime 获取小于某个时间的视频
 func (u *VideoUsecase) GetPublishedVideosByLatestTime(ctx context.Context, latestTime int64, limit int) ([]*do.Video, error) {
-	return u.repo.GetPublishedVideosByLatestTime(ctx, latestTime, limit)
+	res, err, _ := u.sf.Do(constants.SFLatestPublishedVideoKey(latestTime, limit), func() (interface{}, error) {
+		return u.repo.GetPublishedVideosByLatestTime(ctx, latestTime, limit)
+	})
+	if err != nil {
+		u.log.Errorf("get published videos by latest time error: %v", err)
+		return nil, err
+	}
+	return res.([]*do.Video), nil
 }
 
 // GetVideoById 获取视频信息
-func (u *VideoUsecase) GetVideoById(ctx context.Context, id int64) (*do.Video, error) {
-	return u.repo.GetVideoById(ctx, id)
+func (u *VideoUsecase) GetVideoById(ctx context.Context, videoId int64) (*do.Video, error) {
+	res, err, _ := u.sf.Do(constants.SFVideoKey(videoId), func() (interface{}, error) {
+		return u.repo.GetVideoById(ctx, videoId)
+	})
+	if err != nil {
+		u.log.Errorf("get video by id error: %v", err)
+		return nil, err
+	}
+	return res.(*do.Video), nil
 }
 
 // MGetVideoByIds 批量获取视频信息
-func (u *VideoUsecase) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Video, error) {
-	return u.repo.MGetVideoByIds(ctx, ids)
+func (u *VideoUsecase) MGetVideoByIds(ctx context.Context, videoIds []int64) ([]*do.Video, error) {
+	return u.repo.MGetVideoByIds(ctx, videoIds)
 }
 
 // CountUserPublishedVideoByUserId 获取用户发布视频数量
 func (u *VideoUsecase) CountUserPublishedVideoByUserId(ctx context.Context, userId int64) (int64, error) {
-	return u.repo.CountUserPublishedVideoByUserId(ctx, userId)
+	res, err, _ := u.sf.Do(constants.SFVideoCountKey(userId), func() (interface{}, error) {
+		return u.repo.CountUserPublishedVideoByUserId(ctx, userId)
+	})
+	if err != nil {
+		u.log.Errorf("count user published video by user id error: %v", err)
+		return 0, err
+	}
+	return res.(int64), nil
 }

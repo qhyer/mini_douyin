@@ -2,9 +2,11 @@ package biz
 
 import (
 	"context"
+	"douyin/app/user/passport/common/constants"
 	do "douyin/app/user/passport/common/entity"
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/sync/singleflight"
 )
 
 type PassportRepo interface {
@@ -17,12 +19,14 @@ type PassportRepo interface {
 type PassportUsecase struct {
 	repo PassportRepo
 	log  *log.Helper
+	sf   *singleflight.Group
 }
 
 func NewPassportUseCase(repo PassportRepo, logger log.Logger) *PassportUsecase {
 	return &PassportUsecase{
 		repo: repo,
 		log:  log.NewHelper(logger),
+		sf:   &singleflight.Group{},
 	}
 }
 
@@ -62,11 +66,18 @@ func (u *PassportUsecase) VerifyPassword(ctx context.Context, user *do.User) (ve
 }
 
 // GetUserByID 通过id获取用户信息
-func (u *PassportUsecase) GetUserByID(ctx context.Context, id int64) (*do.User, error) {
-	return u.repo.GetUserById(ctx, id)
+func (u *PassportUsecase) GetUserByID(ctx context.Context, userId int64) (*do.User, error) {
+	res, err, _ := u.sf.Do(constants.SFUserInfoKey(userId), func() (interface{}, error) {
+		return u.repo.GetUserById(ctx, userId)
+	})
+	if err != nil {
+		u.log.Errorf("get user by id(%v) error(%v)", userId, err)
+		return nil, err
+	}
+	return res.(*do.User), nil
 }
 
 // MGetUserByID 批量获取用户信息
-func (u *PassportUsecase) MGetUserByID(ctx context.Context, ids []int64) ([]*do.User, error) {
-	return u.repo.MGetUserById(ctx, ids)
+func (u *PassportUsecase) MGetUserByID(ctx context.Context, userIds []int64) ([]*do.User, error) {
+	return u.repo.MGetUserById(ctx, userIds)
 }

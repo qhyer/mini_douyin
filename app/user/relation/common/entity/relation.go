@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -17,4 +18,12 @@ type Relation struct {
 	FromUserId int64              `json:"from_user_id"`
 	ToUserId   int64              `json:"to_user_id"`
 	CreatedAt  time.Time          `json:"created_at"`
+}
+
+func (r *Relation) MarshalJson() ([]byte, error) {
+	return json.Marshal(r)
+}
+
+func (r *Relation) UnmarshalJson(data []byte) error {
+	return json.Unmarshal(data, r)
 }

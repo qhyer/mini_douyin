@@ -8,6 +8,7 @@ import (
 	publish "douyin/api/video/publish/service/v1"
 	"douyin/app/user/account/service/internal/conf"
 	rdb "douyin/common/cache/redis"
+	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/redis/go-redis/v9"
@@ -26,10 +27,12 @@ type Data struct {
 	favoriteCli favorite.FavoriteClient
 	publishCli  publish.PublishClient
 	redis       *redis.Client
+	memcached   *memcache.Client
 }
 
 // NewData .
-func NewData(c *conf.Data, rc relation.RelationClient, pc passport.PassportClient, fc favorite.FavoriteClient, pubc publish.PublishClient, rds *redis.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, rc relation.RelationClient, pc passport.PassportClient, fc favorite.FavoriteClient,
+	pubc publish.PublishClient, rds *redis.Client, mem *memcache.Client, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
@@ -39,6 +42,7 @@ func NewData(c *conf.Data, rc relation.RelationClient, pc passport.PassportClien
 		favoriteCli: fc,
 		publishCli:  pubc,
 		redis:       rds,
+		memcached:   mem,
 	}, cleanup, nil
 }
 

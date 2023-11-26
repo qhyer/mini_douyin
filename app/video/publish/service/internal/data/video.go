@@ -53,14 +53,14 @@ func (r *videoRepo) PublishVideo(ctx context.Context, video *do.Video) error {
 }
 
 // GetPublishedVideosByUserId 获取用户发布视频列表
-func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64, offset int, limit int) ([]*do.Video, error) {
+func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64) ([]*do.Video, error) {
 	vids, err := r.getUserPublishedVidListFromCache(ctx, userId, 0, 0)
 	if err != nil {
 		if err != redis.Nil {
 			r.log.Errorf("redis error: %v", err)
 		}
 		vs := make([]*po.Video, 0)
-		if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("user_id = ?", userId).Offset(offset).Limit(limit).Find(&vs).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("user_id = ?", userId).Find(&vs).Error; err != nil {
 			r.log.Errorf("db error: %v", err)
 			return nil, err
 		}

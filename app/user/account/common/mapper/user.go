@@ -14,3 +14,15 @@ func UserFromPassportDTO(u *passport.UserInfo) (*do.User, error) {
 		Signature:       u.GetSignature(),
 	}, nil
 }
+
+func UserFromPassportDTOs(us []*passport.UserInfo) ([]*do.User, error) {
+	var users []*do.User
+	for _, u := range us {
+		user, err := UserFromPassportDTO(u)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}

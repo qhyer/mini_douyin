@@ -6,13 +6,11 @@ import (
 	do "douyin/app/video/favorite/common/entity"
 	po "douyin/app/video/favorite/common/model"
 	"douyin/app/video/favorite/service/internal/biz"
-	"fmt"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/cast"
 	"strconv"
-	"time"
 )
 
 type favoriteRepo struct {
@@ -185,10 +183,7 @@ func (r *favoriteRepo) setUserFavoriteVideoIdListCache(ctx context.Context, user
 
 // 从缓存中获取用户点赞视频列表
 func (r *favoriteRepo) getUserFavoriteVideoIdListFromCache(ctx context.Context, userId int64) ([]int64, error) {
-	res, err := r.data.redis.ZRevRangeByScore(ctx, constants.UserFavoriteListCacheKey(userId), &redis.ZRangeBy{
-		Min: "0",
-		Max: fmt.Sprintf("%d", time.Now().UnixMilli()),
-	}).Result()
+	res, err := r.data.redis.ZRevRange(ctx, constants.UserFavoriteListCacheKey(userId), 0, -1).Result()
 	if err != nil {
 		if err != redis.Nil {
 			r.log.Errorf("redis error: %v", err)

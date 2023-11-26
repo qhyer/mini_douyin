@@ -6,24 +6,20 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
-type PassportRepo interface {
+type AccountRepo interface {
 	GetUserInfoByUserId(ctx context.Context, userId int64, toUserId int64) (*do.User, error)
 	MGetUserInfoByUserId(ctx context.Context, userId int64, toUserIds []int64) ([]*do.User, error)
-}
-
-type RelationRepo interface {
-	GetFollowListByUserId(ctx context.Context, userId int64) ([]*do.User, error)
-	GetFollowerListByUserId(ctx context.Context, userId int64) ([]*do.User, error)
+	GetFollowListByUserId(ctx context.Context, userId int64, toUserId int64) ([]*do.User, error)
+	GetFollowerListByUserId(ctx context.Context, userId int64, toUserId int64) ([]*do.User, error)
 	GetFriendListByUserId(ctx context.Context, userId int64) ([]*do.User, error)
-	GetRelationByUserId(ctx context.Context, userId int64, toUserIds []int64) (*do.Relation, error)
 }
 
 type AccountUsecase struct {
-	repo PassportRepo
+	repo AccountRepo
 	log  *log.Helper
 }
 
-func NewAccountUsecase(repo PassportRepo, logger log.Logger) *AccountUsecase {
+func NewAccountUsecase(repo AccountRepo, logger log.Logger) *AccountUsecase {
 	return &AccountUsecase{repo: repo, log: log.NewHelper(logger)}
 }
 
@@ -37,14 +33,17 @@ func (uc *AccountUsecase) MGetUserInfoByUserId(ctx context.Context, userId int64
 	return uc.repo.MGetUserInfoByUserId(ctx, userId, toUserIds)
 }
 
-func (uc *AccountUsecase) GetFollowListByUserId(ctx context.Context, userId int64) ([]*do.User, error) {
-	return uc.repo.GetFollowListByUserId(ctx, userId)
+// GetFollowListByUserId 获取用户的关注列表
+func (uc *AccountUsecase) GetFollowListByUserId(ctx context.Context, userId int64, toUserId int64) ([]*do.User, error) {
+	return uc.repo.GetFollowListByUserId(ctx, userId, toUserId)
 }
 
-func (uc *AccountUsecase) GetFollowerListByUserId(ctx context.Context, userId int64) ([]*do.User, error) {
-	return uc.repo.GetFollowerListByUserId(ctx, userId)
+// GetFollowerListByUserId 获取用户的粉丝列表
+func (uc *AccountUsecase) GetFollowerListByUserId(ctx context.Context, userId int64, toUserId int64) ([]*do.User, error) {
+	return uc.repo.GetFollowerListByUserId(ctx, userId, toUserId)
 }
 
+// GetFriendListByUserId 获取用户的好友列表
 func (uc *AccountUsecase) GetFriendListByUserId(ctx context.Context, userId int64) ([]*do.User, error) {
 	return uc.repo.GetFriendListByUserId(ctx, userId)
 }
