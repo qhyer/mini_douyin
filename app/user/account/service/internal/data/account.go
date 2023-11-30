@@ -310,6 +310,7 @@ func (r *accountRepo) batchGetIsFollowByUserIdFromRelationRPC(ctx context.Contex
 
 // GetFollowListByUserId 获取关注列表
 func (r *accountRepo) GetFollowListByUserId(ctx context.Context, userId int64, toUserId int64) ([]*do.User, error) {
+	// todo 改为函数
 	res, err := r.data.memcached.Get(constants.UserFollowListCacheKey(toUserId))
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
@@ -340,6 +341,7 @@ func (r *accountRepo) GetFollowListByUserId(ctx context.Context, userId int64, t
 				return err
 			}
 			isFollows = append(isFollows, rel...)
+			return nil
 		})
 		err = g.Wait()
 		if err != nil {
@@ -349,14 +351,14 @@ func (r *accountRepo) GetFollowListByUserId(ctx context.Context, userId int64, t
 		for i, isFollow := range isFollows {
 			users[i].IsFollow = isFollow
 		}
-		// todo如果是热key，设置缓存
+		// todo 如果是热key，设置缓存
 
 		// 判断是否关注要放在设置缓存后
 		for i, isFollow := range isFollows {
 			users[i].IsFollow = isFollow
 		}
 	}
-
+	// todo
 }
 
 // GetFollowerListByUserId 获取粉丝列表

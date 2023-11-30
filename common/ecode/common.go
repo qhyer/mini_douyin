@@ -6,4 +6,5 @@ var (
 	AuthorizeErr = NewErrNo(-401, "请重新登陆账号", "Authorize failed")
 	NothingFound = NewErrNo(-404, "什么都没找到", "Nothing found")
 	ServiceErr   = NewErrNo(-500, "服务器内部错误", "Service internal error")
+	ChanFullErr  = NewErrNo(-510, "服务器内部错误", "Channel is full")
 )

@@ -4,6 +4,7 @@ import (
 	"context"
 	"douyin/app/video/favorite/common/constants"
 	do "douyin/app/video/favorite/common/entity"
+	"douyin/app/video/favorite/common/mapper"
 	"douyin/app/video/favorite/job/internal/biz"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
@@ -49,8 +50,12 @@ func (r *favoriteRepo) UpdateVideoFavoritedCount(ctx context.Context, videoId in
 }
 
 func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.FavoriteAction) error {
-	// TODO do to po
-	err := r.data.db.WithContext(ctx).Table(constants.FavoriteVideoRecordTableName(favorite.UserId)).Create(favorite).Error
+	fav, err := mapper.FavoriteToPO(favorite)
+	if err != nil {
+		r.log.Errorf("CreateFavorite error(%v)", err)
+		return err
+	}
+	err = r.data.db.WithContext(ctx).Table(constants.FavoriteVideoRecordTableName(favorite.UserId)).Create(fav).Error
 	if err != nil {
 		r.log.Errorf("CreateFavorite error(%v)", err)
 		return err
@@ -59,8 +64,12 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.Favorite
 }
 
 func (r *favoriteRepo) DeleteFavorite(ctx context.Context, favorite *do.FavoriteAction) error {
-	// TODO do to po
-	err := r.data.db.WithContext(ctx).Table(constants.FavoriteVideoRecordTableName(favorite.UserId)).Where("user_id = ? and video_id = ?", favorite.UserId, favorite.VideoId).Delete(favorite).Error
+	fav, err := mapper.FavoriteToPO(favorite)
+	if err != nil {
+		r.log.Errorf("DeleteFavorite error(%v)", err)
+		return err
+	}
+	err = r.data.db.WithContext(ctx).Table(constants.FavoriteVideoRecordTableName(favorite.UserId)).Where("user_id = ? and video_id = ?", fav.UserId, fav.VideoId).Delete(fav).Error
 	if err != nil {
 		r.log.Errorf("DeleteFavorite error(%v)", err)
 		return err

@@ -12,24 +12,31 @@ import (
 	"douyin/app/video/publish/job/internal/data"
 	"douyin/app/video/publish/job/internal/server"
 	"douyin/app/video/publish/job/internal/service"
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+)
+
+import (
+	_ "go.uber.org/automaxprocs"
 )
 
 // Injectors from wire.go:
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
+	db := data.NewOrm(confData)
+	client := data.NewRedis(confData)
+	minioClient := data.NewMinio(confData)
+	consumer := service.NewKafka(confData)
+	dataData, cleanup, err := data.NewData(confData, db, client, minioClient, consumer, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, logger)
+	videoRepo := data.NewVideoRepo(dataData, logger)
+	videoUsecase := biz.NewVideoUsecase(videoRepo, logger)
+	publishService := service.NewPublishService(videoUsecase, consumer, logger)
+	grpcServer := server.NewGRPCServer(confServer, publishService, logger)
+	httpServer := server.NewHTTPServer(confServer, publishService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()

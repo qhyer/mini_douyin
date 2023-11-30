@@ -1,7 +1,7 @@
 package server
 
 import (
-	v1 "douyin/api/helloworld/v1"
+	v1 "douyin/api/video/favorite/job"
 	"douyin/app/video/favorite/job/internal/conf"
 	"douyin/app/video/favorite/job/internal/service"
 
@@ -11,7 +11,7 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, favorite *service.FavoriteService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -27,6 +27,6 @@ func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, logger log.L
 		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
 	}
 	srv := grpc.NewServer(opts...)
-	v1.RegisterGreeterServer(srv, greeter)
+	v1.RegisterFavoriteServer(srv, favorite)
 	return srv
 }

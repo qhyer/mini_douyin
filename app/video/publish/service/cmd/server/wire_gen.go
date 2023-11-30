@@ -27,7 +27,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	db := data.NewOrm(confData)
 	client := data.NewRedis(confData)
 	minioClient := data.NewMinio(confData)
-	dataData, cleanup, err := data.NewData(confData, db, client, minioClient, logger)
+	syncProducer := data.NewKafka(confData)
+	dataData, cleanup, err := data.NewData(confData, db, client, minioClient, syncProducer, logger)
 	if err != nil {
 		return nil, nil, err
 	}

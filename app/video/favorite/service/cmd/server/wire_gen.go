@@ -26,7 +26,8 @@ import (
 func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
 	db := data.NewOrm(confData)
 	client := data.NewRedis(confData)
-	dataData, cleanup, err := data.NewData(confData, db, client, logger)
+	syncProducer := data.NewKafka(confData)
+	dataData, cleanup, err := data.NewData(confData, db, client, syncProducer, logger)
 	if err != nil {
 		return nil, nil, err
 	}

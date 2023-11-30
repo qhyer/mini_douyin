@@ -98,7 +98,7 @@ func (u *SeqUsecase) GetID() (int64, error) {
 		u.sequence = int64(rand.Intn(100))
 	}
 	u.lastTimestamp = ts
-	return (ts-u.twepoch)<<timestampLeftShift | u.workerId<<workerIdShift | u.sequence, nil
+	return (ts-u.twepoch)<<int64(timestampLeftShift) | int64(u.workerId)<<int64(workerIdShift) | u.sequence, nil
 }
 
 func (u *SeqUsecase) tilNextMillis(lastTimestamp int64) int64 {

@@ -38,7 +38,7 @@ func (s *PublishService) PublishVideo(ctx context.Context, req *v1.PublishAction
 
 // GetPublishedVideosByUserId 获取用户发布的视频列表
 func (s *PublishService) GetPublishedVideosByUserId(ctx context.Context, req *v1.GetUserPublishedVideoListRequest) (*v1.GetUserPublishedVideoListResponse, error) {
-	videos, err := s.uc.GetPublishedVideosByUserId(ctx, req.GetUserId(), 0, 0)
+	videos, err := s.uc.GetPublishedVideosByUserId(ctx, req.GetUserId())
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.GetUserPublishedVideoListResponse{
