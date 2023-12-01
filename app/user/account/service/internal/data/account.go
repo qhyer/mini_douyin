@@ -82,7 +82,12 @@ func (r *accountRepo) GetUserInfoByUserId(ctx context.Context, userId int64, toU
 		user.FollowerCount = usFollowerCnt
 		user.WorkCount = usWorkCnt
 		user.IsFollow = isFollow
-		r.setUserInfoCache(ctx, user)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.setUserInfoCache(ctx, user)
+		})
+		if err != nil {
+			r.log.Errorf("Fanout err: %v", err)
+		}
 	}
 	return user, nil
 }

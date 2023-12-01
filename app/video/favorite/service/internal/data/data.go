@@ -5,6 +5,7 @@ import (
 	rdb "douyin/common/cache/redis"
 	"douyin/common/database/orm"
 	"douyin/common/queue/kafka"
+	"douyin/common/sync/fanout"
 	"github.com/IBM/sarama"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -18,9 +19,10 @@ var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewKafka, NewFavoriteRe
 
 // Data .
 type Data struct {
-	db    *gorm.DB
-	redis *redis.Client
-	kafka sarama.SyncProducer
+	db       *gorm.DB
+	redis    *redis.Client
+	kafka    sarama.SyncProducer
+	cacheFan *fanout.Fanout
 }
 
 // NewData .
@@ -29,9 +31,10 @@ func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, kafka sarama.SyncP
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	return &Data{
-		db:    orm,
-		redis: redis,
-		kafka: kafka,
+		db:       orm,
+		redis:    redis,
+		kafka:    kafka,
+		cacheFan: fanout.New(fanout.Worker(10), fanout.Buffer(10240)),
 	}, cleanup, nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"douyin/app/user/passport/service/internal/conf"
 	rdb "douyin/common/cache/redis"
 	"douyin/common/database/orm"
+	"douyin/common/sync/fanout"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
@@ -15,8 +16,9 @@ var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewPassportRepo)
 
 // Data .
 type Data struct {
-	db    *gorm.DB
-	redis *redis.Client
+	db       *gorm.DB
+	redis    *redis.Client
+	cacheFan *fanout.Fanout
 }
 
 // NewData .
@@ -24,7 +26,7 @@ func NewData(c *conf.Data, orm *gorm.DB, rds *redis.Client, logger log.Logger) (
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{db: orm, redis: rds}, cleanup, nil
+	return &Data{db: orm, redis: rds, cacheFan: fanout.New(fanout.Worker(10), fanout.Buffer(10240))}, cleanup, nil
 }
 
 func NewOrm(c *conf.Data) *gorm.DB {

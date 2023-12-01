@@ -49,79 +49,100 @@ func (r *relationRepo) RelationAction(ctx context.Context, relation *do.Relation
 // GetFollowListByUserId 获取关注列表
 func (r *relationRepo) GetFollowListByUserId(ctx context.Context, userId int64) ([]int64, error) {
 	res, err := r.getFollowListFromCache(ctx, userId)
-	if err != nil {
-		if err != redis.Nil {
-			log.Errorf("redis error: %v", err)
-		}
-		var relations []*po.Relation
-		if err := r.data.db.WithContext(ctx).Table(constants.FollowRecordTable(userId)).Where("from_user_id = ?", userId).Find(&relations).Error; err != nil {
-
-			return nil, err
-		}
-		ids := make([]int64, 0, len(relations))
-		for _, relation := range relations {
-			ids = append(ids, relation.ToUserId)
-		}
-		r.setUserFollowListCache(ctx, userId, relations)
-		return ids, nil
+	if err == nil {
+		return res, nil
 	}
-	return res, nil
+	if err != redis.Nil {
+		log.Errorf("redis error: %v", err)
+	}
+	var relations []*po.Relation
+	if err := r.data.db.WithContext(ctx).Table(constants.FollowRecordTable(userId)).Where("from_user_id = ?", userId).Find(&relations).Error; err != nil {
+		r.log.Errorf("mysql error: %v", err)
+		return nil, err
+	}
+	ids := make([]int64, 0, len(relations))
+	for _, relation := range relations {
+		ids = append(ids, relation.ToUserId)
+	}
+	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		r.setUserFollowListCache(ctx, userId, relations)
+	})
+	if err != nil {
+		r.log.Errorf("Fanout error: %v", err)
+	}
+	return ids, nil
 }
 
 // GetFollowerListByUserId 获取粉丝列表
 func (r *relationRepo) GetFollowerListByUserId(ctx context.Context, userId int64) ([]int64, error) {
 	res, err := r.getFollowerListFromCache(ctx, userId)
-	if err != nil {
-		if err != redis.Nil {
-			log.Errorf("redis error: %v", err)
-		}
-		var relations []*po.Relation
-		if err := r.data.db.WithContext(ctx).Table(constants.FollowerRecordTable(userId)).Where("to_user_id = ?", userId).Find(&relations).Error; err != nil {
-			return nil, err
-		}
-		ids := make([]int64, 0, len(relations))
-		for _, relation := range relations {
-			ids = append(ids, relation.FromUserId)
-		}
-		r.setUserFollowerListCache(ctx, userId, relations)
-		return ids, nil
+	if err == nil {
+		return res, nil
 	}
-	return res, nil
+	if err != redis.Nil {
+		log.Errorf("redis error: %v", err)
+	}
+	var relations []*po.Relation
+	if err := r.data.db.WithContext(ctx).Table(constants.FollowerRecordTable(userId)).Where("to_user_id = ?", userId).Find(&relations).Error; err != nil {
+		return nil, err
+	}
+	ids := make([]int64, 0, len(relations))
+	for _, relation := range relations {
+		ids = append(ids, relation.FromUserId)
+	}
+	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		r.setUserFollowerListCache(ctx, userId, relations)
+	})
+	if err != nil {
+		r.log.Errorf("Fanout error: %v", err)
+	}
+	return ids, nil
 }
 
 // GetFriendListByUserId 获取好友列表
 func (r *relationRepo) GetFriendListByUserId(ctx context.Context, userId int64) ([]int64, error) {
 	res, err := r.getFriendListFromCache(ctx, userId)
-	if err != nil {
-		if err != redis.Nil {
-			log.Errorf("redis error: %v", err)
-		}
-		var relations []*po.Relation
-		// todo 查询关系为friend
-		if err := r.data.db.WithContext(ctx).Table(constants.FollowRecordTable(userId)).Where("from_user_id = ?", userId).Find(&relations).Error; err != nil {
-			return nil, err
-		}
-		ids := make([]int64, 0, len(relations))
-		for _, relation := range relations {
-			ids = append(ids, relation.ToUserId)
-		}
-		r.setUserFriendListCache(ctx, userId, relations)
-		return ids, nil
+	if err == nil {
+		return res, nil
 	}
-	return res, nil
+	if err != redis.Nil {
+		log.Errorf("redis error: %v", err)
+	}
+	var relations []*po.Relation
+	// todo 查询关系为friend
+	if err := r.data.db.WithContext(ctx).Table(constants.FollowRecordTable(userId)).Where("from_user_id = ?", userId).Find(&relations).Error; err != nil {
+		return nil, err
+	}
+	ids := make([]int64, 0, len(relations))
+	for _, relation := range relations {
+		ids = append(ids, relation.ToUserId)
+	}
+	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		r.setUserFriendListCache(ctx, userId, relations)
+	})
+	if err != nil {
+		r.log.Errorf("Fanout error: %v", err)
+	}
+	return ids, nil
 }
 
 // CountFollowByUserId 获取关注数量
 func (r *relationRepo) CountFollowByUserId(ctx context.Context, userId int64) (int64, error) {
 	res, err := r.getFollowCountByUserIdFromCache(ctx, userId)
-	if err != nil {
-		if err != redis.Nil {
-			log.Errorf("redis error: %v", err)
-		}
-		if err := r.data.db.WithContext(ctx).Table(constants.RelationCountTable(userId)).Where("user_id = ?", userId).Pluck("follow_count", &res).Error; err != nil {
-			return 0, err
-		}
+	if err == nil {
+		return res, nil
+	}
+	if err != redis.Nil {
+		log.Errorf("redis error: %v", err)
+	}
+	if err := r.data.db.WithContext(ctx).Table(constants.RelationCountTable(userId)).Where("user_id = ?", userId).Pluck("follow_count", &res).Error; err != nil {
+		return 0, err
+	}
+	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
 		r.setFollowCountByUserId(ctx, userId, res)
+	})
+	if err != nil {
+		r.log.Errorf("Fanout error: %v", err)
 	}
 	return res, nil
 }
@@ -129,14 +150,20 @@ func (r *relationRepo) CountFollowByUserId(ctx context.Context, userId int64) (i
 // CountFollowerByUserId 获取粉丝数量
 func (r *relationRepo) CountFollowerByUserId(ctx context.Context, userId int64) (int64, error) {
 	res, err := r.getFollowerCountByUserIdFromCache(ctx, userId)
-	if err != nil {
-		if err != redis.Nil {
-			log.Errorf("redis error: %v", err)
-		}
-		if err := r.data.db.WithContext(ctx).Table(constants.RelationCountTable(userId)).Where("user_id = ?", userId).Pluck("follower_count", &res).Error; err != nil {
-			return 0, err
-		}
+	if err == nil {
+		return res, nil
+	}
+	if err != redis.Nil {
+		log.Errorf("redis error: %v", err)
+	}
+	if err := r.data.db.WithContext(ctx).Table(constants.RelationCountTable(userId)).Where("user_id = ?", userId).Pluck("follower_count", &res).Error; err != nil {
+		return 0, err
+	}
+	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
 		r.setFollowerCountByUserId(ctx, userId, res)
+	})
+	if err != nil {
+		r.log.Errorf("Fanout error: %v", err)
 	}
 	return res, nil
 }
@@ -149,18 +176,22 @@ func (r *relationRepo) IsFollowByUserId(ctx context.Context, userId, toUserId in
 		return false, nil
 	}
 	if err == redis.Nil {
-		// todo 异步设置布隆过滤器
-		r.setUserFollowBloom(ctx, userId)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.setUserFollowBloom(ctx, userId)
+		})
+		if err != nil {
+			r.log.Errorf("Fanout error: %v", err)
+		}
 	} else {
-		log.Errorf("redis error: %v", err)
+		r.log.Errorf("redis error: %v", err)
 	}
 	// 在布隆过滤器中或者查询失败，可能关注，需要查询redis
 	res, err = r.isUserFollowFromCache(ctx, userId, toUserId)
 	if err == nil {
 		return res, nil
 	}
-	if err != nil && err != redis.Nil {
-		log.Errorf("redis error: %v", err)
+	if err != redis.Nil {
+		r.log.Errorf("redis error: %v", err)
 	}
 	// 不在redis中，可能关注，需要查询mysql
 	var relation po.Relation
@@ -182,10 +213,14 @@ func (r *relationRepo) IsFollowByUserIds(ctx context.Context, userId int64, toUs
 		return res, nil
 	}
 	if err == redis.Nil {
-		// todo 异步设置布隆过滤器
-		r.setUserFollowBloom(ctx, userId)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.setUserFollowBloom(ctx, userId)
+		})
+		if err != nil {
+			r.log.Errorf("Fanout error: %v", err)
+		}
 	} else {
-		log.Errorf("redis error: %v", err)
+		r.log.Errorf("redis error: %v", err)
 	}
 	// 从布隆过滤器获取失败，可能关注，需要查询redis
 	if err != nil {

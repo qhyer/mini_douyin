@@ -58,8 +58,13 @@ func (r *commentRepo) GetCommentListByVideoId(ctx context.Context, videoId int64
 			r.log.Errorf("GetCommentListByVideoId err:%v", err)
 			return nil, err
 		}
-		r.setCommentIdListCache(ctx, videoId, dbComments)
-		r.batchSetCommentInfoCache(ctx, dbComments)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.setCommentIdListCache(ctx, videoId, dbComments)
+			r.batchSetCommentInfoCache(ctx, dbComments)
+		})
+		if err != nil {
+			r.log.Errorf("Fanout err:%v", err)
+		}
 		return mapper.CommentFromPOs(dbComments)
 	}
 	return r.batchGetCommentInfoByVideoIdAndCommentIds(ctx, videoId, cacheComments)
@@ -77,7 +82,12 @@ func (r *commentRepo) batchGetCommentInfoByVideoIdAndCommentIds(ctx context.Cont
 			r.log.Errorf("batchGetCommentInfoByVideoIdAndCommentIds err:%v", err)
 			return nil, err
 		}
-		r.batchSetCommentInfoCache(ctx, comments)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.batchSetCommentInfoCache(ctx, comments)
+		})
+		if err != nil {
+			r.log.Errorf("Fanout err:%v", err)
+		}
 		cacheComments = append(cacheComments, comments...)
 	}
 	comments, err := mapper.CommentFromPOs(cacheComments)
@@ -96,7 +106,12 @@ func (r *commentRepo) CountCommentByVideoId(ctx context.Context, videoId int64) 
 			r.log.Errorf("CountCommentByVideoId err:%v", err)
 			return 0, err
 		}
-		r.setCommentCountCache(ctx, videoId, res)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.setCommentCountCache(ctx, videoId, res)
+		})
+		if err != nil {
+			r.log.Errorf("Fanout err:%v", err)
+		}
 	}
 	return res, nil
 }

@@ -6,6 +6,7 @@ import (
 	"douyin/common/database/orm"
 	minio1 "douyin/common/minio"
 	"douyin/common/queue/kafka"
+	"douyin/common/sync/fanout"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -19,10 +20,11 @@ var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewKafka, New
 
 // Data .
 type Data struct {
-	db    *gorm.DB
-	redis *redis.Client
-	minio *minio.Client
-	kafka sarama.SyncProducer
+	db       *gorm.DB
+	redis    *redis.Client
+	minio    *minio.Client
+	kafka    sarama.SyncProducer
+	cacheFan *fanout.Fanout
 }
 
 // NewData .
@@ -30,7 +32,13 @@ func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Clien
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{db: orm, redis: redis, minio: minio, kafka: kafka}, cleanup, nil
+	return &Data{
+		db:       orm,
+		redis:    redis,
+		minio:    minio,
+		kafka:    kafka,
+		cacheFan: fanout.New(fanout.Worker(10), fanout.Buffer(10240)),
+	}, cleanup, nil
 }
 
 func NewOrm(c *conf.Data) *gorm.DB {

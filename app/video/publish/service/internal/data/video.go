@@ -64,7 +64,12 @@ func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64
 			r.log.Errorf("db error: %v", err)
 			return nil, err
 		}
-		r.setUserPublishedVidListCache(ctx, userId, vs)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.setUserPublishedVidListCache(ctx, userId, vs)
+		})
+		if err != nil {
+			r.log.Errorf("cache fanout error: %v", err)
+		}
 		vids = make([]int64, 0, len(vs))
 		for _, v := range vs {
 			vids = append(vids, v.ID)
@@ -86,6 +91,7 @@ func (r *videoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTi
 	}
 	videos, err := r.MGetVideoByIds(ctx, vids)
 	if err != nil {
+		r.log.Errorf("MGetVideoByIds err: %v", err)
 		return nil, err
 	}
 	return videos, nil
@@ -103,10 +109,16 @@ func (r *videoRepo) GetVideoById(ctx context.Context, id int64) (*do.Video, erro
 			r.log.Errorf("db error: %v", err)
 			return nil, err
 		}
-		r.setVideoCache(ctx, video)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.setVideoCache(ctx, video)
+		})
+		if err != nil {
+			r.log.Errorf("cache fanout error: %v", err)
+		}
 	}
 	vs, err := mapper.VideoFromPO(video)
 	if err != nil {
+		r.log.Errorf("mapper video from po error: %v", err)
 		return nil, err
 	}
 	return vs, nil
@@ -116,7 +128,7 @@ func (r *videoRepo) GetVideoById(ctx context.Context, id int64) (*do.Video, erro
 func (r *videoRepo) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Video, error) {
 	videos, missed, err := r.batchGetVideoFromCache(ctx, ids)
 	if err != nil {
-		log.Errorf("redis error: %v", err)
+		r.log.Errorf("redis error: %v", err)
 	}
 	if len(missed) > 0 {
 		missedVideos := make([]*po.Video, 0, len(missed))
@@ -129,6 +141,7 @@ func (r *videoRepo) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Vide
 	}
 	result, err := mapper.VideoFromPOs(videos)
 	if err != nil {
+		r.log.Errorf("mapper video from po error: %v", err)
 		return nil, err
 	}
 	return result, nil
@@ -137,19 +150,24 @@ func (r *videoRepo) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Vide
 // CountUserPublishedVideoByUserId 获取用户发布视频数量
 func (r *videoRepo) CountUserPublishedVideoByUserId(ctx context.Context, userId int64) (int64, error) {
 	res, err := r.getUserPublishedVidCountFromCache(ctx, userId)
-	if err != nil {
-		if err != redis.Nil {
-			log.Errorf("redis error: %v", err)
-		}
-		var count int64
-		if err := r.data.db.WithContext(ctx).Table(constants.PublishCountTableName(userId)).Where("user_id = ?", userId).Pluck("count", &count).Error; err != nil {
-			r.log.Errorf("db error: %v", err)
-			return 0, err
-		}
-		r.setUserPublishedVidCountCache(ctx, userId, count)
-		return count, nil
+	if err == nil {
+		return res, nil
 	}
-	return res, nil
+	if err != redis.Nil {
+		log.Errorf("redis error: %v", err)
+	}
+	var count int64
+	if err := r.data.db.WithContext(ctx).Table(constants.PublishCountTableName(userId)).Where("user_id = ?", userId).Pluck("count", &count).Error; err != nil {
+		r.log.Errorf("db error: %v", err)
+		return 0, err
+	}
+	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		r.setUserPublishedVidCountCache(ctx, userId, count)
+	})
+	if err != nil {
+		r.log.Errorf("cache fanout error: %v", err)
+	}
+	return count, nil
 }
 
 // setVideoCache 设置视频信息缓存

@@ -36,7 +36,12 @@ func (r *favoriteRepo) CountVideoFavoritedByVideoId(ctx context.Context, videoId
 			r.log.Errorf("db error: %v", err)
 			return 0, err
 		}
-		r.setVideoFavoritedCountCache(ctx, videoId, count)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.setVideoFavoritedCountCache(ctx, videoId, count)
+		})
+		if err != nil {
+			r.log.Errorf("fanout error: %v", err)
+		}
 	}
 	return count, nil
 }
@@ -45,6 +50,7 @@ func (r *favoriteRepo) CountVideoFavoritedByVideoId(ctx context.Context, videoId
 func (r *favoriteRepo) IsUserFavoriteVideoList(ctx context.Context, userId int64, videoIds []int64) ([]bool, error) {
 	favs, err := r.GetFavoriteVideoIdListByUserId(ctx, userId)
 	if err != nil {
+		r.log.Errorf("get user favorite video id list error: %v", err)
 		return nil, err
 	}
 	favMap := make(map[int64]bool, len(favs))
@@ -90,7 +96,12 @@ func (r *favoriteRepo) GetFavoriteVideoIdListByUserId(ctx context.Context, userI
 			r.log.Errorf("db error: %v", err)
 			return nil, err
 		}
-		r.setUserFavoriteVideoIdListCache(ctx, userId, favs)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.setUserFavoriteVideoIdListCache(ctx, userId, favs)
+		})
+		if err != nil {
+			r.log.Errorf("fanout error: %v", err)
+		}
 		vids = make([]int64, 0, len(favs))
 		for _, v := range favs {
 			vids = append(vids, v.VideoId)
@@ -125,7 +136,12 @@ func (r *favoriteRepo) CountUserFavoriteByUserId(ctx context.Context, userId int
 		if err := r.data.db.WithContext(ctx).Table(constants.UserFavoriteVideoCountTableName(userId)).Where("user_id = ?", userId).Pluck("fav_count", &count).Error; err != nil {
 			return 0, err
 		}
-		r.setUserFavoriteCountCache(ctx, userId, count)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.setUserFavoriteCountCache(ctx, userId, count)
+		})
+		if err != nil {
+			r.log.Errorf("fanout error: %v", err)
+		}
 	}
 	return count, nil
 }
@@ -140,7 +156,12 @@ func (r *favoriteRepo) CountUserFavoritedByUserId(ctx context.Context, userId in
 		if err := r.data.db.WithContext(ctx).Table(constants.UserFavoriteVideoCountTableName(userId)).Where("user_id = ?", userId).Pluck("favd_count", &count).Error; err != nil {
 			return 0, err
 		}
-		r.setUserFavoritedCountCache(ctx, userId, count)
+		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+			r.setUserFavoritedCountCache(ctx, userId, count)
+		})
+		if err != nil {
+			r.log.Errorf("fanout error: %v", err)
+		}
 	}
 	return count, nil
 }
