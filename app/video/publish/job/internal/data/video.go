@@ -11,6 +11,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/minio/minio-go/v7"
 	"gorm.io/gorm"
+	"time"
 )
 
 type videoRepo struct {
@@ -36,13 +37,22 @@ func (r *videoRepo) CreateVideo(ctx context.Context, video *do.Video) error {
 		r.log.Errorf("mapper video to po error: %v", err)
 		return err
 	}
+	// 清除缓存
+	err = r.delUserPublishCache(ctx, v.AuthorID)
+	if err != nil {
+		r.log.Errorf("clear cache error: %v", err)
+	}
+
+	// 写入数据库
 	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// 创建视频
 		if err := tx.Table(constants.PublishRecordTableName).Create(v).Error; err != nil {
 			return err
 		}
 		pubCnt := po.PublishCount{
 			UserID: v.AuthorID,
 		}
+		// 更新发布视频数
 		if err := tx.Table(constants.PublishCountTableName(v.AuthorID)).FirstOrInit(&pubCnt, pubCnt).UpdateColumn("video_count", gorm.Expr("video_count + ?", 1)).Error; err != nil {
 			return err
 		}
@@ -50,6 +60,30 @@ func (r *videoRepo) CreateVideo(ctx context.Context, video *do.Video) error {
 	})
 	if err != nil {
 		r.log.Errorf("create video error: %v", err)
+		return err
+	}
+
+	// 延时清除缓存
+	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		time.Sleep(100 * time.Millisecond)
+		err := r.delUserPublishCache(ctx, v.AuthorID)
+		if err != nil {
+			r.log.Errorf("clear cache error: %v", err)
+		}
+	})
+	if err != nil {
+		r.log.Errorf("clear cache error: %v", err)
+	}
+	return nil
+}
+
+func (r *videoRepo) delUserPublishCache(ctx context.Context, userId int64) error {
+	pipe := r.data.redis.Pipeline()
+	pipe.Del(ctx, constants.UserPublishedVidCountCacheKey(userId))
+	pipe.Del(ctx, constants.UserPublishedVidListCacheKey(userId))
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		r.log.Errorf("clear cache error: %v", err)
 		return err
 	}
 	return nil

@@ -9,6 +9,7 @@ import (
 	"douyin/app/user/account/service/internal/conf"
 	rdb "douyin/common/cache/redis"
 	"douyin/common/sync/fanout"
+	"github.com/bluele/gcache"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
@@ -30,6 +31,7 @@ type Data struct {
 	redis       *redis.Client
 	memcached   *memcache.Client
 	cacheFan    *fanout.Fanout
+	localCache  gcache.Cache
 }
 
 // NewData .
@@ -46,6 +48,7 @@ func NewData(c *conf.Data, rc relation.RelationClient, pc passport.PassportClien
 		redis:       rds,
 		memcached:   mem,
 		cacheFan:    fanout.New(fanout.Worker(10), fanout.Buffer(10240)),
+		localCache:  gcache.New(10240).LFU().Build(),
 	}, cleanup, nil
 }
 

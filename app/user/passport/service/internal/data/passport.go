@@ -28,6 +28,7 @@ func NewPassportRepo(data *Data, logger log.Logger) biz.PassportRepo {
 func (r *passportRepo) CreateUser(ctx context.Context, user *do.User) error {
 	poUser, err := mapper.UserToPO(user)
 	if err != nil {
+		r.log.Errorf("user to po err: %v", err)
 		return err
 	}
 	err = r.data.db.WithContext(ctx).Table(constants.PassportTableName).Create(poUser).Error

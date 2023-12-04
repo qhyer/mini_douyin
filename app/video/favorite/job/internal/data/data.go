@@ -4,6 +4,8 @@ import (
 	"douyin/app/video/favorite/job/internal/conf"
 	rdb "douyin/common/cache/redis"
 	"douyin/common/database/orm"
+	"douyin/common/queue/kafka"
+	"github.com/IBM/sarama"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
@@ -12,22 +14,26 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewFavoriteRepo)
+var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewKafkaConsumer, NewKafkaProducer, NewFavoriteRepo)
 
 // Data .
 type Data struct {
-	db    *gorm.DB
-	redis *redis.Client
+	db            *gorm.DB
+	redis         *redis.Client
+	kafkaConsumer sarama.Consumer
+	kafkaProducer sarama.SyncProducer
 }
 
 // NewData .
-func NewData(c *conf.Data, db *gorm.DB, rds *redis.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, db *gorm.DB, rds *redis.Client, kafkaConsumer sarama.Consumer, kafkaProducer sarama.SyncProducer, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	return &Data{
-		db:    db,
-		redis: rds,
+		db:            db,
+		redis:         rds,
+		kafkaConsumer: kafkaConsumer,
+		kafkaProducer: kafkaProducer,
 	}, cleanup, nil
 }
 
@@ -49,5 +55,17 @@ func NewRedis(c *conf.Data) *redis.Client {
 		DialTimeout:  c.GetRedis().GetDialTimeout().AsDuration(),
 		ReadTimeout:  c.GetRedis().GetReadTimeout().AsDuration(),
 		WriteTimeout: c.GetRedis().GetWriteTimeout().AsDuration(),
+	})
+}
+
+func NewKafkaProducer(c *conf.Data) sarama.SyncProducer {
+	return kafka.NewKafkaSyncProducer(&kafka.Config{
+		Addr: c.GetKafka().GetAddr(),
+	})
+}
+
+func NewKafkaConsumer(c *conf.Data) sarama.Consumer {
+	return kafka.NewKafkaConsumer(&kafka.Config{
+		Addr: c.GetKafka().GetAddr(),
 	})
 }

@@ -5,6 +5,7 @@ import (
 	rdb "douyin/common/cache/redis"
 	"douyin/common/database/orm"
 	minio1 "douyin/common/minio"
+	"douyin/common/sync/fanout"
 	"github.com/IBM/sarama"
 	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
@@ -19,9 +20,11 @@ var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewVideoRepo)
 
 // Data .
 type Data struct {
-	db    *gorm.DB
-	redis *redis.Client
-	minio *minio.Client
+	db       *gorm.DB
+	redis    *redis.Client
+	minio    *minio.Client
+	kafka    sarama.Consumer
+	cacheFan *fanout.Fanout
 }
 
 // NewData .
@@ -29,7 +32,11 @@ func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Clien
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{db: orm, redis: redis, minio: minio}, cleanup, nil
+	return &Data{
+		db: orm, redis: redis, minio: minio,
+		kafka:    kafka,
+		cacheFan: fanout.New(fanout.Worker(10), fanout.Buffer(10240)),
+	}, cleanup, nil
 }
 
 func NewOrm(c *conf.Data) *gorm.DB {

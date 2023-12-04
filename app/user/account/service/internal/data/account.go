@@ -12,6 +12,7 @@ import (
 	"douyin/app/user/account/service/internal/biz"
 	constants2 "douyin/common/constants"
 	"douyin/common/ecode"
+	"encoding/json"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/pkg/errors"
@@ -136,6 +137,13 @@ func (r *accountRepo) setUserInfoCache(ctx context.Context, user *do.User) {
 		r.log.Errorf("redis marshal user info err: %v", err)
 		return
 	}
+	// 如果粉丝数大于最小粉丝数，设置本地缓存
+	if user.FollowerCount > constants.LeastFollowerCount {
+		err := r.data.localCache.SetWithExpire(constants.AccountInfoCacheKey(user.ID), user, constants.AccountInfoCacheExpiration)
+		if err != nil {
+			r.log.Errorf("local cache set user info err: %v", err)
+		}
+	}
 	err = r.data.redis.Set(ctx, constants.AccountInfoCacheKey(user.ID), b, constants.AccountInfoCacheExpiration).Err()
 	if err != nil {
 		r.log.Errorf("redis set user info err: %v", err)
@@ -144,6 +152,12 @@ func (r *accountRepo) setUserInfoCache(ctx context.Context, user *do.User) {
 
 // 从缓存中获取用户信息
 func (r *accountRepo) getUserInfoFromCache(ctx context.Context, userId string) (*do.User, error) {
+	// 先从本地缓存读取
+	us, err := r.data.localCache.Get(userId)
+	if err == nil {
+		return us.(*do.User), nil
+	}
+	// 本地缓存没有，从redis读取
 	res, err := r.data.redis.Get(ctx, userId).Bytes()
 	if err != nil {
 		if err != redis.Nil {
@@ -315,67 +329,169 @@ func (r *accountRepo) batchGetIsFollowByUserIdFromRelationRPC(ctx context.Contex
 
 // GetFollowListByUserId 获取关注列表
 func (r *accountRepo) GetFollowListByUserId(ctx context.Context, userId int64, toUserId int64) ([]*do.User, error) {
-	// todo 改为函数
-	res, err := r.data.memcached.Get(constants.UserFollowListCacheKey(toUserId))
-	if err != nil {
-		if !errors.Is(err, memcache.ErrCacheMiss) {
-			r.log.Errorf("memcached get user follow list err: %v", err)
+	// 从memcached中获取列表
+	users, err := r.getUserFollowListFromCache(ctx, userId)
+	if err == nil {
+		userIds := make([]int64, 0, len(users))
+		for _, user := range users {
+			userIds = append(userIds, user.ID)
 		}
-		// 从relation rpc获取关注列表
-		userIds, err := r.getFollowListByUserIdFromRelationRPC(ctx, toUserId)
+		// 从relation rpc获取是否关注
+		rel, err := r.batchGetIsFollowByUserIdFromRelationRPC(ctx, userId, userIds)
 		if err != nil {
-			r.log.Errorf("get follow list err: %v", err)
+			r.log.Errorf("get follow relation err: %v", err)
 			return nil, err
 		}
-		g := errgroup.Group{}
-		users := make([]*do.User, 0, len(userIds))
-		isFollows := make([]bool, 0, len(userIds))
-		// 获取用户信息
-		g.Go(func() error {
-			us, err := r.MGetUserInfoByUserId(ctx, userId, userIds)
-			if err != nil {
-				return err
-			}
-			users = append(users, us...)
-			return nil
-		})
-		// 获取是否关注
-		g.Go(func() error {
-			rel, err := r.batchGetIsFollowByUserIdFromRelationRPC(ctx, userId, userIds)
-			if err != nil {
-				return err
-			}
-			isFollows = append(isFollows, rel...)
-			return nil
-		})
-		err = g.Wait()
-		if err != nil {
-			r.log.Errorf("get follow list err: %v", err)
-			return nil, err
+		for i, user := range users {
+			user.IsFollow = rel[i]
 		}
-		for i, isFollow := range isFollows {
-			users[i].IsFollow = isFollow
-		}
-		// todo 如果是热key，设置缓存
-
-		// 判断是否关注要放在设置缓存后
-		for i, isFollow := range isFollows {
-			users[i].IsFollow = isFollow
-		}
+		return users, nil
 	}
-	// todo
+	// 从relation rpc获取关注列表
+	userIds, err := r.getFollowListByUserIdFromRelationRPC(ctx, toUserId)
+	if err != nil {
+		r.log.Errorf("get follow list err: %v", err)
+		return nil, err
+	}
+	g := errgroup.Group{}
+	users = make([]*do.User, 0, len(userIds))
+	isFollows := make([]bool, 0, len(userIds))
+	// 获取用户信息
+	g.Go(func() error {
+		us, err := r.MGetUserInfoByUserId(ctx, userId, userIds)
+		if err != nil {
+			return err
+		}
+		users = append(users, us...)
+		return nil
+	})
+	// 获取是否关注
+	g.Go(func() error {
+		rel, err := r.batchGetIsFollowByUserIdFromRelationRPC(ctx, userId, userIds)
+		if err != nil {
+			return err
+		}
+		isFollows = append(isFollows, rel...)
+		return nil
+	})
+	err = g.Wait()
+	if err != nil {
+		r.log.Errorf("get follow list err: %v", err)
+		return nil, err
+	}
+	// 设置缓存
+	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		r.setUserFollowListCache(ctx, userId, users)
+	})
+	if err != nil {
+		r.log.Errorf("Fanout err: %v", err)
+	}
+
+	// 判断是否关注要放在设置缓存后
+	for i, isFollow := range isFollows {
+		users[i].IsFollow = isFollow
+	}
+	return users, nil
 }
 
 // GetFollowerListByUserId 获取粉丝列表
 func (r *accountRepo) GetFollowerListByUserId(ctx context.Context, userId int64, toUserId int64) ([]*do.User, error) {
-	//TODO implement me
-	panic("implement me")
+	// 从memcached中获取列表
+	users, err := r.getUserFollowerListFromCache(ctx, userId)
+	if err == nil {
+		userIds := make([]int64, 0, len(users))
+		for _, user := range users {
+			userIds = append(userIds, user.ID)
+		}
+		// 从relation rpc获取是否关注
+		rel, err := r.batchGetIsFollowByUserIdFromRelationRPC(ctx, userId, userIds)
+		if err != nil {
+			r.log.Errorf("get follower relation err: %v", err)
+			return nil, err
+		}
+		for i, user := range users {
+			user.IsFollow = rel[i]
+		}
+		return users, nil
+	}
+	// 从relation rpc获取粉丝列表
+	userIds, err := r.getFollowerListByUserIdFromRelationRPC(ctx, toUserId)
+	if err != nil {
+		r.log.Errorf("get follower list err: %v", err)
+		return nil, err
+	}
+	g := errgroup.Group{}
+	users = make([]*do.User, 0, len(userIds))
+	isFollows := make([]bool, 0, len(userIds))
+	// 获取用户信息
+	g.Go(func() error {
+		us, err := r.MGetUserInfoByUserId(ctx, userId, userIds)
+		if err != nil {
+			return err
+		}
+		users = append(users, us...)
+		return nil
+	})
+	// 获取是否关注
+	g.Go(func() error {
+		rel, err := r.batchGetIsFollowByUserIdFromRelationRPC(ctx, userId, userIds)
+		if err != nil {
+			return err
+		}
+		isFollows = append(isFollows, rel...)
+		return nil
+	})
+	err = g.Wait()
+	if err != nil {
+		r.log.Errorf("get follower list err: %v", err)
+		return nil, err
+	}
+	// 设置缓存
+	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		r.setUserFollowerListCache(ctx, userId, users)
+	})
+	if err != nil {
+		r.log.Errorf("Fanout err: %v", err)
+	}
+
+	// 判断是否关注要放在设置缓存后
+	for i, isFollow := range isFollows {
+		users[i].IsFollow = isFollow
+	}
+	return users, nil
 }
 
 // GetFriendListByUserId 获取好友列表
 func (r *accountRepo) GetFriendListByUserId(ctx context.Context, userId int64) ([]*do.User, error) {
-	//TODO implement me
-	panic("implement me")
+	// 从memcached中获取列表
+	users, err := r.getUserFriendListFromCache(ctx, userId)
+	if err == nil {
+		return users, nil
+	}
+	// 从relation rpc获取好友列表
+	userIds, err := r.getFriendListByUserIdFromRelationRPC(ctx, userId)
+	if err != nil {
+		r.log.Errorf("get friend list err: %v", err)
+		return nil, err
+	}
+	// 获取用户信息
+	users, err = r.MGetUserInfoByUserId(ctx, userId, userIds)
+	if err != nil {
+		r.log.Errorf("get friend list err: %v", err)
+		return nil, err
+	}
+	// 设置缓存
+	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		r.setUserFriendListCache(ctx, userId, users)
+	})
+	if err != nil {
+		r.log.Errorf("Fanout err: %v", err)
+	}
+	// 朋友一定是关注的
+	for i := range users {
+		users[i].IsFollow = true
+	}
+	return users, nil
 }
 
 // 从relation rpc获取关注列表
@@ -428,15 +544,108 @@ func (r *accountRepo) getFriendListByUserIdFromRelationRPC(ctx context.Context, 
 
 // 设置用户关注列表缓存
 func (r *accountRepo) setUserFollowListCache(ctx context.Context, userId int64, users []*do.User) {
-	// todo
+	b, err := json.Marshal(users)
+	if err != nil {
+		r.log.Errorf("marshal user follow list err: %v", err)
+		return
+	}
+	err = r.data.memcached.Set(&memcache.Item{
+		Key:        constants.UserFollowListCacheKey(userId),
+		Value:      b,
+		Expiration: int32(constants.UserFollowListCacheExpiration.Seconds()),
+	})
+	if err != nil {
+		r.log.Errorf("memcached set user follow list err: %v", err)
+		return
+	}
+}
+
+// 从缓存中获取用户关注列表
+func (r *accountRepo) getUserFollowListFromCache(ctx context.Context, userId int64) ([]*do.User, error) {
+	res, err := r.data.memcached.Get(constants.UserFollowListCacheKey(userId))
+	if err != nil {
+		if !errors.Is(err, memcache.ErrCacheMiss) {
+			r.log.Errorf("memcached get user follow list err: %v", err)
+		}
+		return nil, err
+	}
+	users := make([]*do.User, 0, len(res.Value))
+	err = json.Unmarshal(res.Value, &users)
+	if err != nil {
+		r.log.Errorf("unmarshal user follow list err: %v", err)
+		return nil, err
+	}
+	return users, nil
 }
 
 // 设置用户粉丝列表缓存
 func (r *accountRepo) setUserFollowerListCache(ctx context.Context, userId int64, users []*do.User) {
-	// todo
+	b, err := json.Marshal(users)
+	if err != nil {
+		r.log.Errorf("marshal user follower list err: %v", err)
+		return
+	}
+	err = r.data.memcached.Set(&memcache.Item{
+		Key:        constants.UserFollowerListCacheKey(userId),
+		Value:      b,
+		Expiration: int32(constants.UserFollowerListCacheExpiration.Seconds()),
+	})
+	if err != nil {
+		r.log.Errorf("memcached set user follower list err: %v", err)
+		return
+	}
+}
+
+// 从缓存中获取用户粉丝列表
+func (r *accountRepo) getUserFollowerListFromCache(ctx context.Context, userId int64) ([]*do.User, error) {
+	res, err := r.data.memcached.Get(constants.UserFollowerListCacheKey(userId))
+	if err != nil {
+		if !errors.Is(err, memcache.ErrCacheMiss) {
+			r.log.Errorf("memcached get user follower list err: %v", err)
+		}
+		return nil, err
+	}
+	users := make([]*do.User, 0, len(res.Value))
+	err = json.Unmarshal(res.Value, &users)
+	if err != nil {
+		r.log.Errorf("unmarshal user follower list err: %v", err)
+		return nil, err
+	}
+	return users, nil
 }
 
 // 设置用户好友列表缓存
 func (r *accountRepo) setUserFriendListCache(ctx context.Context, userId int64, users []*do.User) {
-	// todo
+	b, err := json.Marshal(users)
+	if err != nil {
+		r.log.Errorf("marshal user friend list err: %v", err)
+		return
+	}
+	err = r.data.memcached.Set(&memcache.Item{
+		Key:        constants.UserFriendListCacheKey(userId),
+		Value:      b,
+		Expiration: int32(constants.UserFriendListCacheExpiration.Seconds()),
+	})
+	if err != nil {
+		r.log.Errorf("memcached set user friend list err: %v", err)
+		return
+	}
+}
+
+// 从缓存中获取用户好友列表
+func (r *accountRepo) getUserFriendListFromCache(ctx context.Context, userId int64) ([]*do.User, error) {
+	res, err := r.data.memcached.Get(constants.UserFriendListCacheKey(userId))
+	if err != nil {
+		if !errors.Is(err, memcache.ErrCacheMiss) {
+			r.log.Errorf("memcached get user friend list err: %v", err)
+		}
+		return nil, err
+	}
+	users := make([]*do.User, 0, len(res.Value))
+	err = json.Unmarshal(res.Value, &users)
+	if err != nil {
+		r.log.Errorf("unmarshal user friend list err: %v", err)
+		return nil, err
+	}
+	return users, nil
 }
