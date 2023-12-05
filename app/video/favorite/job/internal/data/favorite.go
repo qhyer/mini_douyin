@@ -161,6 +161,7 @@ func (r *favoriteRepo) BatchDeleteFavorite(ctx context.Context, favorites []*do.
 	panic("implement me")
 }
 
+// 从redis中删除用户喜欢缓存
 func (r *favoriteRepo) delUserFavoriteCache(ctx context.Context, userId int64) error {
 	pipe := r.data.redis.Pipeline()
 	pipe.Del(ctx, constants.UserFavoriteCountCacheKey(userId))

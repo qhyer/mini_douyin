@@ -112,5 +112,5 @@ func (uc *RelationUsecase) IsFollowByUserId(ctx context.Context, userId, toUserI
 }
 
 func (uc *RelationUsecase) IsFollowByUSerIds(ctx context.Context, userId int64, toUserIds []int64) ([]bool, error) {
-	return uc.repo.IsFollowByUSerIds(ctx, userId, toUserIds)
+	return uc.repo.IsFollowByUserIds(ctx, userId, toUserIds)
 }
