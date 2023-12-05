@@ -28,8 +28,7 @@ func NewRelationRepo(data *Data, logger log.Logger) biz.RelationRepo {
 }
 
 // RelationAction 关注/取消关注
-func (r *relationRepo) RelationAction(ctx context.Context, relation *do.Relation) error {
-	// TODO get seq-num
+func (r *relationRepo) RelationAction(ctx context.Context, relation *do.RelationAction) error {
 	b, err := relation.MarshalJson()
 	if err != nil {
 		r.log.Errorf("json marshal error: %v", err)
@@ -37,6 +36,7 @@ func (r *relationRepo) RelationAction(ctx context.Context, relation *do.Relation
 	}
 	_, _, err = r.data.kafka.SendMessage(&sarama.ProducerMessage{
 		Topic: constants.RelationActionTopic,
+		Key:   sarama.StringEncoder(constants.RelationActionKafkaKey(relation.FromUserId)),
 		Value: sarama.ByteEncoder(b),
 	})
 	if err != nil {
@@ -56,6 +56,7 @@ func (r *relationRepo) GetFollowListByUserId(ctx context.Context, userId int64) 
 		log.Errorf("redis error: %v", err)
 	}
 	var relations []*po.Relation
+	// todo
 	if err := r.data.db.WithContext(ctx).Table(constants.FollowRecordTable(userId)).Where("from_user_id = ?", userId).Find(&relations).Error; err != nil {
 		r.log.Errorf("mysql error: %v", err)
 		return nil, err
@@ -83,7 +84,8 @@ func (r *relationRepo) GetFollowerListByUserId(ctx context.Context, userId int64
 		log.Errorf("redis error: %v", err)
 	}
 	var relations []*po.Relation
-	if err := r.data.db.WithContext(ctx).Table(constants.FollowerRecordTable(userId)).Where("to_user_id = ?", userId).Find(&relations).Error; err != nil {
+	// todo
+	if err := r.data.db.WithContext(ctx).Table(constants.FollowerRecordTable(userId)).Where("from_user_id = ?", userId).Find(&relations).Error; err != nil {
 		return nil, err
 	}
 	ids := make([]int64, 0, len(relations))
@@ -109,8 +111,8 @@ func (r *relationRepo) GetFriendListByUserId(ctx context.Context, userId int64) 
 		log.Errorf("redis error: %v", err)
 	}
 	var relations []*po.Relation
-	// todo 查询关系为friend
-	if err := r.data.db.WithContext(ctx).Table(constants.FollowRecordTable(userId)).Where("from_user_id = ?", userId).Find(&relations).Error; err != nil {
+	// todo
+	if err := r.data.db.WithContext(ctx).Table(constants.FollowRecordTable(userId)).Where("from_user_id = ? and type = ?", userId, do.RelationFollowed).Find(&relations).Error; err != nil {
 		return nil, err
 	}
 	ids := make([]int64, 0, len(relations))
@@ -192,6 +194,8 @@ func (r *relationRepo) IsFollowByUserId(ctx context.Context, userId, toUserId in
 	}
 	if err != redis.Nil {
 		r.log.Errorf("redis error: %v", err)
+	} else {
+		// todo
 	}
 	// 不在redis中，可能关注，需要查询mysql
 	var relation po.Relation
@@ -223,14 +227,14 @@ func (r *relationRepo) IsFollowByUserIds(ctx context.Context, userId int64, toUs
 		r.log.Errorf("redis error: %v", err)
 	}
 	// 从布隆过滤器获取失败，可能关注，需要查询redis
-	if err != nil {
-		res, err = r.isUserFollowsFromCache(ctx, userId, toUserIds)
-		if err == nil {
-			return res, nil
-		}
-		if err != redis.Nil {
-			r.log.Errorf("redis error: %v", err)
-		}
+	res, err = r.isUserFollowsFromCache(ctx, userId, toUserIds)
+	if err == nil {
+		return res, nil
+	}
+	if err != redis.Nil {
+		r.log.Errorf("redis error: %v", err)
+	} else {
+		// todo
 	}
 	// 从redis获取失败，可能关注，需要查询mysql
 	var relations []*po.Relation

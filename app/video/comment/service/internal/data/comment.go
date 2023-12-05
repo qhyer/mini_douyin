@@ -28,7 +28,6 @@ func NewCommentRepo(data *Data, logger log.Logger) biz.CommentRepo {
 
 // CommentAction 发布/删除评论
 func (r *commentRepo) CommentAction(ctx context.Context, comment *do.CommentAction) error {
-	// TODO get seq-num
 	b, err := comment.MarshalJson()
 	if err != nil {
 		r.log.Errorf("CommentAction err:%v", err)

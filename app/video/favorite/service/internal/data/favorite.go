@@ -66,7 +66,6 @@ func (r *favoriteRepo) IsUserFavoriteVideoList(ctx context.Context, userId int64
 
 // FavoriteVideo 点赞视频
 func (r *favoriteRepo) FavoriteVideo(ctx context.Context, fav *do.FavoriteAction) error {
-	// TODO get seq-number
 	b, err := fav.MarshalJson()
 	if err != nil {
 		r.log.Errorf("json marshal error: %v", err)

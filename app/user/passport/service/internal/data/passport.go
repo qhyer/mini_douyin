@@ -2,11 +2,13 @@ package data
 
 import (
 	"context"
+	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/user/passport/common/constants"
 	do "douyin/app/user/passport/common/entity"
 	"douyin/app/user/passport/common/mapper"
 	po "douyin/app/user/passport/common/model"
 	"douyin/app/user/passport/service/internal/biz"
+	constants2 "douyin/common/constants"
 	"encoding/json"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
@@ -26,6 +28,15 @@ func NewPassportRepo(data *Data, logger log.Logger) biz.PassportRepo {
 
 // CreateUser 创建用户
 func (r *passportRepo) CreateUser(ctx context.Context, user *do.User) error {
+	// 获取用户ID
+	uid, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{
+		BusinessId: constants2.PassportBusinessId,
+	})
+	if err != nil || !uid.GetIsOk() {
+		r.log.Errorf("get user id err: %v", err)
+		return err
+	}
+	user.ID = uid.GetID()
 	poUser, err := mapper.UserToPO(user)
 	if err != nil {
 		r.log.Errorf("user to po err: %v", err)

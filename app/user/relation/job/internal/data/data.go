@@ -1,11 +1,15 @@
 package data
 
 import (
+	"context"
+	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/user/relation/job/internal/conf"
 	rdb "douyin/common/cache/redis"
 	"douyin/common/database/orm"
 	"douyin/common/queue/kafka"
 	"github.com/IBM/sarama"
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
@@ -14,24 +18,28 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewKafka, NewRelationRepo)
+var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewKafkaConsumer, NewKafkaProducer, NewRelationRepo)
 
 // Data .
 type Data struct {
-	db    *gorm.DB
-	redis *redis.Client
-	kafka sarama.Consumer
+	db            *gorm.DB
+	redis         *redis.Client
+	kafkaConsumer sarama.Consumer
+	kafkaProducer sarama.SyncProducer
+	seqRPC        seq.SeqClient
 }
 
 // NewData .
-func NewData(c *conf.Data, db *gorm.DB, rds *redis.Client, kafka sarama.Consumer, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, db *gorm.DB, rds *redis.Client, kafkaConsumer sarama.Consumer, kafkaProducer sarama.SyncProducer, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	return &Data{
-		db:    db,
-		redis: rds,
-		kafka: kafka,
+		db:            db,
+		redis:         rds,
+		kafkaConsumer: kafkaConsumer,
+		kafkaProducer: kafkaProducer,
+		seqRPC:        NewSeqClient(),
 	}, cleanup, nil
 }
 
@@ -56,8 +64,27 @@ func NewRedis(c *conf.Data) *redis.Client {
 	})
 }
 
-func NewKafka(c *conf.Data) sarama.Consumer {
+func NewKafkaConsumer(c *conf.Data) sarama.Consumer {
 	return kafka.NewKafkaConsumer(&kafka.Config{
 		Addr: c.GetKafka().GetAddr(),
 	})
+}
+
+func NewKafkaProducer(c *conf.Data) sarama.SyncProducer {
+	return kafka.NewKafkaSyncProducer(&kafka.Config{
+		Addr: c.GetKafka().GetAddr(),
+	})
+}
+
+func NewSeqClient() seq.SeqClient {
+	conn, err := grpc.DialInsecure(
+		context.Background(),
+		grpc.WithMiddleware(
+			recovery.Recovery(),
+		),
+	)
+	if err != nil {
+		panic(err)
+	}
+	return seq.NewSeqClient(conn)
 }

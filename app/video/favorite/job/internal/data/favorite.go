@@ -2,14 +2,17 @@ package data
 
 import (
 	"context"
+	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/favorite/common/constants"
 	do "douyin/app/video/favorite/common/entity"
 	"douyin/app/video/favorite/common/mapper"
 	po "douyin/app/video/favorite/common/model"
 	"douyin/app/video/favorite/job/internal/biz"
+	constants2 "douyin/common/constants"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
+	"time"
 )
 
 type favoriteRepo struct {
@@ -55,11 +58,26 @@ func (r *favoriteRepo) UpdateVideoFavoritedCount(ctx context.Context, videoId in
 }
 
 func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.FavoriteAction) error {
+	// 获取点赞ID
+	fid, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{
+		BusinessId: constants2.FavoriteBusinessId,
+	})
+	if err != nil || !fid.GetIsOk() {
+		r.log.Errorf("Get seq num error(%v)", err)
+		return err
+	}
+	favorite.ID = fid.GetID()
 	fav, err := mapper.FavoriteToPO(favorite)
 	if err != nil {
 		r.log.Errorf("CreateFavorite error(%v)", err)
 		return err
 	}
+	// 删除用户喜欢缓存
+	err = r.delUserFavoriteCache(ctx, favorite.UserId)
+	if err != nil {
+		r.log.Errorf("CreateFavorite error(%v)", err)
+	}
+	// 创建喜欢
 	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// 创建点赞记录
 		err := tx.Table(constants.FavoriteVideoRecordTableName(favorite.UserId)).Create(fav).Error
@@ -88,6 +106,18 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.Favorite
 	if err != nil {
 		r.log.Errorf("CreateFavorite error(%v)", err)
 		return err
+	}
+
+	// 延时删除用户喜欢缓存
+	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		time.Sleep(100 * time.Millisecond)
+		err = r.delUserFavoriteCache(ctx, favorite.UserId)
+		if err != nil {
+			r.log.Errorf("DelUserFavoriteCache error(%v)", err)
+		}
+	})
+	if err != nil {
+		r.log.Errorf("Fanout error(%v)", err)
 	}
 	return nil
 }
@@ -129,4 +159,16 @@ func (r *favoriteRepo) BatchCreateFavorite(ctx context.Context, favorites []*do.
 func (r *favoriteRepo) BatchDeleteFavorite(ctx context.Context, favorites []*do.FavoriteAction) error {
 	//TODO implement me
 	panic("implement me")
+}
+
+func (r *favoriteRepo) delUserFavoriteCache(ctx context.Context, userId int64) error {
+	pipe := r.data.redis.Pipeline()
+	pipe.Del(ctx, constants.UserFavoriteCountCacheKey(userId))
+	pipe.Del(ctx, constants.UserFavoriteListCacheKey(userId))
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		r.log.Errorf("delUserFavoriteCache error(%v)", err)
+		return err
+	}
+	return nil
 }

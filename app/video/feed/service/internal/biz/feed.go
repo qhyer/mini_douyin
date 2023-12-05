@@ -13,6 +13,7 @@ type FeedRepo interface {
 	MGetUserInfoByUserId(ctx context.Context, userId int64, toUserIds []int64) ([]*do.User, error)
 	MCountVideoFavoritedByVideoId(ctx context.Context, videoId []int64) ([]int64, error)
 	MCountCommentByVideoId(ctx context.Context, videoId []int64) ([]int64, error)
+	MGetIsVideoFavoritedByVideoIdAndUserId(ctx context.Context, userId int64, videoIds []int64) ([]bool, error)
 }
 
 type FeedUsecase struct {
@@ -22,4 +23,12 @@ type FeedUsecase struct {
 
 func NewFeedUsecase(repo FeedRepo, logger log.Logger) *FeedUsecase {
 	return &FeedUsecase{repo: repo, log: log.NewHelper(logger)}
+}
+
+func (uc *FeedUsecase) GetPublishedVideoByUserId(ctx context.Context, userId int64) ([]*do.Video, error) {
+	return uc.repo.GetPublishedVideoByUserId(ctx, userId)
+}
+
+func (uc *FeedUsecase) GetPublishedVideoByLatestTimeAndUserId(ctx context.Context, userId int64, latestTime int64) ([]*do.Video, error) {
+	return uc.repo.GetPublishedVideoByLatestTime(ctx, latestTime)
 }

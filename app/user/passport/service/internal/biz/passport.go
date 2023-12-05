@@ -37,11 +37,13 @@ func (u *PassportUsecase) CreateUser(ctx context.Context, user *do.User) (uid in
 	pwd := []byte(user.Password)
 	hashedPassword, err := bcrypt.GenerateFromPassword(pwd, bcrypt.DefaultCost)
 	if err != nil {
+		u.log.Errorf("create user error(%v)", err)
 		return 0, err
 	}
 	user.EncryptedPassword = string(hashedPassword)
 	err = u.repo.CreateUser(ctx, user)
 	if err != nil {
+		u.log.Errorf("create user error(%v)", err)
 		return 0, err
 	}
 	return user.ID, nil
@@ -52,10 +54,12 @@ func (u *PassportUsecase) VerifyPassword(ctx context.Context, user *do.User) (ve
 	pwd := []byte(user.Password)
 	hashedPassword, err := bcrypt.GenerateFromPassword(pwd, bcrypt.DefaultCost)
 	if err != nil {
+		u.log.Errorf("verify password error(%v)", err)
 		return false, 0, err
 	}
 	us, err := u.repo.GetUserByName(ctx, user.Name)
 	if err != nil {
+		u.log.Errorf("get user by name error(%v)", err)
 		return false, 0, err
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(us.EncryptedPassword), hashedPassword)

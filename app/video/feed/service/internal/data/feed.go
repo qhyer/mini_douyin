@@ -149,3 +149,8 @@ func (r *feedRepo) MCountCommentByVideoId(ctx context.Context, videoIds []int64)
 	cnt = res.GetCountList()
 	return cnt, nil
 }
+
+func (r *feedRepo) MGetIsVideoFavoritedByVideoIdAndUserId(ctx context.Context, userId int64, videoIds []int64) ([]bool, error) {
+	// todo
+	panic("implement me ")
+}

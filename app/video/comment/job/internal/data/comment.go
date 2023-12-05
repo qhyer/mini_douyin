@@ -2,11 +2,13 @@ package data
 
 import (
 	"context"
+	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/comment/common/constants"
 	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/common/mapper"
 	po "douyin/app/video/comment/common/model"
 	"douyin/app/video/comment/job/internal/biz"
+	constants2 "douyin/common/constants"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
 )
@@ -39,6 +41,15 @@ func (r *commentRepo) BatchUpdateVideoCommentCount(ctx context.Context, videoIds
 }
 
 func (r *commentRepo) CreateComment(ctx context.Context, comment *do.Comment) error {
+	// 获取评论ID
+	cid, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{
+		BusinessId: constants2.CommentBusinessId,
+	})
+	if err != nil || !cid.GetIsOk() {
+		r.log.Errorf("seqRPC.GetID error(%v)", err)
+		return err
+	}
+	comment.ID = cid.GetID()
 	com, err := mapper.CommentToPO(comment)
 	if err != nil {
 		r.log.Errorf("mapper.CommentToPO error(%v)", err)

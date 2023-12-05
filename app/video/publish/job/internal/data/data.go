@@ -1,12 +1,16 @@
 package data
 
 import (
+	"context"
+	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/publish/job/internal/conf"
 	rdb "douyin/common/cache/redis"
 	"douyin/common/database/orm"
 	minio1 "douyin/common/minio"
 	"douyin/common/sync/fanout"
 	"github.com/IBM/sarama"
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -25,6 +29,7 @@ type Data struct {
 	minio    *minio.Client
 	kafka    sarama.Consumer
 	cacheFan *fanout.Fanout
+	seqRPC   seq.SeqClient
 }
 
 // NewData .
@@ -36,6 +41,7 @@ func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Clien
 		db: orm, redis: redis, minio: minio,
 		kafka:    kafka,
 		cacheFan: fanout.New(fanout.Worker(10), fanout.Buffer(10240)),
+		seqRPC:   NewSeqClient(),
 	}, cleanup, nil
 }
 
@@ -66,4 +72,17 @@ func NewMinio(c *conf.Data) *minio.Client {
 		AccessKeyID:     c.GetMinio().GetAccessKeyId(),
 		SecretAccessKey: c.GetMinio().GetSecretAccessKey(),
 	})
+}
+
+func NewSeqClient() seq.SeqClient {
+	conn, err := grpc.DialInsecure(
+		context.Background(),
+		grpc.WithMiddleware(
+			recovery.Recovery(),
+		),
+	)
+	if err != nil {
+		panic(err)
+	}
+	return seq.NewSeqClient(conn)
 }

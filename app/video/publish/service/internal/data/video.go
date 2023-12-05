@@ -29,22 +29,23 @@ func NewVideoRepo(data *Data, logger log.Logger) biz.VideoRepo {
 
 // PublishVideo 发布视频
 func (r *videoRepo) PublishVideo(ctx context.Context, video *do.Video) error {
-	// TODO get seq-number
 	b, err := video.MarshalJson()
 	if err != nil {
 		r.log.Errorf("json marshal error: %v", err)
 		return err
 	}
-	msgs := make([]*sarama.ProducerMessage, 0, 2)
-	msgs = append(msgs, &sarama.ProducerMessage{
-		Topic: constants.PublishVideoTopic,
-		Value: sarama.ByteEncoder(b),
+	err = r.data.kafka.SendMessages([]*sarama.ProducerMessage{
+		{
+			// 发布视频
+			Topic: constants.PublishVideoTopic,
+			Value: sarama.ByteEncoder(b),
+		},
+		{
+			// 生成封面
+			Topic: constants.GenCoverTopic,
+			Value: sarama.ByteEncoder(b),
+		},
 	})
-	msgs = append(msgs, &sarama.ProducerMessage{
-		Topic: constants.GenCoverTopic,
-		Value: sarama.ByteEncoder(b),
-	})
-	err = r.data.kafka.SendMessages(msgs)
 	if err != nil {
 		r.log.Errorf("kafka send message error: %v", err)
 		return err

@@ -3,11 +3,13 @@ package data
 import (
 	"bytes"
 	"context"
+	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/publish/common/constants"
 	do "douyin/app/video/publish/common/entity"
 	"douyin/app/video/publish/common/mapper"
 	po "douyin/app/video/publish/common/model"
 	"douyin/app/video/publish/job/internal/biz"
+	constants2 "douyin/common/constants"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/minio/minio-go/v7"
 	"gorm.io/gorm"
@@ -32,6 +34,15 @@ func (r *videoRepo) BatchCreateVideo(ctx context.Context, videos []*do.Video) er
 }
 
 func (r *videoRepo) CreateVideo(ctx context.Context, video *do.Video) error {
+	// 生成视频ID
+	vid, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{
+		BusinessId: constants2.PublishBusinessId,
+	})
+	if err != nil || !vid.GetIsOk() {
+		r.log.Errorf("seq rpc error: %v", err)
+		return err
+	}
+	video.ID = vid.GetID()
 	v, err := mapper.VideoToPO(video)
 	if err != nil {
 		r.log.Errorf("mapper video to po error: %v", err)
