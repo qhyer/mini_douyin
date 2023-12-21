@@ -8,6 +8,7 @@ import (
 	po "douyin/app/video/comment/common/model"
 	"douyin/app/video/comment/service/internal/biz"
 	"encoding/json"
+	"errors"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
@@ -49,7 +50,7 @@ func (r *commentRepo) CommentAction(ctx context.Context, comment *do.CommentActi
 func (r *commentRepo) GetCommentListByVideoId(ctx context.Context, videoId int64) ([]*do.Comment, error) {
 	cacheComments, err := r.getCommentIdListFromCache(ctx, videoId)
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("GetCommentListByVideoId err:%v", err)
 		}
 		dbComments := make([]*po.Comment, 0, constants.CommentQueryLimit)
@@ -73,7 +74,7 @@ func (r *commentRepo) GetCommentListByVideoId(ctx context.Context, videoId int64
 func (r *commentRepo) batchGetCommentInfoByVideoIdAndCommentIds(ctx context.Context, videoId int64, commentIds []int64) ([]*do.Comment, error) {
 	cacheComments, missed, err := r.batchGetCommentInfoFromCache(ctx, commentIds)
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("batchGetCommentInfoByVideoIdAndCommentIds err:%v", err)
 		}
 		var comments []*po.Comment
@@ -98,7 +99,7 @@ func (r *commentRepo) batchGetCommentInfoByVideoIdAndCommentIds(ctx context.Cont
 func (r *commentRepo) CountCommentByVideoId(ctx context.Context, videoId int64) (int64, error) {
 	res, err := r.getCommentCountFromCache(ctx, videoId)
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("CountCommentByVideoId err:%v", err)
 		}
 		if err := r.data.db.WithContext(ctx).Table(constants.CommentCountTableName(videoId)).Where("video_id = ?", videoId).Pluck("comment_count", &res).Error; err != nil {
@@ -264,7 +265,7 @@ func (r *commentRepo) setCommentIdListCache(ctx context.Context, videoId int64, 
 func (r *commentRepo) getCommentIdListFromCache(ctx context.Context, videoId int64) ([]int64, error) {
 	res, err := r.data.redis.ZRevRange(ctx, constants.CommentListCacheKey(videoId), 0, -1).Result()
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("getCommentListCache err:%v", err)
 		}
 		return nil, err

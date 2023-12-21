@@ -1,8 +1,8 @@
 package server
 
 import (
-	"douyin/app/user/relation/job/internal/conf"
-	"douyin/app/user/relation/job/internal/service"
+	"douyin/app/infra/seq-server/service/internal/conf"
+	"douyin/app/infra/seq-server/service/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -10,7 +10,7 @@ import (
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Server, relation *service.RelationService, logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Server, seq *service.SeqService, logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),

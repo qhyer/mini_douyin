@@ -8,6 +8,7 @@ import (
 	"douyin/app/video/publish/common/mapper"
 	po "douyin/app/video/publish/common/model"
 	"douyin/app/video/publish/service/internal/biz"
+	"errors"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/minio/minio-go/v7"
@@ -57,7 +58,7 @@ func (r *videoRepo) PublishVideo(ctx context.Context, video *do.Video) error {
 func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64) ([]*do.Video, error) {
 	vids, err := r.getUserPublishedVidListFromCache(ctx, userId, 0, 0)
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("redis error: %v", err)
 		}
 		vs := make([]*po.Video, 0)
@@ -102,7 +103,7 @@ func (r *videoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTi
 func (r *videoRepo) GetVideoById(ctx context.Context, id int64) (*do.Video, error) {
 	video, err := r.getVideoFromCache(ctx, id)
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("redis error: %v", err)
 		}
 		video = &po.Video{}
@@ -154,7 +155,7 @@ func (r *videoRepo) CountUserPublishedVideoByUserId(ctx context.Context, userId 
 	if err == nil {
 		return res, nil
 	}
-	if err != redis.Nil {
+	if !errors.Is(err, redis.Nil) {
 		log.Errorf("redis error: %v", err)
 	}
 	var count int64
@@ -212,7 +213,7 @@ func (r *videoRepo) batchGetVideoFromCache(ctx context.Context, vids []int64) (v
 	videos = make([]*po.Video, 0, len(vids))
 	missed = make([]int64, 0, len(vids))
 	for i, result := range results {
-		if result.Err() == redis.Nil {
+		if errors.Is(result.Err(), redis.Nil) {
 			missed = append(missed, vids[i])
 			continue
 		}

@@ -73,7 +73,7 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.Favorite
 		return err
 	}
 	// 删除用户喜欢缓存
-	err = r.delUserFavoriteCache(ctx, favorite.UserId)
+	err = r.delUserFavoriteListCache(ctx, favorite.UserId)
 	if err != nil {
 		r.log.Errorf("CreateFavorite error(%v)", err)
 	}
@@ -111,7 +111,7 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.Favorite
 	// 延时删除用户喜欢缓存
 	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
 		time.Sleep(100 * time.Millisecond)
-		err = r.delUserFavoriteCache(ctx, favorite.UserId)
+		err = r.delUserFavoriteListCache(ctx, favorite.UserId)
 		if err != nil {
 			r.log.Errorf("DelUserFavoriteCache error(%v)", err)
 		}
@@ -162,13 +162,10 @@ func (r *favoriteRepo) BatchDeleteFavorite(ctx context.Context, favorites []*do.
 }
 
 // 从redis中删除用户喜欢缓存
-func (r *favoriteRepo) delUserFavoriteCache(ctx context.Context, userId int64) error {
-	pipe := r.data.redis.Pipeline()
-	pipe.Del(ctx, constants.UserFavoriteCountCacheKey(userId))
-	pipe.Del(ctx, constants.UserFavoriteListCacheKey(userId))
-	_, err := pipe.Exec(ctx)
+func (r *favoriteRepo) delUserFavoriteListCache(ctx context.Context, userId int64) error {
+	err := r.data.redis.Del(ctx, constants.UserFavoriteListCacheKey(userId)).Err()
 	if err != nil {
-		r.log.Errorf("delUserFavoriteCache error(%v)", err)
+		r.log.Errorf("delUserFavoriteListCache error(%v)", err)
 		return err
 	}
 	return nil

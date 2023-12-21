@@ -43,3 +43,8 @@ func (r *chatRepo) GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime(ctx context
 	//TODO implement me
 	panic("implement me")
 }
+
+func (r *chatRepo) GetLatestMsgByMyUserIdAndHisUserId(ctx context.Context, myUserId, hisUserId int64) (*do.Message, error) {
+	//TODO implement me
+	panic("implement me")
+}

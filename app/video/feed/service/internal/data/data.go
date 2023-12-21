@@ -7,14 +7,18 @@ import (
 	favorite "douyin/api/video/favorite/service/v1"
 	publish "douyin/api/video/publish/service/v1"
 	"douyin/app/video/feed/service/internal/conf"
+	rdb "douyin/common/cache/redis"
+	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/google/wire"
+	"github.com/redis/go-redis/v9"
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewFavoriteClient, NewPublishClient, NewAccountClient, NewCommentClient, NewFeedRepo)
+var ProviderSet = wire.NewSet(NewData, NewFavoriteClient, NewPublishClient,
+	NewAccountClient, NewCommentClient, NewRedis, NewMemcached, NewFeedRepo)
 
 // Data .
 type Data struct {
@@ -22,10 +26,14 @@ type Data struct {
 	favoriteCli favorite.FavoriteClient
 	accountCli  account.AccountClient
 	commentCli  comment.CommentClient
+	redis       *redis.Client
+	memcached   *memcache.Client
 }
 
 // NewData .
-func NewData(c *conf.Data, pc publish.PublishClient, fc favorite.FavoriteClient, ac account.AccountClient, cc comment.CommentClient, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, pc publish.PublishClient, fc favorite.FavoriteClient,
+	ac account.AccountClient, cc comment.CommentClient, r *redis.Client, m *memcache.Client,
+	logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
@@ -34,6 +42,8 @@ func NewData(c *conf.Data, pc publish.PublishClient, fc favorite.FavoriteClient,
 		favoriteCli: fc,
 		accountCli:  ac,
 		commentCli:  cc,
+		redis:       r,
+		memcached:   m,
 	}, cleanup, nil
 }
 
@@ -87,4 +97,20 @@ func NewCommentClient() comment.CommentClient {
 		panic(err)
 	}
 	return comment.NewCommentClient(conn)
+}
+
+func NewRedis(c *conf.Data) *redis.Client {
+	return rdb.NewRedis(&rdb.Config{
+		Name:         c.GetRedis().GetName(),
+		Network:      c.GetRedis().GetNetwork(),
+		Addr:         c.GetRedis().GetAddr(),
+		Password:     c.GetRedis().GetPassword(),
+		DialTimeout:  c.GetRedis().GetDialTimeout().AsDuration(),
+		ReadTimeout:  c.GetRedis().GetReadTimeout().AsDuration(),
+		WriteTimeout: c.GetRedis().GetWriteTimeout().AsDuration(),
+	})
+}
+
+func NewMemcached(c *conf.Data) *memcache.Client {
+	return memcache.New(c.GetMemcached().GetAddr())
 }

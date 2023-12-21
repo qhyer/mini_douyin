@@ -147,5 +147,4 @@ func (s *FavoriteService) MCountVideoFavoritedByVideoIds(ctx context.Context, re
 		StatusMsg:  &ecode.Success.ErrMsg,
 		CountList:  countList,
 	}, nil
-
 }

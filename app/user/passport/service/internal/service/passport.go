@@ -13,8 +13,7 @@ import (
 type PassportService struct {
 	v1.UnimplementedPassportServer
 
-	uc    *biz.PassportUsecase
-	jwtuc jwt.JWT
+	uc *biz.PassportUsecase
 }
 
 func NewPassportService(uc *biz.PassportUsecase) *PassportService {
@@ -38,7 +37,7 @@ func (s *PassportService) Register(ctx context.Context, req *v1.DouyinUserRegist
 	}
 
 	// 创建成功 生成token
-	token, err := s.jwtuc.CreateTokenByID(uid)
+	token, err := jwt.CreateTokenByID(uid)
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.DouyinUserRegisterResponse{
@@ -70,7 +69,7 @@ func (s *PassportService) Login(ctx context.Context, req *v1.DouyinUserLoginRequ
 	}
 
 	if verified {
-		token, err := s.jwtuc.CreateTokenByID(uid)
+		token, err := jwt.CreateTokenByID(uid)
 		if err != nil {
 			err := ecode.ConvertErr(err)
 			return &v1.DouyinUserLoginResponse{

@@ -27,6 +27,7 @@ func NewFavoriteService(uc *biz.FavoriteUsecase, kafka sarama.Consumer, logger l
 		log:   log.NewHelper(logger),
 	}
 	go s.FavoriteAction()
+	go s.FavoriteStat()
 	return s
 }
 
@@ -62,5 +63,16 @@ func (s *FavoriteService) FavoriteAction() {
 		} else {
 			s.log.Errorf("FavoriteAction type error: %v", err)
 		}
+	}
+}
+
+func (s *FavoriteService) FavoriteStat() {
+	partitionConsumer, err := s.kafka.ConsumePartition(constants.UpdateVideoFavoritedCountTopic, 0, sarama.OffsetOldest)
+	if err != nil {
+		panic(err)
+	}
+	defer partitionConsumer.Close()
+	for message := range partitionConsumer.Messages() {
+		// todo
 	}
 }

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package relation.job.v1;
+
+
+option go_package = "api/user/relation/job/v1;v1";
+
+
+service relation {
+}

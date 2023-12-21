@@ -1,8 +1,9 @@
 package server
 
 import (
-	"douyin/app/user/relation/job/internal/conf"
-	"douyin/app/user/relation/job/internal/service"
+	v1 "douyin/api/seq-server/service/v1"
+	"douyin/app/infra/seq-server/service/internal/conf"
+	"douyin/app/infra/seq-server/service/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -10,7 +11,7 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, relation *service.RelationService, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, seq *service.SeqService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -26,5 +27,6 @@ func NewGRPCServer(c *conf.Server, relation *service.RelationService, logger log
 		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
 	}
 	srv := grpc.NewServer(opts...)
+	v1.RegisterSeqServer(srv, seq)
 	return srv
 }

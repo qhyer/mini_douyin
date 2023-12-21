@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Video struct {
 	ID            int64     `json:"id"`
@@ -12,4 +15,12 @@ type Video struct {
 	IsFavorite    bool      `json:"is_favorite"`
 	Title         string    `json:"title"`
 	CreatedAt     time.Time `json:"created_at"`
+}
+
+func (v *Video) MarshalJson() ([]byte, error) {
+	return json.Marshal(v)
+}
+
+func (v *Video) UnmarshalJson(data []byte) error {
+	return json.Unmarshal(data, v)
 }

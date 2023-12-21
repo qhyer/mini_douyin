@@ -9,6 +9,7 @@ import (
 	po "douyin/app/video/comment/common/model"
 	"douyin/app/video/comment/job/internal/biz"
 	constants2 "douyin/common/constants"
+	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
 )
@@ -55,7 +56,21 @@ func (r *commentRepo) CreateComment(ctx context.Context, comment *do.Comment) er
 		r.log.Errorf("mapper.CommentToPO error(%v)", err)
 		return err
 	}
-	err = r.data.db.WithContext(ctx).Table(constants.CommentRecordTableName(com.VideoId)).Create(com).Error
+	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		err := tx.Table(constants.CommentRecordTableName(com.VideoId)).Create(com).Error
+		if err != nil {
+			return err
+		}
+		_, _, err = r.data.kafkaProducer.SendMessage(&sarama.ProducerMessage{
+			Topic: constants.UpdateCommentCountTopic,
+			Key:   sarama.StringEncoder(constants.UpdateCommentCountKafkaKey(com.VideoId)),
+			Value: sarama.StringEncoder("1"),
+		})
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		r.log.Errorf("CreateComment error(%v)", err)
 		return err

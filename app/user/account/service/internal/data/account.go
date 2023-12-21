@@ -13,6 +13,7 @@ import (
 	constants2 "douyin/common/constants"
 	"douyin/common/ecode"
 	"encoding/json"
+	"errors"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/pkg/errors"
@@ -36,7 +37,7 @@ func NewAccountRepo(data *Data, logger log.Logger) biz.AccountRepo {
 func (r *accountRepo) GetUserInfoByUserId(ctx context.Context, userId int64, toUserId int64) (*do.User, error) {
 	user, err := r.getUserInfoFromCache(ctx, constants.AccountInfoCacheKey(toUserId))
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("redis get user info err: %v", err)
 			return nil, err
 		}
@@ -160,7 +161,7 @@ func (r *accountRepo) getUserInfoFromCache(ctx context.Context, userId string) (
 	// 本地缓存没有，从redis读取
 	res, err := r.data.redis.Get(ctx, userId).Bytes()
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("redis get user info err: %v", err)
 		}
 		return nil, err

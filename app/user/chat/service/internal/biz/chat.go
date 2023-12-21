@@ -9,6 +9,7 @@ import (
 type ChatRepo interface {
 	SendMessage(ctx context.Context, message *do.Message) error
 	GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime(ctx context.Context, myUserId, hisUserId, preMsgTime int64, limit int) ([]*do.Message, error)
+	GetLatestMsgByMyUserIdAndHisUserId(ctx context.Context, myUserId, hisUserId int64) (*do.Message, error)
 }
 
 type ChatUsecase struct {
