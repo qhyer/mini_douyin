@@ -192,10 +192,8 @@ func (r *relationRepo) IsFollowByUserId(ctx context.Context, userId, toUserId in
 	if err == nil {
 		return res, nil
 	}
-	if err != redis.Nil {
+	if !errors.Is(err, redis.Nil) {
 		r.log.Errorf("redis error: %v", err)
-	} else {
-		// todo
 	}
 	// 不在redis中，可能关注，需要查询mysql
 	var relation po.Relation
@@ -231,10 +229,8 @@ func (r *relationRepo) IsFollowByUserIds(ctx context.Context, userId int64, toUs
 	if err == nil {
 		return res, nil
 	}
-	if err != redis.Nil {
+	if !errors.Is(err, redis.Nil) {
 		r.log.Errorf("redis error: %v", err)
-	} else {
-		// todo
 	}
 	// 从redis获取失败，可能关注，需要查询mysql
 	var relations []*po.Relation

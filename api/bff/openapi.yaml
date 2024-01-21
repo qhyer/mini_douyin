@@ -1,0 +1,918 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: BFF API
+    version: 0.0.1
+paths:
+    /douyin/comment/action:
+        post:
+            tags:
+                - BFF
+            description: 发布评论或者删除评论
+            operationId: BFF_CommentAction
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CommentActionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CommentActionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/comment/list:
+        get:
+            tags:
+                - BFF
+            description: 获取评论列表
+            operationId: BFF_GetCommentList
+            parameters:
+                - name: token
+                  in: query
+                  description: 用户鉴权token
+                  schema:
+                    type: string
+                - name: videoId
+                  in: query
+                  description: 视频id
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CommentListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/favorite/action:
+        post:
+            tags:
+                - BFF
+            description: 点赞/取消点赞视频
+            operationId: BFF_FavoriteAction
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/FavoriteActionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FavoriteActionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/favorite/list:
+        get:
+            tags:
+                - BFF
+            description: 获取点赞视频列表
+            operationId: BFF_GetFavoriteVideoList
+            parameters:
+                - name: userId
+                  in: query
+                  description: 需要查询的用户 id
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: token
+                  in: query
+                  description: 用户鉴权 token
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetFavoriteVideoListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/feed:
+        get:
+            tags:
+                - BFF
+            description: 视频流
+            operationId: BFF_Feed
+            parameters:
+                - name: latestTime
+                  in: query
+                  description: 返回视频的最新投稿时间戳，精确到秒，不填表示当前时间
+                  schema:
+                    type: string
+                - name: token
+                  in: query
+                  description: 用户鉴权token
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FeedReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/message/action:
+        post:
+            tags:
+                - BFF
+            description: 给好友发送消息
+            operationId: BFF_MessageAction
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/MessageActionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MessageActionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/message/chat:
+        get:
+            tags:
+                - BFF
+            description: 获取消息列表
+            operationId: BFF_GetMessageList
+            parameters:
+                - name: token
+                  in: query
+                  description: 用户鉴权token
+                  schema:
+                    type: string
+                - name: toUserId
+                  in: query
+                  description: 对方用户id
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: preMsgTime
+                  in: query
+                  description: 上次最新消息的时间
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetMessageListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/publish/action:
+        post:
+            tags:
+                - BFF
+            description: 用户发布视频
+            operationId: BFF_PublishAction
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PublishActionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PublishActionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/publish/list:
+        get:
+            tags:
+                - BFF
+            description: 获取用户投稿视频列表
+            operationId: BFF_GetPublishList
+            parameters:
+                - name: userId
+                  in: query
+                  description: 用户id
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: token
+                  in: query
+                  description: 用户鉴权token
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetPublishListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/relation/action:
+        post:
+            tags:
+                - BFF
+            description: 关注或取关用户
+            operationId: BFF_RelationAction
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RelationActionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RelationActionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/relation/follow/list:
+        get:
+            tags:
+                - BFF
+            description: 获取关注列表
+            operationId: BFF_GetFollowList
+            parameters:
+                - name: userId
+                  in: query
+                  description: 用户id
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: token
+                  in: query
+                  description: 用户鉴权token
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetFollowListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/relation/follower/list:
+        get:
+            tags:
+                - BFF
+            description: 获取粉丝列表
+            operationId: BFF_GetFollowerList
+            parameters:
+                - name: userId
+                  in: query
+                  description: 用户id
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: token
+                  in: query
+                  description: 用户鉴权token
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetFollowerListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/relation/friend/list:
+        get:
+            tags:
+                - BFF
+            description: 获取好友列表
+            operationId: BFF_GetFriendList
+            parameters:
+                - name: userId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: token
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetFriendListReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/user:
+        get:
+            tags:
+                - BFF
+            description: 获取用户信息
+            operationId: BFF_GetUserInfo
+            parameters:
+                - name: userId
+                  in: query
+                  description: 用户id
+                  schema:
+                    type: integer
+                    format: uint32
+                - name: token
+                  in: query
+                  description: 用户鉴权token
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetUserInfoReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/user/login:
+        post:
+            tags:
+                - BFF
+            description: 用户登陆
+            operationId: BFF_UserLogin
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UserLoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UserLoginReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /douyin/user/register:
+        post:
+            tags:
+                - BFF
+            description: 用户注册
+            operationId: BFF_UserRegister
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UserRegisterRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UserRegisterReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+components:
+    schemas:
+        Comment:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    description: 视频评论id
+                    format: uint32
+                user:
+                    allOf:
+                        - $ref: '#/components/schemas/User'
+                    description: 评论用户信息
+                content:
+                    type: string
+                    description: 评论内容
+                create_date:
+                    type: string
+                    description: 评论发布日期，格式 mm-dd
+        CommentActionReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+                comment:
+                    allOf:
+                        - $ref: '#/components/schemas/Comment'
+                    description: 评论成功返回评论内容，不需要重新拉取整个列表
+        CommentActionRequest:
+            type: object
+            properties:
+                token:
+                    type: string
+                    description: 用户鉴权token
+                videoId:
+                    type: integer
+                    description: 视频id
+                    format: uint32
+                actionType:
+                    type: integer
+                    description: 1-发布评论，2-删除评论
+                    format: uint32
+                commentText:
+                    type: string
+                    description: 用户填写的评论内容，在action_type=1的时候使用
+                commentId:
+                    type: integer
+                    description: 要删除的评论id，在action_type=2的时候使用
+                    format: uint32
+        CommentListReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+                comment_list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Comment'
+                    description: 评论列表
+        FavoriteActionReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+        FavoriteActionRequest:
+            type: object
+            properties:
+                token:
+                    type: string
+                    description: 用户鉴权 token
+                videoId:
+                    type: integer
+                    description: 需要操作的视频 id
+                    format: uint32
+                actionType:
+                    type: integer
+                    description: 1-点赞，2-取消点赞
+                    format: uint32
+        FeedReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+                video_list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Video'
+                    description: 视频列表
+                next_time:
+                    type: string
+                    description: 本次返回的视频中，发布最早的时间，作为下次请求时的latest_time
+        GetFavoriteVideoListReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+                video_list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Video'
+                    description: 视频信息列表，按照发布时间倒序排列
+        GetFollowListReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+                user_list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/User'
+                    description: 用户信息列表
+        GetFollowerListReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+                user_list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/User'
+                    description: 用户列表
+        GetFriendListReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    format: int32
+                status_msg:
+                    type: string
+                user_list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/User'
+        GetMessageListReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+                message_list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Message'
+                    description: 消息列表
+        GetPublishListReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+                video_list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Video'
+                    description: 用户发布视频列表
+        GetUserInfoReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+                user:
+                    allOf:
+                        - $ref: '#/components/schemas/User'
+                    description: 用户信息
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        Message:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 消息id
+                to_user_id:
+                    type: integer
+                    description: 该消息接收者的id
+                    format: uint32
+                from_user_id:
+                    type: integer
+                    description: 该消息发送者的id
+                    format: uint32
+                content:
+                    type: string
+                    description: 消息内容
+                create_time:
+                    type: string
+                    description: 消息创建时间
+        MessageActionReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+        MessageActionRequest:
+            type: object
+            properties:
+                token:
+                    type: string
+                    description: 用户鉴权token
+                toUserId:
+                    type: integer
+                    description: 对方用户id
+                    format: uint32
+                actionType:
+                    type: integer
+                    description: 1-发送消息
+                    format: uint32
+                content:
+                    type: string
+                    description: 消息内容
+        PublishActionReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+        PublishActionRequest:
+            type: object
+            properties:
+                token:
+                    type: string
+                    description: 用户鉴权token
+                data:
+                    type: string
+                    description: 视频数据
+                    format: bytes
+                title:
+                    type: string
+                    description: 视频标题
+        RelationActionReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+        RelationActionRequest:
+            type: object
+            properties:
+                token:
+                    type: string
+                    description: 用户鉴权token
+                toUserId:
+                    type: integer
+                    description: 对方用户id
+                    format: uint32
+                actionType:
+                    type: integer
+                    description: 1-关注，2-取消关注
+                    format: uint32
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
+                message:
+                    type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        User:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 用户id
+                name:
+                    type: string
+                    description: 用户名称
+                follow_count:
+                    type: string
+                    description: 关注总数
+                follower_count:
+                    type: string
+                    description: 粉丝总数
+                is_follow:
+                    type: boolean
+                    description: true-已关注，false-未关注
+                avatar:
+                    type: string
+                    description: 用户头像
+                background_image:
+                    type: string
+                    description: 用户个人页顶部大图
+                signature:
+                    type: string
+                    description: 个人简介
+                total_favorited:
+                    type: string
+                    description: 获赞数量
+                work_count:
+                    type: string
+                    description: 作品数量
+                favorite_count:
+                    type: string
+                    description: 点赞数量
+                message:
+                    type: string
+                    description: 和该好友的最新聊天消息
+                msg_type:
+                    type: string
+                    description: message消息的类型，0 => 当前请求用户接收的消息， 1 => 当前请求用户发送的消息
+        UserLoginReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+                user_id:
+                    type: integer
+                    description: 用户id
+                    format: uint32
+                token:
+                    type: string
+                    description: 用户鉴权token
+        UserLoginRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                    description: 登录用户名
+                password:
+                    type: string
+                    description: 登录密码
+        UserRegisterReply:
+            type: object
+            properties:
+                status_code:
+                    type: integer
+                    description: 状态码，0-成功，其他值-失败
+                    format: int32
+                status_msg:
+                    type: string
+                    description: 返回状态描述
+                user_id:
+                    type: integer
+                    description: 用户id
+                    format: uint32
+                token:
+                    type: string
+                    description: 用户鉴权token
+        UserRegisterRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                    description: 注册用户名，最长32个字符
+                password:
+                    type: string
+                    description: 密码，最长32个字符
+        Video:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 视频唯一标识
+                author:
+                    allOf:
+                        - $ref: '#/components/schemas/User'
+                    description: 视频作者信息
+                play_url:
+                    type: string
+                    description: 视频播放地址
+                cover_url:
+                    type: string
+                    description: 视频封面地址
+                favorite_count:
+                    type: string
+                    description: 视频的点赞总数
+                comment_count:
+                    type: string
+                    description: 视频的评论总数
+                is_favorite:
+                    type: boolean
+                    description: true-已点赞，false-未点赞
+                title:
+                    type: string
+                    description: 视频标题
+tags:
+    - name: BFF

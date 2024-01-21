@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package chat.job.v1;
+
+
+option go_package = "api/user/chat/job/v1;v1";
+
+
+service chat {
+}

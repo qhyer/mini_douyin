@@ -35,6 +35,9 @@ func NewRelationUsecase(repo RelationRepo, logger log.Logger) *RelationUsecase {
 }
 
 func (uc *RelationUsecase) RelationAction(ctx context.Context, relation *do.RelationAction) error {
+	if relation.FromUserId == relation.ToUserId {
+		return ecode.RelationFollowSelfBannedErr
+	}
 	if relation.Type != do.RelationActionFollow && relation.Type != do.RelationActionUnFollow {
 		return ecode.ParamErr
 	}

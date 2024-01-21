@@ -1,6 +1,8 @@
 package data
 
 import (
+	"context"
+	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/publish/service/internal/conf"
 	rdb "douyin/common/cache/redis"
 	"douyin/common/database/orm"
@@ -9,6 +11,8 @@ import (
 	"douyin/common/sync/fanout"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/google/wire"
 	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
@@ -16,7 +20,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewKafka, NewVideoRepo)
+var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewKafka, NewSeqClient, NewVideoRepo)
 
 // Data .
 type Data struct {
@@ -25,10 +29,12 @@ type Data struct {
 	minio    *minio.Client
 	kafka    sarama.SyncProducer
 	cacheFan *fanout.Fanout
+	seqRPC   seq.SeqClient
 }
 
 // NewData .
-func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Client, kafka sarama.SyncProducer, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Client, kafka sarama.SyncProducer,
+	s seq.SeqClient, logger log.Logger) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
@@ -37,6 +43,7 @@ func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Clien
 		redis:    redis,
 		minio:    minio,
 		kafka:    kafka,
+		seqRPC:   s,
 		cacheFan: fanout.New(fanout.Worker(10), fanout.Buffer(10240)),
 	}, cleanup, nil
 }
@@ -74,4 +81,17 @@ func NewKafka(c *conf.Data) sarama.SyncProducer {
 	return kafka.NewKafkaSyncProducer(&kafka.Config{
 		Addr: c.GetKafka().GetAddr(),
 	})
+}
+
+func NewSeqClient() seq.SeqClient {
+	conn, err := grpc.DialInsecure(
+		context.Background(),
+		grpc.WithMiddleware(
+			recovery.Recovery(),
+		),
+	)
+	if err != nil {
+		panic(err)
+	}
+	return seq.NewSeqClient(conn)
 }

@@ -1,0 +1,468 @@
+syntax = "proto3";
+
+package bff.service.v1;
+
+import "third_party/google/api/annotations.proto";
+import "third_party/validate/validate.proto";
+
+option go_package = "douyin/service/bff/v1;v1";
+
+service BFF {
+  // 用户注册
+  rpc UserRegister(UserRegisterRequest) returns (UserRegisterReply) {
+    option (google.api.http) = {
+      post: "/douyin/user/register"
+      body: "*"
+    };
+  }
+
+  // 用户登陆
+  rpc UserLogin(UserLoginRequest) returns (UserLoginReply) {
+    option (google.api.http) = {
+      post: "/douyin/user/login"
+      body: "*"
+    };
+  }
+
+  // 获取用户信息
+  rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoReply) {
+    option (google.api.http) = {
+      get: "/douyin/user"
+    };
+  }
+
+  // 获取用户投稿视频列表
+  rpc GetPublishList(GetPublishListRequest) returns (GetPublishListReply) {
+    option (google.api.http) = {
+      get: "/douyin/publish/list"
+    };
+  }
+
+  // 用户发布视频
+  rpc PublishAction(PublishActionRequest) returns (PublishActionReply) {
+    option (google.api.http) = {
+      post: "/douyin/publish/action"
+      body: "*"
+    };
+  }
+
+  // 视频流
+  rpc Feed(FeedRequest) returns (FeedReply) {
+    option (google.api.http) = {
+      get: "/douyin/feed"
+    };
+  }
+
+  // 获取粉丝列表
+  rpc GetFollowerList(GetFollowerListRequest) returns (GetFollowerListReply) {
+    option (google.api.http) = {
+      get: "/douyin/relation/follower/list"
+    };
+  }
+
+  // 获取关注列表
+  rpc GetFollowList(GetFollowListRequest) returns (GetFollowListReply) {
+    option (google.api.http) = {
+      get: "/douyin/relation/follow/list"
+    };
+  }
+
+  // 关注或取关用户
+  rpc RelationAction(RelationActionRequest) returns (RelationActionReply) {
+    option (google.api.http) = {
+      post: "/douyin/relation/action"
+      body: "*"
+    };
+  }
+
+  // 获取好友列表
+  rpc GetFriendList(GetFriendListRequest) returns (GetFriendListReply) {
+    option (google.api.http) = {
+      get: "/douyin/relation/friend/list"
+    };
+  }
+
+  // 获取消息列表
+  rpc GetMessageList(GetMessageListRequest) returns (GetMessageListReply) {
+    option (google.api.http) = {
+      get: "/douyin/message/chat"
+    };
+  }
+
+  // 给好友发送消息
+  rpc MessageAction(MessageActionRequest) returns (MessageActionReply) {
+    option (google.api.http) = {
+      post: "/douyin/message/action"
+      body: "*"
+    };
+  }
+
+  // 获取点赞视频列表
+  rpc GetFavoriteVideoList(GetFavoriteVideoListRequest) returns (GetFavoriteVideoListReply) {
+    option (google.api.http) = {
+      get: "/douyin/favorite/list"
+    };
+  }
+
+  // 点赞/取消点赞视频
+  rpc FavoriteAction(FavoriteActionRequest) returns (FavoriteActionReply) {
+    option (google.api.http) = {
+      post: "/douyin/favorite/action"
+      body: "*"
+    };
+  }
+
+  // 获取评论列表
+  rpc GetCommentList(CommentListRequest) returns (CommentListReply) {
+    option (google.api.http) = {
+      get: "/douyin/comment/list"
+    };
+  }
+
+  // 发布评论或者删除评论
+  rpc CommentAction(CommentActionRequest) returns (CommentActionReply) {
+    option (google.api.http) = {
+      post: "/douyin/comment/action"
+      body: "*"
+    };
+  }
+}
+
+message GetUserInfoRequest {
+  // 用户id
+  uint32 user_id = 1;
+  // 用户鉴权token
+  string token = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GetUserInfoReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+  // 用户信息
+  User user = 3 [json_name = "user"];
+}
+
+message UserLoginRequest {
+  // 登录用户名
+  string username = 1;
+  // 登录密码
+  string password = 2;
+}
+
+message UserLoginReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+  // 用户id
+  uint32 user_id = 3 [json_name = "user_id"];
+  // 用户鉴权token
+  string token = 4 [json_name = "token"];
+}
+
+message UserRegisterRequest {
+  // 注册用户名，最长32个字符
+  string username = 1 [(validate.rules).string = {min_len:1, max_len:32}];
+  // 密码，最长32个字符
+  string password = 2 [(validate.rules).string = {min_len:6, max_len:32}];
+}
+
+message UserRegisterReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+  // 用户id
+  uint32 user_id = 3 [json_name = "user_id"];
+  // 用户鉴权token
+  string token = 4 [json_name = "token"];
+}
+
+message PublishActionRequest {
+  // 用户鉴权token
+  string token = 1 [(validate.rules).string.min_len = 1];
+  // 视频数据
+  bytes data = 2 [(validate.rules).bytes.min_len = 100000];
+  // 视频标题
+  string title = 3 [(validate.rules).string.min_len = 1];
+}
+
+message FeedRequest {
+  // 返回视频的最新投稿时间戳，精确到秒，不填表示当前时间
+  string latest_time = 1;
+  // 用户鉴权token
+  string token = 2;
+}
+
+message FeedReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+  // 视频列表
+  repeated Video video_list = 3 [json_name = "video_list"];
+  // 本次返回的视频中，发布最早的时间，作为下次请求时的latest_time
+  int64 next_time = 4 [json_name = "next_time"];
+}
+
+message PublishActionReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+}
+
+message GetPublishListRequest {
+  // 用户id
+  uint32 user_id = 1;
+  // 用户鉴权token
+  string token = 2;
+}
+
+message GetPublishListReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+  // 用户发布视频列表
+  repeated Video video_list = 3 [json_name = "video_list"];
+}
+
+message RelationActionRequest {
+  // 用户鉴权token
+  string token = 1 [(validate.rules).string.min_len = 1];
+  // 对方用户id
+  uint32 to_user_id = 2 [(validate.rules).uint32 = {gt: 0}];
+  // 1-关注，2-取消关注
+  uint32 action_type = 3;
+}
+
+message RelationActionReply{
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+}
+
+message GetFollowerListRequest {
+  // 用户id
+  uint32 user_id = 1;
+  // 用户鉴权token
+  string token = 2;
+}
+
+message GetFollowerListReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+  // 用户列表
+  repeated User user_list = 3 [json_name = "user_list"];
+}
+
+message GetFollowListRequest {
+  // 用户id
+  uint32 user_id = 1;
+  // 用户鉴权token
+  string token = 2;
+}
+
+message GetFollowListReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+  // 用户信息列表
+  repeated User user_list = 3 [json_name = "user_list"];
+}
+
+message GetFriendListRequest {
+  uint32 user_id = 1; // 用户id
+  string token = 2 [(validate.rules).string.min_len = 1]; // 用户鉴权token
+}
+
+message GetFriendListReply {
+  int32 status_code = 1 [json_name = "status_code"]; // 状态码，0-成功，其他值-失败
+  string status_msg = 2 [json_name = "status_msg"]; // 返回状态描述
+  repeated User user_list = 3 [json_name = "user_list"]; // 用户列表
+}
+
+message GetMessageListRequest {
+  // 用户鉴权token
+  string token = 1 [(validate.rules).string.min_len = 1];
+  // 对方用户id
+  uint32 to_user_id = 2 [(validate.rules).uint32 = {gt: 0}];
+  //上次最新消息的时间
+  int64 pre_msg_time = 3;
+}
+
+message GetMessageListReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+  // 消息列表
+  repeated Message message_list = 3 [json_name = "message_list"];
+}
+
+message MessageActionRequest {
+  // 用户鉴权token
+  string token = 1 [(validate.rules).string.min_len = 1];
+  // 对方用户id
+  uint32 to_user_id = 2 [(validate.rules).uint32 = {gt: 0}];
+  // 1-发送消息
+  uint32 action_type = 3;
+  // 消息内容
+  string content = 4;
+}
+
+message MessageActionReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+}
+
+message GetFavoriteVideoListRequest {
+  // 需要查询的用户 id
+  uint32 user_id = 1;
+  // 用户鉴权 token
+  string token = 2;
+}
+
+message GetFavoriteVideoListReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+  // 视频信息列表，按照发布时间倒序排列
+  repeated Video video_list = 3 [json_name = "video_list"];
+}
+
+message FavoriteActionRequest {
+  // 用户鉴权 token
+  string token = 1 [(validate.rules).string.min_len = 1];
+  // 需要操作的视频 id
+  uint32 video_id = 2 [(validate.rules).uint32 = {gt: 0}];
+  // 1-点赞，2-取消点赞
+  uint32 action_type = 3;
+}
+
+message FavoriteActionReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+}
+
+message CommentListRequest {
+  // 用户鉴权token
+  string token = 1;
+  // 视频id
+  uint32 video_id = 2 [(validate.rules).uint32 = {gt: 0}];
+}
+
+message CommentListReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+  // 评论列表
+  repeated Comment comment_list = 3 [json_name = "comment_list"];
+}
+
+message CommentActionRequest {
+  // 用户鉴权token
+  string token = 1 [(validate.rules).string.min_len = 1];
+  // 视频id
+  uint32 video_id = 2 [(validate.rules).uint32 = {gt: 0}];
+  // 1-发布评论，2-删除评论
+  uint32 action_type = 3;
+  // 用户填写的评论内容，在action_type=1的时候使用
+  string comment_text = 4;
+  // 要删除的评论id，在action_type=2的时候使用
+  uint32 comment_id = 5;
+}
+
+message CommentActionReply {
+  // 状态码，0-成功，其他值-失败
+  int32 status_code = 1 [json_name = "status_code"];
+  // 返回状态描述
+  string status_msg = 2 [json_name = "status_msg"];
+  // 评论成功返回评论内容，不需要重新拉取整个列表
+  Comment comment = 3 [json_name = "comment"];
+}
+
+message Comment {
+  // 视频评论id
+  uint32 id = 1 [json_name = "id"];
+  // 评论用户信息
+  User user = 2 [json_name = "user"];
+  // 评论内容
+  string content = 3 [json_name = "content"];
+  // 评论发布日期，格式 mm-dd
+  string create_date = 4 [json_name = "create_date"];
+}
+
+message Message {
+  // 消息id
+  uint64 id = 1 [json_name = "id"];
+  // 该消息接收者的id
+  uint32 to_user_id = 2 [json_name = "to_user_id"];
+  // 该消息发送者的id
+  uint32 from_user_id = 3 [json_name = "from_user_id"];
+  // 消息内容
+  string content = 4 [json_name = "content"];
+  // 消息创建时间
+  int64 create_time = 5 [json_name = "create_time"];
+}
+
+message Video {
+  // 视频唯一标识
+  int64 id = 1 [json_name = "id"];
+  // 视频作者信息
+  User author = 2 [json_name = "author"];
+  // 视频播放地址
+  string play_url = 3 [json_name = "play_url"];
+  // 视频封面地址
+  string cover_url = 4 [json_name = "cover_url"];
+  // 视频的点赞总数
+  int64 favorite_count = 5 [json_name = "favorite_count"];
+  // 视频的评论总数
+  int64 comment_count = 6 [json_name = "comment_count"];
+  // true-已点赞，false-未点赞
+  bool is_favorite = 7 [json_name = "is_favorite"];
+  // 视频标题
+  string title = 8 [json_name = "title"];
+}
+
+message User {
+  // 用户id
+  int64 id = 1 [json_name = "id"];
+  // 用户名称
+  string name = 2 [json_name = "name"];
+  // 关注总数
+  int64 follow_count = 3 [json_name = "follow_count"];
+  // 粉丝总数
+  int64 follower_count = 4 [json_name = "follower_count"];
+  // true-已关注，false-未关注
+  bool is_follow = 5 [json_name = "is_follow"];
+  // 用户头像
+  string avatar = 6 [json_name = "avatar"];
+  // 用户个人页顶部大图
+  string background_image = 7 [json_name = "background_image"];
+  // 个人简介
+  string signature = 8 [json_name = "signature"];
+  // 获赞数量
+  int64 total_favorited = 9 [json_name = "total_favorited"];
+  // 作品数量
+  int64 work_count = 10 [json_name = "work_count"];
+  // 点赞数量
+  int64 favorite_count = 11 [json_name = "favorite_count"];
+  // 和该好友的最新聊天消息
+  string message = 12 [json_name = "message"];
+  // message消息的类型，0 => 当前请求用户接收的消息， 1 => 当前请求用户发送的消息
+  int64 msgType = 13 [json_name = "msg_type"];
+}

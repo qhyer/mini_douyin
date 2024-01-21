@@ -10,6 +10,7 @@ import (
 	"douyin/app/user/passport/service/internal/biz"
 	constants2 "douyin/common/constants"
 	"encoding/json"
+	"errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
 )
@@ -68,7 +69,7 @@ func (r *passportRepo) GetUserById(ctx context.Context, id int64) (*do.User, err
 	key := constants.UserCacheKey(id)
 	user, err := r.getUserFromCache(ctx, key)
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("get user from cache err: %v", err)
 		}
 	} else {
@@ -165,7 +166,7 @@ func (r *passportRepo) batchGetUserFromCache(ctx context.Context, keys []string)
 	res = make([]*po.User, 0, len(keys))
 	missed = make([]string, 0, len(keys))
 	for i, result := range results {
-		if result.Err() == redis.Nil {
+		if errors.Is(result.Err(), redis.Nil) {
 			missed = append(missed, keys[i])
 			continue
 		}

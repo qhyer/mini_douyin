@@ -35,7 +35,6 @@ func NewVideoUsecase(repo VideoRepo, logger log.Logger) *VideoUsecase {
 
 // PublishVideo 发布视频
 func (u *VideoUsecase) PublishVideo(ctx context.Context, video []byte, uid int64, title string) error {
-	// TODO get seq-number
 	filename, err := u.repo.UploadVideo(ctx, video, "")
 	if err != nil {
 		u.log.Errorf("upload video error: %v", err)

@@ -29,6 +29,7 @@ func NewKafka(c *conf.Data) sarama.Consumer {
 func NewCommentService(uc *biz.CommentUsecase, kafka sarama.Consumer, logger log.Logger) *CommentService {
 	s := &CommentService{uc: uc, kafka: kafka, log: log.NewHelper(logger)}
 	go s.CommentAction()
+	go s.CommentStat()
 	return s
 }
 
@@ -68,5 +69,16 @@ func (s *CommentService) CommentAction() {
 		} else {
 			s.log.Errorf("CommentAction type not found: %v", commentAct.Type)
 		}
+	}
+}
+
+func (s *CommentService) CommentStat() {
+	partitionConsumer, err := s.kafka.ConsumePartition(constants.UpdateCommentCountTopic, 0, sarama.OffsetOldest)
+	if err != nil {
+		panic(err)
+	}
+	defer partitionConsumer.Close()
+	for message := range partitionConsumer.Messages() {
+		// todo
 	}
 }

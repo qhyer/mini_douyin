@@ -3,11 +3,13 @@ package data
 import (
 	"bytes"
 	"context"
+	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/publish/common/constants"
 	do "douyin/app/video/publish/common/entity"
 	"douyin/app/video/publish/common/mapper"
 	po "douyin/app/video/publish/common/model"
 	"douyin/app/video/publish/service/internal/biz"
+	constants2 "douyin/common/constants"
 	"errors"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
@@ -30,6 +32,12 @@ func NewVideoRepo(data *Data, logger log.Logger) biz.VideoRepo {
 
 // PublishVideo 发布视频
 func (r *videoRepo) PublishVideo(ctx context.Context, video *do.Video) error {
+	res, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{BusinessId: constants2.PublishBusinessId})
+	if err != nil || !res.GetIsOk() {
+		r.log.Errorf("seq rpc error: %v", err)
+		return err
+	}
+	video.ID = res.GetID()
 	b, err := video.MarshalJson()
 	if err != nil {
 		r.log.Errorf("json marshal error: %v", err)

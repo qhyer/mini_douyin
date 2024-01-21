@@ -12,9 +12,15 @@ data:
     idle: 150
     idle_timeout: 25s
   redis:
+    name: video
     addr: 127.0.0.1:6379
+    dial_timeout: 1s
     read_timeout: 0.2s
     write_timeout: 0.2s
-  memory_cache:
-    default_expiration: 5m
-    cleanup_interval: 10m
+  minio:
+    endpoint: 127.0.0.1:9000
+    access_key_id: minioadmin
+    secret_access_key: minioadmin
+  kafka:
+    addr:
+      - 127.0.0.1:9092
