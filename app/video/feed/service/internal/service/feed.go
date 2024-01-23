@@ -53,7 +53,7 @@ func (s *FeedService) Feed(ctx context.Context, req *v1.FeedRequest) (*v1.FeedRe
 
 // GetPublishedVideoByUserId 获取用户发布视频列表
 func (s *FeedService) GetPublishedVideoByUserId(ctx context.Context, req *v1.GetPublishedVideoByUserIdRequest) (*v1.GetPublishedVideoByUserIdResponse, error) {
-	res, err := s.uc.GetPublishedVideoByUserId(ctx, req.GetUserId())
+	res, err := s.uc.GetPublishedVideoByUserId(ctx, req.GetUserId(), req.GetToUserId())
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.GetPublishedVideoByUserIdResponse{

@@ -1,7 +1,7 @@
 package server
 
 import (
-	v1 "douyin/api/bff/"
+	v1 "douyin/api/bff"
 	"douyin/app/interface/bff/service/internal/conf"
 	"douyin/app/interface/bff/service/internal/service"
 

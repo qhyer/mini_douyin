@@ -32,8 +32,8 @@ func NewFeedUsecase(repo FeedRepo, logger log.Logger) *FeedUsecase {
 }
 
 // GetPublishedVideoByUserId 获取用户发布视频列表
-func (uc *FeedUsecase) GetPublishedVideoByUserId(ctx context.Context, userId int64) ([]*do.Video, error) {
-	videoList, err := uc.repo.GetPublishedVideoByUserId(ctx, userId)
+func (uc *FeedUsecase) GetPublishedVideoByUserId(ctx context.Context, userId, toUserId int64) ([]*do.Video, error) {
+	videoList, err := uc.repo.GetPublishedVideoByUserId(ctx, toUserId)
 	if err != nil {
 		uc.log.Errorf("uc.repo.GetPublishedVideoByUserId error(%v)", err)
 		return nil, err
@@ -60,7 +60,7 @@ func (uc *FeedUsecase) GetPublishedVideoByUserId(ctx context.Context, userId int
 		for _, video := range videoList {
 			uids = append(uids, video.User.ID)
 		}
-		authorList, err = uc.repo.MGetUserInfoByUserId(ctx, userId, uids)
+		authorList, err = uc.repo.MGetUserInfoByUserId(ctx, toUserId, uids)
 		if err != nil {
 			uc.log.Errorf("uc.repo.MGetUserInfoByUserId error(%v)", err)
 			return err
