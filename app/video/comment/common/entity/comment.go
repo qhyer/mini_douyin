@@ -16,8 +16,8 @@ type Comment struct {
 type CommentActionType int
 
 const (
-	CommentActionTypePublish CommentActionType = iota + 1
-	CommentActionTypeDelete
+	CommentActionPublish CommentActionType = iota + 1
+	CommentActionDelete
 )
 
 type CommentAction struct {

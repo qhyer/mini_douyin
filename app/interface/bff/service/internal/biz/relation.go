@@ -4,6 +4,7 @@ import (
 	"context"
 	account "douyin/api/user/account/service/v1"
 	relation "douyin/api/user/relation/service/v1"
+	do "douyin/app/user/relation/common/entity"
 	"douyin/common/ecode"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -27,6 +28,9 @@ func NewRelationUsecase(repo RelationRepo, logger log.Logger) *RelationUsecase {
 func (uc *RelationUsecase) RelationAction(ctx context.Context, userId, toUserId int64, actionType int32) (*relation.RelationActionResponse, error) {
 	if userId == toUserId {
 		return nil, ecode.RelationFollowSelfBannedErr
+	}
+	if !isRelationActionTypeValid(actionType) {
+		return nil, ecode.RelationActionTypeInvalidErr
 	}
 
 	res, err := uc.repo.RelationAction(ctx, userId, toUserId, actionType)
@@ -62,4 +66,11 @@ func (uc *RelationUsecase) GetUserFriendList(ctx context.Context, userId int64) 
 		return nil, err
 	}
 	return res, nil
+}
+
+func isRelationActionTypeValid(actionType int32) bool {
+	if actionType == int32(do.RelationActionFollow) || actionType == int32(do.RelationActionUnFollow) {
+		return true
+	}
+	return false
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	favorite "douyin/api/video/favorite/service/v1"
 	video "douyin/api/video/feed/service/v1"
+	do "douyin/app/video/favorite/common/entity"
+	"douyin/common/ecode"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -22,6 +24,9 @@ func NewFavoriteUsecase(repo FavoriteRepo, logger log.Logger) *FavoriteUsecase {
 }
 
 func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, userId, videoId int64, actionType int32) (*favorite.DouyinFavoriteActionResponse, error) {
+	if !isFavoriteActionTypeValid(actionType) {
+		return nil, ecode.FavoriteActionTypeInvalidErr
+	}
 	res, err := uc.repo.FavoriteAction(ctx, userId, videoId, actionType)
 	if err != nil {
 		uc.log.Errorf("FavoriteAction error: %v", err)
@@ -37,4 +42,11 @@ func (uc *FavoriteUsecase) GetUserFavoriteVideoList(ctx context.Context, userId,
 		return nil, err
 	}
 	return res, nil
+}
+
+func isFavoriteActionTypeValid(actionType int32) bool {
+	if actionType == int32(do.FavoriteActionAdd) || actionType == int32(do.FavoriteActionDelete) {
+		return true
+	}
+	return false
 }

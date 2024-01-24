@@ -46,7 +46,7 @@ func (s *CommentService) CommentAction() {
 			s.log.Errorf("CommentAction UnmarshalJson error: %v", err)
 			return
 		}
-		if commentAct.Type == do.CommentActionTypePublish {
+		if commentAct.Type == do.CommentActionPublish {
 			err := s.uc.CreateComment(context.Background(), &do.Comment{
 				ID:      commentAct.ID,
 				VideoId: commentAct.VideoId,
@@ -59,7 +59,7 @@ func (s *CommentService) CommentAction() {
 			if err != nil {
 				s.log.Errorf("PublishComment error: %v", err)
 			}
-		} else if commentAct.Type == do.CommentActionTypeDelete {
+		} else if commentAct.Type == do.CommentActionDelete {
 			err := s.uc.DeleteComment(context.Background(), &do.Comment{
 				ID: commentAct.ID,
 			})
@@ -78,7 +78,7 @@ func (s *CommentService) CommentStat() {
 		panic(err)
 	}
 	defer partitionConsumer.Close()
-	for message := range partitionConsumer.Messages() {
-		// todo
-	}
+	//for message := range partitionConsumer.Messages() {
+	// todo
+	//}
 }
