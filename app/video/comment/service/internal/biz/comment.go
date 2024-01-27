@@ -4,13 +4,14 @@ import (
 	"context"
 	"douyin/app/video/comment/common/constants"
 	do "douyin/app/video/comment/common/entity"
+	"douyin/app/video/comment/common/mapper"
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/sync/singleflight"
 )
 
 type CommentRepo interface {
 	CommentAction(ctx context.Context, comment *do.CommentAction) error
-	GetCommentListByVideoId(ctx context.Context, videoId int64) ([]*do.CommentAction, error)
+	GetCommentListByVideoId(ctx context.Context, videoId int64) ([]*do.Comment, error)
 	CountCommentByVideoId(ctx context.Context, videoId int64) (int64, error)
 	MCountCommentByVideoId(ctx context.Context, videoIds []int64) ([]int64, error)
 }
@@ -30,18 +31,23 @@ func NewCommentUsecase(repo CommentRepo, logger log.Logger) *CommentUsecase {
 }
 
 // CommentAction 发布/删除评论
-func (u *CommentUsecase) CommentAction(ctx context.Context, comment *do.CommentAction) (res *do.CommentAction, err error) {
+func (u *CommentUsecase) CommentAction(ctx context.Context, comment *do.CommentAction) (res *do.Comment, err error) {
 	// TODO 发布评论过滤敏感词，返回过滤后的评论
 	err = u.repo.CommentAction(ctx, comment)
 	if err != nil {
 		u.log.Errorf("CommentAction error(%v)", err)
 		return res, err
 	}
+	res, err = mapper.ParseCommentFromCommentAction(comment)
+	if err != nil {
+		u.log.Errorf("mapper.ParseCommentFromCommentAction error(%v)", err)
+		return res, err
+	}
 	return res, nil
 }
 
 // GetCommentListByVideoId 获取视频的评论列表
-func (u *CommentUsecase) GetCommentListByVideoId(ctx context.Context, videoId int64) (comments []*do.CommentAction, err error) {
+func (u *CommentUsecase) GetCommentListByVideoId(ctx context.Context, videoId int64) (comments []*do.Comment, err error) {
 	res, err, _ := u.sf.Do(constants.SFVideoCommentList(videoId), func() (interface{}, error) {
 		return u.repo.GetCommentListByVideoId(ctx, videoId)
 	})
@@ -49,7 +55,7 @@ func (u *CommentUsecase) GetCommentListByVideoId(ctx context.Context, videoId in
 		u.log.Errorf("GetCommentListByVideoId error(%v)", err)
 		return nil, err
 	}
-	comments = res.([]*do.CommentAction)
+	comments = res.([]*do.Comment)
 	return comments, nil
 }
 

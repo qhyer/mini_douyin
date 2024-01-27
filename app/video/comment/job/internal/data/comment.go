@@ -51,7 +51,12 @@ func (r *commentRepo) CreateComment(ctx context.Context, commentAct *do.CommentA
 		return err
 	}
 	commentAct.ID = cid.GetID()
-	com, err := mapper.CommentToPO(commentAct)
+	comment, err := mapper.ParseCommentFromCommentAction(commentAct)
+	if err != nil {
+		r.log.Errorf("mapper.ParseCommentFromCommentAction error(%v)", err)
+		return err
+	}
+	com, err := mapper.CommentToPO(comment)
 	if err != nil {
 		r.log.Errorf("mapper.CommentToPO error(%v)", err)
 		return err
@@ -88,13 +93,18 @@ func (r *commentRepo) BatchCreateComment(ctx context.Context, comments []*do.Com
 	panic("implement me")
 }
 
-func (r *commentRepo) DeleteComment(ctx context.Context, comment *do.CommentAction) error {
+func (r *commentRepo) DeleteComment(ctx context.Context, commentAct *do.CommentAction) error {
+	comment, err := mapper.ParseCommentFromCommentAction(commentAct)
+	if err != nil {
+		r.log.Errorf("mapper.ParseCommentFromCommentAction error(%v)", err)
+		return err
+	}
 	com, err := mapper.CommentToPO(comment)
 	if err != nil {
 		r.log.Errorf("mapper.CommentToPO error(%v)", err)
 		return err
 	}
-	err = r.data.db.WithContext(ctx).Table(constants.CommentRecordTableName(com.VideoId)).Where("id = ?", com.ID).Delete(com).Error
+	err = r.data.db.WithContext(ctx).Table(constants.CommentRecordTableName(com.VideoId)).Where("id = ? and user_id = ?", com.ID, com.UserId).Delete(com).Error
 	if err != nil {
 		r.log.Errorf("DeleteComment error(%v)", err)
 		return err

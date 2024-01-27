@@ -81,3 +81,15 @@ func CommentToDTOs(comments []*do.Comment) ([]*v1.CommentInfo, error) {
 	}
 	return res, nil
 }
+
+func ParseCommentFromCommentAction(commentAction *do.CommentAction) (*do.Comment, error) {
+	return &do.Comment{
+		ID:      commentAction.ID,
+		VideoId: commentAction.VideoId,
+		User: &do.User{
+			ID: commentAction.UserId,
+		},
+		Content:   commentAction.Content,
+		CreatedAt: commentAction.CreatedAt,
+	}, nil
+}
