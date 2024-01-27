@@ -50,7 +50,8 @@ func (r *chatRepo) GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime(ctx context
 		r.log.Errorf("r.getMessageListByMyUserIdAndHisUserIdAndPreMsgTimeFromCache(%d, %d, %d, %d) error(%v)", myUserId, hisUserId, preMsgTime, limit, err)
 	}
 	var messagesFromDb []*do.Message
-	res := r.data.db.WithContext(ctx).Where("(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)", myUserId, hisUserId, hisUserId, myUserId).Order("id DESC").Limit(limit).Find(&messagesFromDb)
+	tableName := constants.MessageRecordTable(myUserId, hisUserId)
+	res := r.data.db.WithContext(ctx).Table(tableName).Where("(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)", myUserId, hisUserId, hisUserId, myUserId).Order("id DESC").Limit(limit).Find(&messagesFromDb)
 	if res.Error != nil {
 		r.log.Errorf("r.data.db.WithContext(ctx).Table(%s).Where(%s).Order(%s).Limit(%d).Find(&messagesFromDb) error(%v)", tableName, "(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)", "id DESC", limit, res.Error)
 		return nil, res.Error

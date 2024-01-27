@@ -8,7 +8,7 @@ import (
 type User struct {
 	gorm.Model
 	ID                int64          `json:"id" gorm:"primaryKey;column:id"`
-	Name              string         `json:"name" gorm:"column:name"`
+	Name              string         `json:"name" gorm:"column:name;index:name_idx"`
 	EncryptedPassword string         `json:"encrypted_password" gorm:"column:password"`
 	CreatedAt         time.Time      `json:"created_at" gorm:"column:created_at"`
 	UpdatedAt         time.Time      `json:"updated_at" gorm:"column:updated_at"`
