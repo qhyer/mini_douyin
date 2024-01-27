@@ -7,8 +7,8 @@ import (
 	"fmt"
 )
 
-func CommentFromPO(c *po.Comment) (*do.CommentAction, error) {
-	return &do.CommentAction{
+func CommentFromPO(c *po.Comment) (*do.Comment, error) {
+	return &do.Comment{
 		ID: c.ID,
 		User: &do.User{
 			ID: c.UserId,
@@ -18,10 +18,10 @@ func CommentFromPO(c *po.Comment) (*do.CommentAction, error) {
 	}, nil
 }
 
-func CommentFromPOs(c []*po.Comment) ([]*do.CommentAction, error) {
-	res := make([]*do.CommentAction, 0, len(c))
+func CommentFromPOs(c []*po.Comment) ([]*do.Comment, error) {
+	res := make([]*do.Comment, 0, len(c))
 	for _, v := range c {
-		res = append(res, &do.CommentAction{
+		res = append(res, &do.Comment{
 			ID: v.ID,
 			User: &do.User{
 				ID: v.UserId,
@@ -33,7 +33,7 @@ func CommentFromPOs(c []*po.Comment) ([]*do.CommentAction, error) {
 	return res, nil
 }
 
-func CommentToPO(c *do.CommentAction) (*po.Comment, error) {
+func CommentToPO(c *do.Comment) (*po.Comment, error) {
 	return &po.Comment{
 		ID:        c.ID,
 		UserId:    c.User.ID,
@@ -43,7 +43,7 @@ func CommentToPO(c *do.CommentAction) (*po.Comment, error) {
 	}, nil
 }
 
-func CommentToPOs(c []*do.CommentAction) ([]*po.Comment, error) {
+func CommentToPOs(c []*do.Comment) ([]*po.Comment, error) {
 	res := make([]*po.Comment, 0, len(c))
 	for _, v := range c {
 		res = append(res, &po.Comment{
@@ -57,7 +57,7 @@ func CommentToPOs(c []*do.CommentAction) ([]*po.Comment, error) {
 	return res, nil
 }
 
-func CommentToDTO(comment *do.CommentAction) (*v1.CommentInfo, error) {
+func CommentToDTO(comment *do.Comment) (*v1.CommentInfo, error) {
 	return &v1.CommentInfo{
 		Id: comment.ID,
 		User: &v1.User{
@@ -70,7 +70,7 @@ func CommentToDTO(comment *do.CommentAction) (*v1.CommentInfo, error) {
 	}, nil
 }
 
-func CommentToDTOs(comments []*do.CommentAction) ([]*v1.CommentInfo, error) {
+func CommentToDTOs(comments []*do.Comment) ([]*v1.CommentInfo, error) {
 	res := make([]*v1.CommentInfo, 0, len(comments))
 	for _, v := range comments {
 		res = append(res, &v1.CommentInfo{
