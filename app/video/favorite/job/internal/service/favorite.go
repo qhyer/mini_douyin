@@ -6,8 +6,6 @@ import (
 	"douyin/app/video/favorite/common/constants"
 	do "douyin/app/video/favorite/common/entity"
 	"douyin/app/video/favorite/job/internal/biz"
-	"douyin/app/video/favorite/job/internal/conf"
-	"douyin/common/queue/kafka"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -29,12 +27,6 @@ func NewFavoriteService(uc *biz.FavoriteUsecase, kafka sarama.Consumer, logger l
 	go s.FavoriteAction()
 	go s.FavoriteStat()
 	return s
-}
-
-func NewKafka(c *conf.Data) sarama.Consumer {
-	return kafka.NewKafkaConsumer(&kafka.Config{
-		Addr: c.GetKafka().GetAddr(),
-	})
 }
 
 func (s *FavoriteService) FavoriteAction() {
@@ -72,7 +64,7 @@ func (s *FavoriteService) FavoriteStat() {
 		panic(err)
 	}
 	defer partitionConsumer.Close()
-	for message := range partitionConsumer.Messages() {
-		// todo
-	}
+	//for message := range partitionConsumer.Messages() {
+	// todo
+	//}
 }

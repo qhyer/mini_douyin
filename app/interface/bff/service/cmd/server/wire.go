@@ -6,11 +6,11 @@
 package main
 
 import (
-	"douyin/app/interface/bff/internal/biz"
-	"douyin/app/interface/bff/internal/conf"
-	"douyin/app/interface/bff/internal/data"
-	"douyin/app/interface/bff/internal/server"
-	"douyin/app/interface/bff/internal/service"
+	"douyin/app/interface/bff/service/internal/biz"
+	"douyin/app/interface/bff/service/internal/conf"
+	"douyin/app/interface/bff/service/internal/data"
+	"douyin/app/interface/bff/service/internal/server"
+	"douyin/app/interface/bff/service/internal/service"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"

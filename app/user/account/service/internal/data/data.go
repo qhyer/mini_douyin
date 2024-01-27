@@ -20,7 +20,8 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewPassportClient, NewRelationClient, NewRedis, NewAccountRepo)
+var ProviderSet = wire.NewSet(NewData, NewPassportClient, NewRelationClient, NewFavoriteClient,
+	NewPublishClient, NewRedis, NewMemcached, NewAccountRepo)
 
 // Data .
 type Data struct {
@@ -78,6 +79,32 @@ func NewRelationClient() relation.RelationClient {
 	return relation.NewRelationClient(conn)
 }
 
+func NewFavoriteClient() favorite.FavoriteClient {
+	conn, err := grpc.DialInsecure(
+		context.Background(),
+		grpc.WithMiddleware(
+			recovery.Recovery(),
+		),
+	)
+	if err != nil {
+		panic(err)
+	}
+	return favorite.NewFavoriteClient(conn)
+}
+
+func NewPublishClient() publish.PublishClient {
+	conn, err := grpc.DialInsecure(
+		context.Background(),
+		grpc.WithMiddleware(
+			recovery.Recovery(),
+		),
+	)
+	if err != nil {
+		panic(err)
+	}
+	return publish.NewPublishClient(conn)
+}
+
 func NewRedis(c *conf.Data) *redis.Client {
 	return rdb.NewRedis(&rdb.Config{
 		Name:         c.GetRedis().GetName(),
@@ -88,4 +115,8 @@ func NewRedis(c *conf.Data) *redis.Client {
 		ReadTimeout:  c.GetRedis().GetReadTimeout().AsDuration(),
 		WriteTimeout: c.GetRedis().GetWriteTimeout().AsDuration(),
 	})
+}
+
+func NewMemcached(c *conf.Data) *memcache.Client {
+	return memcache.New(c.GetMemcached().GetAddr())
 }

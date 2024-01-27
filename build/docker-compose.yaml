@@ -197,7 +197,7 @@ services:
   chat-job:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=user
         - SERVICE_NAME=chat
@@ -218,7 +218,7 @@ services:
   chat-service:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=user
         - SERVICE_NAME=chat
@@ -236,31 +236,10 @@ services:
       redis:
         condition: service_healthy
 
-  passport-job:
-    build:
-      context: ../
-      dockerfile: docker/build/Dockerfile
-      args:
-        - BUSINESS_NAME=user
-        - SERVICE_NAME=passport
-        - SERVICE_TYPE=job
-    container_name: passport-job
-    privileged: true
-    restart: always
-    networks:
-      - douyin_net
-    depends_on:
-      mysql:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
   passport-service:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=user
         - SERVICE_NAME=passport
@@ -281,7 +260,7 @@ services:
   relation-job:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=user
         - SERVICE_NAME=relation
@@ -302,7 +281,7 @@ services:
   relation-service:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=user
         - SERVICE_NAME=relation
@@ -323,7 +302,7 @@ services:
   publish-job:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=video
         - SERVICE_NAME=publish
@@ -346,7 +325,7 @@ services:
   publish-service:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=video
         - SERVICE_NAME=publish
@@ -369,7 +348,7 @@ services:
   favorite-job:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=video
         - SERVICE_NAME=favorite
@@ -390,7 +369,7 @@ services:
   favorite-service:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=video
         - SERVICE_NAME=favorite
@@ -411,7 +390,7 @@ services:
   feed-service:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=video
         - SERVICE_NAME=feed
@@ -432,7 +411,7 @@ services:
   comment-job:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=video
         - SERVICE_NAME=comment
@@ -453,7 +432,7 @@ services:
   comment-service:
     build:
       context: ../
-      dockerfile: docker/build/Dockerfile
+      dockerfile: build/Dockerfile
       args:
         - BUSINESS_NAME=video
         - SERVICE_NAME=comment

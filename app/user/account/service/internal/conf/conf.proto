@@ -44,7 +44,12 @@ message Data {
   message Kafka {
     repeated string addr = 1;
   }
+  message Memcached {
+    string network = 1;
+    string addr = 2;
+  }
   Orm orm = 1;
   Redis redis = 2;
   Kafka kafka = 3;
+  Memcached memcached = 4;
 }

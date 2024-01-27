@@ -12,9 +12,12 @@ import (
 	"douyin/app/user/chat/job/internal/data"
 	"douyin/app/user/chat/job/internal/server"
 	"douyin/app/user/chat/job/internal/service"
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+)
+
+import (
+	_ "go.uber.org/automaxprocs"
 )
 
 // Injectors from wire.go:

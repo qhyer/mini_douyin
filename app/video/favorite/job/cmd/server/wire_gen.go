@@ -26,13 +26,14 @@ import (
 func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
 	db := data.NewOrm(confData)
 	client := data.NewRedis(confData)
-	dataData, cleanup, err := data.NewData(confData, db, client, logger)
+	consumer := data.NewKafkaConsumer(confData)
+	syncProducer := data.NewKafkaProducer(confData)
+	dataData, cleanup, err := data.NewData(confData, db, client, consumer, syncProducer, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	favoriteRepo := data.NewFavoriteRepo(dataData, logger)
 	favoriteUsecase := biz.NewFavoriteUsecase(favoriteRepo, logger)
-	consumer := service.NewKafka(confData)
 	favoriteService := service.NewFavoriteService(favoriteUsecase, consumer, logger)
 	grpcServer := server.NewGRPCServer(confServer, favoriteService, logger)
 	httpServer := server.NewHTTPServer(confServer, favoriteService, logger)

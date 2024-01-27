@@ -9,26 +9,33 @@ package main
 import (
 	"douyin/app/user/relation/service/internal/biz"
 	"douyin/app/user/relation/service/internal/conf"
-	data2 "douyin/app/user/relation/service/internal/data"
-	server2 "douyin/app/user/relation/service/internal/server"
+	"douyin/app/user/relation/service/internal/data"
+	"douyin/app/user/relation/service/internal/server"
 	"douyin/app/user/relation/service/internal/service"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+)
+
+import (
+	_ "go.uber.org/automaxprocs"
 )
 
 // Injectors from wire.go:
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data2.NewData(confData, logger)
+	db := data.NewOrm(confData)
+	client := data.NewRedis(confData)
+	syncProducer := data.NewKafka(confData)
+	dataData, cleanup, err := data.NewData(confData, db, client, syncProducer, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	greeterRepo := data2.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
-	grpcServer := server2.NewGRPCServer(confServer, greeterService, logger)
-	httpServer := server2.NewHTTPServer(confServer, greeterService, logger)
+	relationRepo := data.NewRelationRepo(dataData, logger)
+	relationUsecase := biz.NewRelationUsecase(relationRepo, logger)
+	relationService := service.NewRelationService(relationUsecase)
+	grpcServer := server.NewGRPCServer(confServer, relationService, logger)
+	httpServer := server.NewHTTPServer(confServer, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
 		cleanup()

@@ -16,7 +16,6 @@ import (
 	"errors"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/pkg/errors"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/sync/errgroup"
 )

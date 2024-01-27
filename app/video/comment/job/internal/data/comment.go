@@ -41,7 +41,7 @@ func (r *commentRepo) BatchUpdateVideoCommentCount(ctx context.Context, videoIds
 	panic("implement me")
 }
 
-func (r *commentRepo) CreateComment(ctx context.Context, comment *do.Comment) error {
+func (r *commentRepo) CreateComment(ctx context.Context, commentAct *do.CommentAction) error {
 	// 获取评论ID
 	cid, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{
 		BusinessId: constants2.CommentBusinessId,
@@ -50,10 +50,15 @@ func (r *commentRepo) CreateComment(ctx context.Context, comment *do.Comment) er
 		r.log.Errorf("seqRPC.GetID error(%v)", err)
 		return err
 	}
-	comment.ID = cid.GetID()
-	com, err := mapper.CommentToPO(comment)
+	commentAct.ID = cid.GetID()
+	com, err := mapper.CommentToPO(commentAct)
 	if err != nil {
 		r.log.Errorf("mapper.CommentToPO error(%v)", err)
+		return err
+	}
+	commentActByte, err := commentAct.MarshalJson()
+	if err != nil {
+		r.log.Errorf("commentAct.MarshalJson error(%v)", err)
 		return err
 	}
 	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -64,7 +69,7 @@ func (r *commentRepo) CreateComment(ctx context.Context, comment *do.Comment) er
 		_, _, err = r.data.kafkaProducer.SendMessage(&sarama.ProducerMessage{
 			Topic: constants.UpdateCommentCountTopic,
 			Key:   sarama.StringEncoder(constants.UpdateCommentCountKafkaKey(com.VideoId)),
-			Value: sarama.StringEncoder("1"),
+			Value: sarama.ByteEncoder(commentActByte),
 		})
 		if err != nil {
 			return err
@@ -78,12 +83,12 @@ func (r *commentRepo) CreateComment(ctx context.Context, comment *do.Comment) er
 	return nil
 }
 
-func (r *commentRepo) BatchCreateComment(ctx context.Context, comments []*do.Comment) error {
+func (r *commentRepo) BatchCreateComment(ctx context.Context, comments []*do.CommentAction) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (r *commentRepo) DeleteComment(ctx context.Context, comment *do.Comment) error {
+func (r *commentRepo) DeleteComment(ctx context.Context, comment *do.CommentAction) error {
 	com, err := mapper.CommentToPO(comment)
 	if err != nil {
 		r.log.Errorf("mapper.CommentToPO error(%v)", err)
@@ -97,7 +102,7 @@ func (r *commentRepo) DeleteComment(ctx context.Context, comment *do.Comment) er
 	return nil
 }
 
-func (r *commentRepo) BatchDeleteComment(ctx context.Context, comments []*do.Comment) error {
+func (r *commentRepo) BatchDeleteComment(ctx context.Context, comments []*do.CommentAction) error {
 	//TODO implement me
 	panic("implement me")
 }

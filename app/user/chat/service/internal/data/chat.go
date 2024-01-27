@@ -52,7 +52,7 @@ func (r *chatRepo) GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime(ctx context
 	var messagesFromDb []*do.Message
 	res := r.data.db.WithContext(ctx).Where("(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)", myUserId, hisUserId, hisUserId, myUserId).Order("id DESC").Limit(limit).Find(&messagesFromDb)
 	if res.Error != nil {
-		r.log.Errorf("db.Where(%s, %s).Where(created_at < %d).Order(id DESC).Limit(%d).Find(%v) error(%v)", myUserId, hisUserId, preMsgTime, limit, messagesFromDb, res.Error)
+		r.log.Errorf("r.data.db.WithContext(ctx).Table(%s).Where(%s).Order(%s).Limit(%d).Find(&messagesFromDb) error(%v)", tableName, "(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)", "id DESC", limit, res.Error)
 		return nil, res.Error
 	}
 	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
@@ -72,9 +72,10 @@ func (r *chatRepo) GetLatestMsgByMyUserIdAndHisUserId(ctx context.Context, myUse
 	if !errors.Is(err, redis.Nil) {
 		r.log.Errorf("r.getLatestMsgFromCache(%d, %d) error(%v)", myUserId, hisUserId, err)
 	}
-	res := r.data.db.WithContext(ctx).Where("(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)", myUserId, hisUserId, hisUserId, myUserId).Order("id DESC").First(&message)
+	tableName := constants.MessageRecordTable(myUserId, hisUserId)
+	res := r.data.db.WithContext(ctx).Table(tableName).Where("(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)", myUserId, hisUserId, hisUserId, myUserId).Order("id DESC").First(&message)
 	if res.Error != nil {
-		r.log.Errorf("db.Where(%s, %s).Order(id DESC).First(%v) error(%v)", myUserId, hisUserId, message, res.Error)
+		r.log.Errorf("r.data.db.WithContext(ctx).Table(%s).Where(%s).Order(%s).First(&message) error(%v)", tableName, "(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)", "id DESC", res.Error)
 		return nil, res.Error
 	}
 	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {

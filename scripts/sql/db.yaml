@@ -1,0 +1,31 @@
+mysql:
+  host: "localhost"
+  port: 3306
+  user: "root"
+  passwd: "root"
+  database: "douyin"
+tables:
+  - name: "comment_count"
+    count: 100
+  - name: "comment_record"
+    count: 100
+  - name: "favorite_video_record"
+    count: 100
+  - name: "follow_record"
+    count: 100
+  - name: "follower_record"
+    count: 100
+  - name: "message_record"
+    count: 100
+  - name: "passport"
+    count: 1
+  - name: "publish_count"
+    count: 100
+  - name: "publish_record"
+    count: 1
+  - name: "relation_count"
+    count: 100
+  - name: "user_favorite_count"
+    count: 100
+  - name: "video_favorited_count"
+    count: 100

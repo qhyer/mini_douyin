@@ -6,8 +6,6 @@ import (
 	"douyin/app/video/comment/common/constants"
 	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/job/internal/biz"
-	"douyin/app/video/comment/job/internal/conf"
-	"douyin/common/queue/kafka"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -18,12 +16,6 @@ type CommentService struct {
 	uc    *biz.CommentUsecase
 	kafka sarama.Consumer
 	log   *log.Helper
-}
-
-func NewKafka(c *conf.Data) sarama.Consumer {
-	return kafka.NewKafkaConsumer(&kafka.Config{
-		Addr: c.GetKafka().GetAddr(),
-	})
 }
 
 func NewCommentService(uc *biz.CommentUsecase, kafka sarama.Consumer, logger log.Logger) *CommentService {
@@ -47,22 +39,12 @@ func (s *CommentService) CommentAction() {
 			return
 		}
 		if commentAct.Type == do.CommentActionPublish {
-			err := s.uc.CreateComment(context.Background(), &do.Comment{
-				ID:      commentAct.ID,
-				VideoId: commentAct.VideoId,
-				User: &do.User{
-					ID: commentAct.UserId,
-				},
-				Content:   commentAct.Content,
-				CreatedAt: commentAct.CreatedAt,
-			})
+			err := s.uc.CreateComment(context.Background(), &commentAct)
 			if err != nil {
 				s.log.Errorf("PublishComment error: %v", err)
 			}
 		} else if commentAct.Type == do.CommentActionDelete {
-			err := s.uc.DeleteComment(context.Background(), &do.Comment{
-				ID: commentAct.ID,
-			})
+			err := s.uc.DeleteComment(context.Background(), &commentAct)
 			if err != nil {
 				s.log.Errorf("DeleteComment error: %v", err)
 			}

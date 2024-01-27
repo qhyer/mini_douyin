@@ -47,7 +47,7 @@ func (r *commentRepo) CommentAction(ctx context.Context, comment *do.CommentActi
 }
 
 // GetCommentListByVideoId 获取视频的评论列表
-func (r *commentRepo) GetCommentListByVideoId(ctx context.Context, videoId int64) ([]*do.Comment, error) {
+func (r *commentRepo) GetCommentListByVideoId(ctx context.Context, videoId int64) ([]*do.CommentAction, error) {
 	cacheComments, err := r.getCommentIdListFromCache(ctx, videoId)
 	if err != nil {
 		if !errors.Is(err, redis.Nil) {
@@ -71,7 +71,7 @@ func (r *commentRepo) GetCommentListByVideoId(ctx context.Context, videoId int64
 }
 
 // 批量获取评论信息
-func (r *commentRepo) batchGetCommentInfoByVideoIdAndCommentIds(ctx context.Context, videoId int64, commentIds []int64) ([]*do.Comment, error) {
+func (r *commentRepo) batchGetCommentInfoByVideoIdAndCommentIds(ctx context.Context, videoId int64, commentIds []int64) ([]*do.CommentAction, error) {
 	cacheComments, missed, err := r.batchGetCommentInfoFromCache(ctx, commentIds)
 	if err != nil {
 		if !errors.Is(err, redis.Nil) {
