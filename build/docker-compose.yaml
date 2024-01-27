@@ -105,7 +105,8 @@ services:
       - ../_data/minio/data:/data:rw
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 5s
+      interval: 30s
+      timeout: 20s
       retries: 3
     networks:
       - douyin_net
@@ -146,12 +147,12 @@ services:
 
   memcached:
     image: memcached:latest
-    container_name: my-memcached
+    container_name: memcached
     ports:
       - "11211:11211"
     restart: always
     healthcheck:
-      test: ["CMD", "nc", "-zv", "localhost", "11211"]
+      test: ["CMD", "bash", "-c", "echo 'version' | nc localhost 11211"]
       interval: 30s
       timeout: 10s
       retries: 3
