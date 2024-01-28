@@ -8,8 +8,23 @@ server:
 data:
   database:
     driver: mysql
-    source: root:root@tcp(127.0.0.1:3306)/test
+    source: root:uvVFljcDfc2an4U@tcp(mysql:3306)/douyin
   redis:
-    addr: 127.0.0.1:6379
+    name: redis
+    network: tcp
+    password: uvVFljcDfc2an4U
+    addr: redis:6379
     read_timeout: 0.2s
     write_timeout: 0.2s
+    dial_timeout: 0.2s
+  kafka:
+    addr:
+      - kafka:9092
+  memcached:
+      network: tcp
+      addr: memcached:11211
+register:
+  etcd:
+    endpoint: etcd:2379
+    dial_timeout: 3s
+    time_deviation: 0.5

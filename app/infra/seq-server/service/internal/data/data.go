@@ -27,7 +27,7 @@ func NewData(c *conf.Data, etcdCli *clientv3.Client, logger log.Logger) (*Data, 
 func NewEtcdCli(c *conf.Data, logger log.Logger) *clientv3.Client {
 	l := log.NewHelper(log.With(logger))
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   c.GetEtcd().GetEndpoints(),
+		Endpoints:   []string{c.GetEtcd().GetEndpoint()},
 		DialTimeout: c.Etcd.DialTimeout.AsDuration(),
 		DialOptions: []grpc.DialOption{grpc.WithBlock()},
 	})

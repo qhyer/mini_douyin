@@ -8,6 +8,7 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
+  Register register = 3;
 }
 
 message Server {
@@ -52,4 +53,13 @@ message Data {
   Redis redis = 2;
   Kafka kafka = 3;
   Memcached memcached = 4;
+}
+
+message Register {
+  message Etcd {
+    string endpoint = 1;
+    google.protobuf.Duration dial_timeout = 2;
+    float time_deviation = 3;
+  }
+  Etcd etcd = 1;
 }

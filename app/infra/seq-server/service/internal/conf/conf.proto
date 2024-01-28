@@ -28,7 +28,7 @@ message Server {
 
 message Data {
   message Etcd {
-    repeated string endpoints = 1;
+    string endpoint = 1;
     google.protobuf.Duration dial_timeout = 2;
     float time_deviation = 3;
   }
