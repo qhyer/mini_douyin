@@ -34,7 +34,8 @@ func wireApp(bootstrap *conf.Bootstrap, confServer *conf.Server, confData *conf.
 	seqService := service.NewSeqService(seqUsecase)
 	grpcServer := server.NewGRPCServer(confServer, seqService, logger)
 	httpServer := server.NewHTTPServer(confServer, seqService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+	registrar := server.NewRegistrar(confData)
+	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {
 		cleanup()
 	}, nil

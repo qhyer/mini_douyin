@@ -28,7 +28,7 @@ type Bootstrap struct {
 
 	Server   *Server   `protobuf:"bytes,1,opt,name=server,proto3" json:"server,omitempty"`
 	Data     *Data     `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
-	Register *Register `protobuf:"bytes,3,opt,name=register,proto3" json:"register,omitempty"`
+	Registry *Registry `protobuf:"bytes,3,opt,name=registry,proto3" json:"registry,omitempty"`
 }
 
 func (x *Bootstrap) Reset() {
@@ -77,9 +77,9 @@ func (x *Bootstrap) GetData() *Data {
 	return nil
 }
 
-func (x *Bootstrap) GetRegister() *Register {
+func (x *Bootstrap) GetRegistry() *Registry {
 	if x != nil {
-		return x.Register
+		return x.Registry
 	}
 	return nil
 }
@@ -202,16 +202,16 @@ func (x *Data) GetKafka() *Data_Kafka {
 	return nil
 }
 
-type Register struct {
+type Registry struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Etcd *Register_Etcd `protobuf:"bytes,1,opt,name=etcd,proto3" json:"etcd,omitempty"`
+	Etcd *Registry_Etcd `protobuf:"bytes,1,opt,name=etcd,proto3" json:"etcd,omitempty"`
 }
 
-func (x *Register) Reset() {
-	*x = Register{}
+func (x *Registry) Reset() {
+	*x = Registry{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_conf_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -219,13 +219,13 @@ func (x *Register) Reset() {
 	}
 }
 
-func (x *Register) String() string {
+func (x *Registry) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Register) ProtoMessage() {}
+func (*Registry) ProtoMessage() {}
 
-func (x *Register) ProtoReflect() protoreflect.Message {
+func (x *Registry) ProtoReflect() protoreflect.Message {
 	mi := &file_conf_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -237,12 +237,12 @@ func (x *Register) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Register.ProtoReflect.Descriptor instead.
-func (*Register) Descriptor() ([]byte, []int) {
+// Deprecated: Use Registry.ProtoReflect.Descriptor instead.
+func (*Registry) Descriptor() ([]byte, []int) {
 	return file_conf_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *Register) GetEtcd() *Register_Etcd {
+func (x *Registry) GetEtcd() *Registry_Etcd {
 	if x != nil {
 		return x.Etcd
 	}
@@ -588,7 +588,7 @@ func (x *Data_Kafka) GetAddr() []string {
 	return nil
 }
 
-type Register_Etcd struct {
+type Registry_Etcd struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -598,8 +598,8 @@ type Register_Etcd struct {
 	TimeDeviation float32              `protobuf:"fixed32,3,opt,name=time_deviation,json=timeDeviation,proto3" json:"time_deviation,omitempty"`
 }
 
-func (x *Register_Etcd) Reset() {
-	*x = Register_Etcd{}
+func (x *Registry_Etcd) Reset() {
+	*x = Registry_Etcd{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_conf_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -607,13 +607,13 @@ func (x *Register_Etcd) Reset() {
 	}
 }
 
-func (x *Register_Etcd) String() string {
+func (x *Registry_Etcd) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Register_Etcd) ProtoMessage() {}
+func (*Registry_Etcd) ProtoMessage() {}
 
-func (x *Register_Etcd) ProtoReflect() protoreflect.Message {
+func (x *Registry_Etcd) ProtoReflect() protoreflect.Message {
 	mi := &file_conf_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -625,26 +625,26 @@ func (x *Register_Etcd) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Register_Etcd.ProtoReflect.Descriptor instead.
-func (*Register_Etcd) Descriptor() ([]byte, []int) {
+// Deprecated: Use Registry_Etcd.ProtoReflect.Descriptor instead.
+func (*Registry_Etcd) Descriptor() ([]byte, []int) {
 	return file_conf_proto_rawDescGZIP(), []int{3, 0}
 }
 
-func (x *Register_Etcd) GetEndpoint() string {
+func (x *Registry_Etcd) GetEndpoint() string {
 	if x != nil {
 		return x.Endpoint
 	}
 	return ""
 }
 
-func (x *Register_Etcd) GetDialTimeout() *durationpb.Duration {
+func (x *Registry_Etcd) GetDialTimeout() *durationpb.Duration {
 	if x != nil {
 		return x.DialTimeout
 	}
 	return nil
 }
 
-func (x *Register_Etcd) GetTimeDeviation() float32 {
+func (x *Registry_Etcd) GetTimeDeviation() float32 {
 	if x != nil {
 		return x.TimeDeviation
 	}
@@ -664,9 +664,9 @@ var file_conf_proto_rawDesc = []byte{
 	0x65, 0x72, 0x12, 0x24, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b,
 	0x32, 0x10, 0x2e, 0x6b, 0x72, 0x61, 0x74, 0x6f, 0x73, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x44, 0x61,
 	0x74, 0x61, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x30, 0x0a, 0x08, 0x72, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x6b, 0x72, 0x61,
-	0x74, 0x6f, 0x73, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72,
-	0x52, 0x08, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x22, 0xb8, 0x02, 0x0a, 0x06, 0x53,
+	0x73, 0x74, 0x72, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x6b, 0x72, 0x61,
+	0x74, 0x6f, 0x73, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79,
+	0x52, 0x08, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x22, 0xb8, 0x02, 0x0a, 0x06, 0x53,
 	0x65, 0x72, 0x76, 0x65, 0x72, 0x12, 0x2b, 0x0a, 0x04, 0x68, 0x74, 0x74, 0x70, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x6b, 0x72, 0x61, 0x74, 0x6f, 0x73, 0x2e, 0x61, 0x70, 0x69,
 	0x2e, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x48, 0x54, 0x54, 0x50, 0x52, 0x04, 0x68, 0x74,
@@ -724,9 +724,9 @@ var file_conf_proto_rawDesc = []byte{
 	0x69, 0x74, 0x65, 0x54, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x1a, 0x1b, 0x0a, 0x05, 0x4b, 0x61,
 	0x66, 0x6b, 0x61, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x64, 0x64, 0x72, 0x18, 0x01, 0x20, 0x03, 0x28,
 	0x09, 0x52, 0x04, 0x61, 0x64, 0x64, 0x72, 0x22, 0xc3, 0x01, 0x0a, 0x08, 0x52, 0x65, 0x67, 0x69,
-	0x73, 0x74, 0x65, 0x72, 0x12, 0x2d, 0x0a, 0x04, 0x65, 0x74, 0x63, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x73, 0x74, 0x72, 0x79, 0x12, 0x2d, 0x0a, 0x04, 0x65, 0x74, 0x63, 0x64, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x0b, 0x32, 0x19, 0x2e, 0x6b, 0x72, 0x61, 0x74, 0x6f, 0x73, 0x2e, 0x61, 0x70, 0x69, 0x2e,
-	0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x2e, 0x45, 0x74, 0x63, 0x64, 0x52, 0x04, 0x65,
+	0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x45, 0x74, 0x63, 0x64, 0x52, 0x04, 0x65,
 	0x74, 0x63, 0x64, 0x1a, 0x87, 0x01, 0x0a, 0x04, 0x45, 0x74, 0x63, 0x64, 0x12, 0x1a, 0x0a, 0x08,
 	0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08,
 	0x65, 0x6e, 0x64, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x12, 0x3c, 0x0a, 0x0c, 0x64, 0x69, 0x61, 0x6c,
@@ -759,32 +759,32 @@ var file_conf_proto_goTypes = []interface{}{
 	(*Bootstrap)(nil),           // 0: kratos.api.Bootstrap
 	(*Server)(nil),              // 1: kratos.api.Server
 	(*Data)(nil),                // 2: kratos.api.Data
-	(*Register)(nil),            // 3: kratos.api.Register
+	(*Registry)(nil),            // 3: kratos.api.Registry
 	(*Server_HTTP)(nil),         // 4: kratos.api.Server.HTTP
 	(*Server_GRPC)(nil),         // 5: kratos.api.Server.GRPC
 	(*Data_Orm)(nil),            // 6: kratos.api.Data.Orm
 	(*Data_Redis)(nil),          // 7: kratos.api.Data.Redis
 	(*Data_Kafka)(nil),          // 8: kratos.api.Data.Kafka
-	(*Register_Etcd)(nil),       // 9: kratos.api.Register.Etcd
+	(*Registry_Etcd)(nil),       // 9: kratos.api.Registry.Etcd
 	(*durationpb.Duration)(nil), // 10: google.protobuf.Duration
 }
 var file_conf_proto_depIdxs = []int32{
 	1,  // 0: kratos.api.Bootstrap.server:type_name -> kratos.api.Server
 	2,  // 1: kratos.api.Bootstrap.data:type_name -> kratos.api.Data
-	3,  // 2: kratos.api.Bootstrap.register:type_name -> kratos.api.Register
+	3,  // 2: kratos.api.Bootstrap.registry:type_name -> kratos.api.Registry
 	4,  // 3: kratos.api.Server.http:type_name -> kratos.api.Server.HTTP
 	5,  // 4: kratos.api.Server.grpc:type_name -> kratos.api.Server.GRPC
 	6,  // 5: kratos.api.Data.orm:type_name -> kratos.api.Data.Orm
 	7,  // 6: kratos.api.Data.redis:type_name -> kratos.api.Data.Redis
 	8,  // 7: kratos.api.Data.kafka:type_name -> kratos.api.Data.Kafka
-	9,  // 8: kratos.api.Register.etcd:type_name -> kratos.api.Register.Etcd
+	9,  // 8: kratos.api.Registry.etcd:type_name -> kratos.api.Registry.Etcd
 	10, // 9: kratos.api.Server.HTTP.timeout:type_name -> google.protobuf.Duration
 	10, // 10: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
 	10, // 11: kratos.api.Data.Orm.idle_timeout:type_name -> google.protobuf.Duration
 	10, // 12: kratos.api.Data.Redis.dial_timeout:type_name -> google.protobuf.Duration
 	10, // 13: kratos.api.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
 	10, // 14: kratos.api.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	10, // 15: kratos.api.Register.Etcd.dial_timeout:type_name -> google.protobuf.Duration
+	10, // 15: kratos.api.Registry.Etcd.dial_timeout:type_name -> google.protobuf.Duration
 	16, // [16:16] is the sub-list for method output_type
 	16, // [16:16] is the sub-list for method input_type
 	16, // [16:16] is the sub-list for extension type_name
@@ -835,7 +835,7 @@ func file_conf_proto_init() {
 			}
 		}
 		file_conf_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Register); i {
+			switch v := v.(*Registry); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -907,7 +907,7 @@ func file_conf_proto_init() {
 			}
 		}
 		file_conf_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Register_Etcd); i {
+			switch v := v.(*Registry_Etcd); i {
 			case 0:
 				return &v.state
 			case 1:

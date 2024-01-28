@@ -11,7 +11,9 @@ import (
 	"douyin/common/sync/fanout"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/google/wire"
 	"github.com/minio/minio-go/v7"
@@ -83,11 +85,14 @@ func NewKafka(c *conf.Data) sarama.SyncProducer {
 	})
 }
 
-func NewSeqClient() seq.SeqClient {
+func NewSeqClient(r registry.Discovery, logger log.Logger) seq.SeqClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.seq.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {

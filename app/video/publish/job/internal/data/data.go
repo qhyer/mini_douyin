@@ -9,7 +9,9 @@ import (
 	minio1 "douyin/common/minio"
 	"douyin/common/sync/fanout"
 	"github.com/IBM/sarama"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
@@ -20,7 +22,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewVideoRepo)
+var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewVideoRepo, NewSeqClient)
 
 // Data .
 type Data struct {
@@ -33,7 +35,8 @@ type Data struct {
 }
 
 // NewData .
-func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Client, kafka sarama.Consumer, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Client, kafka sarama.Consumer,
+	logger log.Logger, s seq.SeqClient) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
@@ -41,7 +44,7 @@ func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Clien
 		db: orm, redis: redis, minio: minio,
 		kafka:    kafka,
 		cacheFan: fanout.New(fanout.Worker(10), fanout.Buffer(10240)),
-		seqRPC:   NewSeqClient(),
+		seqRPC:   s,
 	}, cleanup, nil
 }
 
@@ -74,11 +77,14 @@ func NewMinio(c *conf.Data) *minio.Client {
 	})
 }
 
-func NewSeqClient() seq.SeqClient {
+func NewSeqClient(r registry.Discovery, logger log.Logger) seq.SeqClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.seq.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {

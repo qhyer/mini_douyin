@@ -27,7 +27,7 @@ data:
     endpoint: minio:9000
     access_key_id: douyin
     secret_access_key: xnQpG8QhRprggUb
-register:
+registry:
   etcd:
     endpoint: etcd:2379
     dial_timeout: 3s

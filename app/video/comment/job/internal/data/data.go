@@ -8,7 +8,9 @@ import (
 	"douyin/common/database/orm"
 	"douyin/common/queue/kafka"
 	"github.com/IBM/sarama"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -18,7 +20,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewKafkaConsumer, NewKafkaProducer, NewCommentRepo)
+var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewKafkaConsumer, NewKafkaProducer, NewCommentRepo, NewSeqClient)
 
 // Data .
 type Data struct {
@@ -30,14 +32,15 @@ type Data struct {
 }
 
 // NewData .
-func NewData(c *conf.Data, db *gorm.DB, rds *redis.Client, kafkaConsumer sarama.Consumer, kafkaProducer sarama.SyncProducer, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, db *gorm.DB, rds *redis.Client, kafkaConsumer sarama.Consumer,
+	kafkaProducer sarama.SyncProducer, logger log.Logger, s seq.SeqClient) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	return &Data{
 		db:            db,
 		redis:         rds,
-		seqRPC:        NewSeqClient(),
+		seqRPC:        s,
 		kafkaProducer: kafkaProducer,
 		kafkaConsumer: kafkaConsumer,
 	}, cleanup, nil
@@ -64,11 +67,14 @@ func NewRedis(c *conf.Data) *redis.Client {
 	})
 }
 
-func NewSeqClient() seq.SeqClient {
+func NewSeqClient(r registry.Discovery, logger log.Logger) seq.SeqClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.seq.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {

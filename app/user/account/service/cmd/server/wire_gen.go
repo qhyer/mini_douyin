@@ -23,14 +23,16 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	relationClient := data.NewRelationClient()
-	passportClient := data.NewPassportClient()
-	favoriteClient := data.NewFavoriteClient()
-	publishClient := data.NewPublishClient()
-	client := data.NewRedis(confData)
+func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
+	client := server.NewEtcdCli(registry)
+	discovery := server.NewDiscovery(client)
+	relationClient := data.NewRelationClient(discovery, logger)
+	passportClient := data.NewPassportClient(discovery, logger)
+	favoriteClient := data.NewFavoriteClient(discovery, logger)
+	publishClient := data.NewPublishClient(discovery, logger)
+	redisClient := data.NewRedis(confData)
 	memcacheClient := data.NewMemcached(confData)
-	dataData, cleanup, err := data.NewData(confData, relationClient, passportClient, favoriteClient, publishClient, client, memcacheClient, logger)
+	dataData, cleanup, err := data.NewData(confData, relationClient, passportClient, favoriteClient, publishClient, redisClient, memcacheClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -39,7 +41,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	accountService := service.NewAccountService(accountUsecase)
 	grpcServer := server.NewGRPCServer(confServer, accountService, logger)
 	httpServer := server.NewHTTPServer(confServer, accountService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+	registrar := server.NewRegistrar(client)
+	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {
 		cleanup()
 	}, nil

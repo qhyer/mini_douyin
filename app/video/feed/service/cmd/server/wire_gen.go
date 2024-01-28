@@ -23,14 +23,16 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	publishClient := data.NewPublishClient()
-	favoriteClient := data.NewFavoriteClient()
-	accountClient := data.NewAccountClient()
-	commentClient := data.NewCommentClient()
-	client := data.NewRedis(confData)
+func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
+	client := server.NewEtcdCli(registry)
+	discovery := server.NewDiscovery(client)
+	publishClient := data.NewPublishClient(discovery, logger)
+	favoriteClient := data.NewFavoriteClient(discovery, logger)
+	accountClient := data.NewAccountClient(discovery, logger)
+	commentClient := data.NewCommentClient(discovery, logger)
+	redisClient := data.NewRedis(confData)
 	memcacheClient := data.NewMemcached(confData)
-	dataData, cleanup, err := data.NewData(confData, publishClient, favoriteClient, accountClient, commentClient, client, memcacheClient, logger)
+	dataData, cleanup, err := data.NewData(confData, publishClient, favoriteClient, accountClient, commentClient, redisClient, memcacheClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -39,7 +41,8 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	feedService := service.NewFeedService(feedUsecase)
 	grpcServer := server.NewGRPCServer(confServer, feedService, logger)
 	httpServer := server.NewHTTPServer(confServer, feedService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+	registrar := server.NewRegistrar(client)
+	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {
 		cleanup()
 	}, nil

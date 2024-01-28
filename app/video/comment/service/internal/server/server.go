@@ -9,9 +9,9 @@ import (
 )
 
 // ProviderSet is server providers.
-var ProviderSet = wire.NewSet(NewGRPCServer, NewHTTPServer, NewRegister)
+var ProviderSet = wire.NewSet(NewGRPCServer, NewHTTPServer, NewEtcdCli, NewRegistrar, NewDiscovery)
 
-func NewRegister(c *conf.Register) registry.Registrar {
+func NewEtcdCli(c *conf.Registry) *clientv3.Client {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   []string{c.GetEtcd().GetEndpoint()},
 		DialTimeout: c.Etcd.DialTimeout.AsDuration(),
@@ -19,6 +19,15 @@ func NewRegister(c *conf.Register) registry.Registrar {
 	if err != nil {
 		panic(err)
 	}
+	return cli
+}
+
+func NewRegistrar(cli *clientv3.Client) registry.Registrar {
+	r := etcd.New(cli)
+	return r
+}
+
+func NewDiscovery(cli *clientv3.Client) registry.Discovery {
 	r := etcd.New(cli)
 	return r
 }

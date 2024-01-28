@@ -11,6 +11,7 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
@@ -47,9 +48,11 @@ func NewData(c *conf.Data, pc publish.PublishClient, fc favorite.FavoriteClient,
 	}, cleanup, nil
 }
 
-func NewPublishClient() publish.PublishClient {
+func NewPublishClient(r registry.Discovery, logger log.Logger) publish.PublishClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.publish.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
 		),
@@ -60,9 +63,11 @@ func NewPublishClient() publish.PublishClient {
 	return publish.NewPublishClient(conn)
 }
 
-func NewFavoriteClient() favorite.FavoriteClient {
+func NewFavoriteClient(r registry.Discovery, logger log.Logger) favorite.FavoriteClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.favorite.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
 		),
@@ -73,9 +78,11 @@ func NewFavoriteClient() favorite.FavoriteClient {
 	return favorite.NewFavoriteClient(conn)
 }
 
-func NewAccountClient() account.AccountClient {
+func NewAccountClient(r registry.Discovery, logger log.Logger) account.AccountClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.account.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
 		),
@@ -86,9 +93,11 @@ func NewAccountClient() account.AccountClient {
 	return account.NewAccountClient(conn)
 }
 
-func NewCommentClient() comment.CommentClient {
+func NewCommentClient(r registry.Discovery, logger log.Logger) comment.CommentClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.comment.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
 		),

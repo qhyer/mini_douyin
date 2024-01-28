@@ -11,7 +11,9 @@ import (
 	"douyin/common/sync/fanout"
 	"github.com/bluele/gcache"
 	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/redis/go-redis/v9"
 
@@ -53,11 +55,14 @@ func NewData(c *conf.Data, rc relation.RelationClient, pc passport.PassportClien
 	}, cleanup, nil
 }
 
-func NewPassportClient() passport.PassportClient {
+func NewPassportClient(r registry.Discovery, logger log.Logger) passport.PassportClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.passport.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
@@ -66,11 +71,14 @@ func NewPassportClient() passport.PassportClient {
 	return passport.NewPassportClient(conn)
 }
 
-func NewRelationClient() relation.RelationClient {
+func NewRelationClient(r registry.Discovery, logger log.Logger) relation.RelationClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.relation.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
@@ -79,11 +87,14 @@ func NewRelationClient() relation.RelationClient {
 	return relation.NewRelationClient(conn)
 }
 
-func NewFavoriteClient() favorite.FavoriteClient {
+func NewFavoriteClient(r registry.Discovery, logger log.Logger) favorite.FavoriteClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.favorite.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
@@ -92,11 +103,14 @@ func NewFavoriteClient() favorite.FavoriteClient {
 	return favorite.NewFavoriteClient(conn)
 }
 
-func NewPublishClient() publish.PublishClient {
+func NewPublishClient(r registry.Discovery, logger log.Logger) publish.PublishClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.publish.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
