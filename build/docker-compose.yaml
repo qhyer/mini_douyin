@@ -13,25 +13,25 @@ services:
       - douyin_net
     depends_on:
       account-service:
-        condition: service_healthy
+        condition: service_started
       chat-service:
-        condition: service_healthy
+        condition: service_started
       passport-service:
-        condition: service_healthy
+        condition: service_started
       relation-service:
-        condition: service_healthy
+        condition: service_started
       publish-service:
-        condition: service_healthy
+        condition: service_started
       favorite-service:
-        condition: service_healthy
+        condition: service_started
       feed-service:
-        condition: service_healthy
+        condition: service_started
       comment-service:
-        condition: service_healthy
+        condition: service_started
 
   etcd:
     image: bitnami/etcd
-    container_name: etcd-server
+    container_name: etcd
     ports:
       - "12379:2379"
       - "12380:2380"
@@ -103,11 +103,6 @@ services:
     command: server /data --console-address ":9090"
     volumes:
       - ../_data/minio/data:/data:rw
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
     networks:
       - douyin_net
 
@@ -151,11 +146,6 @@ services:
     ports:
       - "11211:11211"
     restart: always
-    healthcheck:
-      test: ["CMD", "bash", "-c", "echo 'version' | nc localhost 11211"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     networks:
       - douyin_net
 
@@ -192,29 +182,27 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      memcached:
-        condition: service_healthy
 
-  chat-job:
-    build:
-      context: ../
-      dockerfile: build/Dockerfile
-      args:
-        - BUSINESS_NAME=user
-        - SERVICE_NAME=chat
-        - SERVICE_TYPE=job
-    container_name: chat-job
-    privileged: true
-    restart: always
-    networks:
-      - douyin_net
-    depends_on:
-      mysql:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+  #  chat-job:
+  #    build:
+  #      context: ../
+  #      dockerfile: build/Dockerfile
+  #      args:
+  #        - BUSINESS_NAME=user
+  #        - SERVICE_NAME=chat
+  #        - SERVICE_TYPE=job
+  #    container_name: chat-job
+  #    privileged: true
+  #    restart: always
+  #    networks:
+  #      - douyin_net
+  #    depends_on:
+  #      mysql:
+  #        condition: service_healthy
+  #      kafka:
+  #        condition: service_healthy
+  #      redis:
+  #        condition: service_healthy
 
   chat-service:
     build:
@@ -320,8 +308,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      minio:
-        condition: service_healthy
 
   publish-service:
     build:
@@ -342,8 +328,6 @@ services:
       kafka:
         condition: service_healthy
       redis:
-        condition: service_healthy
-      minio:
         condition: service_healthy
 
   favorite-job:
