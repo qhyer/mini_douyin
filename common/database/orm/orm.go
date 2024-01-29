@@ -4,6 +4,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"time"
 )
 
@@ -17,9 +18,11 @@ type Config struct {
 
 // NewMySQL new db and retry connection when has error.
 func NewMySQL(c *Config) (db *gorm.DB) {
-	db, err := gorm.Open(mysql.Open(c.DSN), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(c.DSN), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
-		log.Error("db dsn(%s) error: %v", c.DSN, err)
+		log.Errorf("db dsn(%s) error: %v", c.DSN, err)
 		panic(err)
 	}
 

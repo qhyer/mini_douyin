@@ -6,9 +6,11 @@ server:
     addr: 0.0.0.0:9000
     timeout: 1s
 data:
-  database:
-    driver: mysql
-    source: root:uvVFljcDfc2an4U@tcp(mysql:3306)/douyin
+  orm:
+    dsn: root:uvVFljcDfc2an4U@tcp(mysql:3306)/douyin
+    active: 100
+    idle: 10
+    idle_timeout: 10s
   redis:
     name: redis
     network: tcp

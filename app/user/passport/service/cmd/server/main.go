@@ -31,7 +31,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagconf, "conf", "../configs", "config path, eg: -conf config.yaml")
 }
 
 func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, rr registry.Registrar) *kratos.App {
@@ -75,6 +75,7 @@ func main() {
 	if err := c.Scan(&bc); err != nil {
 		panic(err)
 	}
+	log.Infof("config: %+v", &bc)
 
 	app, cleanup, err := wireApp(bc.Server, bc.Registry, bc.Data, logger)
 	if err != nil {
