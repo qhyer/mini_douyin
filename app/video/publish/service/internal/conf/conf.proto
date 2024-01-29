@@ -28,7 +28,7 @@ message Server {
 
 message Data {
   message Orm {
-    string DSN = 1;
+    string dsn = 1;
     int32 active = 2;
     int32 idle = 3;
     google.protobuf.Duration idle_timeout = 4;

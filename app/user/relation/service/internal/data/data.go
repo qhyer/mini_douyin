@@ -40,7 +40,7 @@ func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, kafka sarama.SyncP
 
 func NewOrm(c *conf.Data) *gorm.DB {
 	return orm.NewMySQL(&orm.Config{
-		DSN:         c.GetOrm().GetDSN(),
+		DSN:         c.GetOrm().GetDsn(),
 		Active:      int(c.GetOrm().GetActive()),
 		Idle:        int(c.GetOrm().GetIdle()),
 		IdleTimeout: c.GetOrm().GetIdleTimeout().AsDuration(),

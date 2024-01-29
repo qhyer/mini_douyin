@@ -1,6 +1,6 @@
 FROM golang:1.21.3 AS builder
 # download modules
-WORKDIR /src
+WORKDIR /douyin
 COPY ./go.mod .
 COPY ./go.sum .
 RUN go mod download
@@ -12,9 +12,9 @@ ARG SERVICE_NAME
 ARG SERVICE_TYPE
 
 WORKDIR /douyin
-COPY .. .
+COPY . .
 
-RUN GOPROXY=https://goproxy.cn go build -o bin/${SERVICE_NAME}-${SERVICE_TYPE} /douyin/app/${BUSINESS_NAME}/${SERVICE_NAME}/${SERVICE_TYPE}/cmd/server
+RUN go build -o bin/${SERVICE_NAME}-${SERVICE_TYPE} /douyin/app/${BUSINESS_NAME}/${SERVICE_NAME}/${SERVICE_TYPE}/cmd/server
 
 # run
 FROM debian:stable-slim

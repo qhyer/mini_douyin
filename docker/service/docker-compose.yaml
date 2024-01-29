@@ -7,8 +7,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - "../configs/nginx/nginx.conf:/etc/nginx/nginx.conf"
-      - "../_data/nginx/logs:/var/log/nginx"
+      - "../../configs/nginx/nginx.conf:/etc/nginx/nginx.conf"
+      - "../../_data/nginx/logs:/var/log/nginx"
     networks:
       - douyin_net
     depends_on:
@@ -59,7 +59,7 @@ services:
       MYSQL_DATABASE: douyin
       MYSQL_ROOT_HOST: "%"
     volumes:
-      - ../_data/mysql/data:/var/lib/mysql:rw
+      - ../../_data/mysql/data:/var/lib/mysql:rw
     command: --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_general_ci
@@ -82,7 +82,7 @@ services:
     environment:
       TZ: Asia/Shanghai
     volumes:
-      - ../_data/redis/data:/data:rw
+      - ../../_data/redis/data:/data:rw
     command: "redis-server --requirepass uvVFljcDfc2an4U  --appendonly yes"
     healthcheck:
       test: [ "CMD", "redis-cli", "-a", "uvVFljcDfc2an4U", "ping" ]
@@ -102,7 +102,7 @@ services:
       - MINIO_SECRET_KEY=xnQpG8QhRprggUb
     command: server /data --console-address ":9090"
     volumes:
-      - ../_data/minio/data:/data:rw
+      - ../../_data/minio/data:/data:rw
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:19090/minio/health/live" ]
       interval: 30s
@@ -117,7 +117,7 @@ services:
     user: root
     container_name: kafka
     volumes:
-      - ../_data/kafka:/bitnami/kafka:rw #持久化数据
+      - ../../_data/kafka:/bitnami/kafka:rw #持久化数据
     environment:
       - KAFKA_ENABLE_KRAFT=yes
       - KAFKA_CFG_PROCESS_ROLES=broker,controller
@@ -160,7 +160,7 @@ services:
 
   seq-server:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=infra
@@ -188,7 +188,7 @@ services:
 
   account-service:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=user
@@ -215,7 +215,7 @@ services:
 
   #  chat-job:
   #    build:
-  #      context: ../
+  #      context: ../../
   #      dockerfile: docker/build/Dockerfile
   #      args:
   #        - BUSINESS_NAME=user
@@ -236,7 +236,7 @@ services:
 
   chat-service:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=user
@@ -263,7 +263,7 @@ services:
 
   passport-service:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=user
@@ -290,7 +290,7 @@ services:
 
   relation-job:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=user
@@ -317,7 +317,7 @@ services:
 
   relation-service:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=user
@@ -344,7 +344,7 @@ services:
 
   publish-job:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=video
@@ -371,7 +371,7 @@ services:
 
   publish-service:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=video
@@ -398,7 +398,7 @@ services:
 
   favorite-job:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=video
@@ -425,7 +425,7 @@ services:
 
   favorite-service:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=video
@@ -452,7 +452,7 @@ services:
 
   feed-service:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=video
@@ -479,7 +479,7 @@ services:
 
   comment-job:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=video
@@ -506,7 +506,7 @@ services:
 
   comment-service:
     build:
-      context: ../
+      context: ../../
       dockerfile: docker/build/Dockerfile
       args:
         - BUSINESS_NAME=video
