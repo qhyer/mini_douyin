@@ -1,7 +1,7 @@
 CREATE TABLE `follow_record` (
-                                 `id` INT(11) NOT NULL,
-                                 `from_user_id` INT(11) NOT NULL,
-                                 `to_user_id` INT(11) NOT NULL,
+                                 `id` BIGINT NOT NULL,
+                                 `from_user_id` BIGINT NOT NULL,
+                                 `to_user_id` BIGINT NOT NULL,
                                  `attr` INT(10) UNSIGNED NOT NULL,
                                  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

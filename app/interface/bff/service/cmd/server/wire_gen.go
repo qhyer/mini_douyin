@@ -24,13 +24,15 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	publishClient := data.NewPublishClient()
-	accountClient := data.NewAccountClient()
-	passportClient := data.NewPassportClient()
-	feedClient := data.NewFeedClient()
-	favoriteClient := data.NewFavoriteClient()
-	commentClient := data.NewCommentClient()
-	relationClient := data.NewRelationClient()
+	client := server.NewEtcdCli(registry)
+	discovery := server.NewDiscovery(client)
+	publishClient := data.NewPublishClient(discovery, logger)
+	accountClient := data.NewAccountClient(discovery, logger)
+	passportClient := data.NewPassportClient(discovery, logger)
+	feedClient := data.NewFeedClient(discovery, logger)
+	favoriteClient := data.NewFavoriteClient(discovery, logger)
+	commentClient := data.NewCommentClient(discovery, logger)
+	relationClient := data.NewRelationClient(discovery, logger)
 	dataData, cleanup, err := data.NewData(confData, publishClient, accountClient, passportClient, feedClient, favoriteClient, commentClient, relationClient, logger)
 	if err != nil {
 		return nil, nil, err
@@ -50,7 +52,6 @@ func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Da
 	bffService := service.NewBFFService(accountUsecase, feedUsecase, relationUsecase, commentUsecase, favoriteUsecase, publishUsecase)
 	grpcServer := server.NewGRPCServer(confServer, bffService, logger)
 	httpServer := server.NewHTTPServer(confServer, bffService, logger)
-	client := server.NewEtcdCli(registry)
 	registrar := server.NewRegistrar(client)
 	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {

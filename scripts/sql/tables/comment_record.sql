@@ -1,7 +1,7 @@
 CREATE TABLE `comment_record` (
-    `id` INT(11) NOT NULL,
-    `user_id` INT(11) NOT NULL,
-    `video_id` INT(11) NOT NULL,
+    `id` BIGINT NOT NULL,
+    `user_id` BIGINT NOT NULL,
+    `video_id` BIGINT NOT NULL,
     `content` TEXT NOT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

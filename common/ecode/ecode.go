@@ -6,9 +6,9 @@ import (
 )
 
 type ErrNo struct {
-	ErrCode   int32
-	ErrMsg    string
-	ErrReason string
+	ErrCode   int32  `json:"err_code"`
+	ErrMsg    string `json:"err_msg"`
+	ErrReason string `json:"-"`
 }
 
 // Err represents an error

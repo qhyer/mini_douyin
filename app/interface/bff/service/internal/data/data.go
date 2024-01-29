@@ -2,6 +2,8 @@ package data
 
 import (
 	"context"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
+	"github.com/go-kratos/kratos/v2/registry"
 
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
@@ -54,11 +56,14 @@ func NewData(c *conf.Data, pc publish.PublishClient, ac account.AccountClient, p
 	}, cleanup, nil
 }
 
-func NewPublishClient() publish.PublishClient {
+func NewPublishClient(r registry.Discovery, logger log.Logger) publish.PublishClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.publish.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
@@ -67,11 +72,14 @@ func NewPublishClient() publish.PublishClient {
 	return publish.NewPublishClient(conn)
 }
 
-func NewAccountClient() account.AccountClient {
+func NewAccountClient(r registry.Discovery, logger log.Logger) account.AccountClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.account.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
@@ -80,11 +88,14 @@ func NewAccountClient() account.AccountClient {
 	return account.NewAccountClient(conn)
 }
 
-func NewPassportClient() passport.PassportClient {
+func NewPassportClient(r registry.Discovery, logger log.Logger) passport.PassportClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.passport.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
@@ -93,11 +104,14 @@ func NewPassportClient() passport.PassportClient {
 	return passport.NewPassportClient(conn)
 }
 
-func NewFeedClient() feed.FeedClient {
+func NewFeedClient(r registry.Discovery, logger log.Logger) feed.FeedClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.feed.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
@@ -106,11 +120,14 @@ func NewFeedClient() feed.FeedClient {
 	return feed.NewFeedClient(conn)
 }
 
-func NewCommentClient() comment.CommentClient {
+func NewCommentClient(r registry.Discovery, logger log.Logger) comment.CommentClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.comment.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
@@ -119,11 +136,14 @@ func NewCommentClient() comment.CommentClient {
 	return comment.NewCommentClient(conn)
 }
 
-func NewFavoriteClient() favorite.FavoriteClient {
+func NewFavoriteClient(r registry.Discovery, logger log.Logger) favorite.FavoriteClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.favorite.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {
@@ -132,11 +152,14 @@ func NewFavoriteClient() favorite.FavoriteClient {
 	return favorite.NewFavoriteClient(conn)
 }
 
-func NewRelationClient() relation.RelationClient {
+func NewRelationClient(r registry.Discovery, logger log.Logger) relation.RelationClient {
 	conn, err := grpc.DialInsecure(
 		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.relation.service"),
+		grpc.WithDiscovery(r),
 		grpc.WithMiddleware(
 			recovery.Recovery(),
+			logging.Client(logger),
 		),
 	)
 	if err != nil {

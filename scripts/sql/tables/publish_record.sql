@@ -1,6 +1,6 @@
 CREATE TABLE `publish_record` (
-                                  `id` INT(11) NOT NULL,
-                                  `author_id` INT(11) NOT NULL,
+                                  `id` BIGINT NOT NULL,
+                                  `author_id` BIGINT NOT NULL,
                                   `title` VARCHAR(255) NOT NULL,
                                   `play_url` VARCHAR(255) NOT NULL,
                                   `cover_url` VARCHAR(255) NOT NULL,

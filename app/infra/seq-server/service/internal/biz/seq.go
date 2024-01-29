@@ -117,8 +117,8 @@ func (u *SeqUsecase) timeGen() int64 {
 
 func (u *SeqUsecase) init() bool {
 	u.twepoch = twepoch
-	if twepoch <= u.timeGen() {
-		panic("twepoch must be > currentTimeMillis")
+	if twepoch > u.timeGen() {
+		panic("twepoch must be <= currentTimeMillis")
 	}
 
 	address, err := network.GetHostAddress("")

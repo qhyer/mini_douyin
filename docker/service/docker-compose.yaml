@@ -28,6 +28,8 @@ services:
         condition: service_started
       comment-service:
         condition: service_started
+      bff-service:
+        condition: service_started
 
   etcd:
     image: bitnami/etcd
@@ -39,7 +41,7 @@ services:
       ALLOW_NONE_AUTHENTICATION: "yes"
     restart: always
     healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://localhost:2379/health" ]
+      test: [ "CMD", "curl", "--fail", "http://etcd:2379/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -104,7 +106,7 @@ services:
     volumes:
       - ../../_data/minio/data:/data:rw
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:19090/minio/health/live" ]
+      test: [ "CMD", "curl", "-f", "http://minio:9090/minio/health/live" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -528,6 +530,23 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      etcd:
+        condition: service_healthy
+
+  bff-service:
+    build:
+      context: ../../
+      dockerfile: docker/build/Dockerfile
+      args:
+        - BUSINESS_NAME=interface
+        - SERVICE_NAME=bff
+        - SERVICE_TYPE=service
+    container_name: bff-service
+    privileged: true
+    restart: always
+    networks:
+      - douyin_net
+    depends_on:
       etcd:
         condition: service_healthy
 

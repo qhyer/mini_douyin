@@ -130,9 +130,9 @@ service BFF {
 
 message GetUserInfoRequest {
   // 用户id
-  uint32 user_id = 1;
+  uint32 user_id = 1 [(validate.rules).uint32 = {gt: 0}];
   // 用户鉴权token
-  string token = 2 [(validate.rules).string.min_len = 1];
+  string token = 2;
 }
 
 message GetUserInfoReply {
@@ -146,9 +146,9 @@ message GetUserInfoReply {
 
 message UserLoginRequest {
   // 登录用户名
-  string username = 1;
+  string username = 1 [(validate.rules).string = {min_len:1, max_len:32}];
   // 登录密码
-  string password = 2;
+  string password = 2 [(validate.rules).string = {min_len:6, max_len:32}];
 }
 
 message UserLoginReply {
@@ -180,15 +180,6 @@ message UserRegisterReply {
   string token = 4 [json_name = "token"];
 }
 
-message PublishActionRequest {
-  // 用户鉴权token
-  string token = 1 [(validate.rules).string.min_len = 1];
-  // 视频数据
-  bytes data = 2 [(validate.rules).bytes.min_len = 100000];
-  // 视频标题
-  string title = 3 [(validate.rules).string.min_len = 1];
-}
-
 message FeedRequest {
   // 返回视频的最新投稿时间戳，精确到秒，不填表示当前时间
   string latest_time = 1;
@@ -207,6 +198,15 @@ message FeedReply {
   int64 next_time = 4 [json_name = "next_time"];
 }
 
+message PublishActionRequest {
+  // 用户鉴权token
+  string token = 1 [(validate.rules).string.min_len = 1];
+  // 视频数据
+  bytes data = 2 [(validate.rules).bytes.min_len = 1];
+  // 视频标题
+  string title = 3 [(validate.rules).string.min_len = 1];
+}
+
 message PublishActionReply {
   // 状态码，0-成功，其他值-失败
   int32 status_code = 1 [json_name = "status_code"];
@@ -216,7 +216,7 @@ message PublishActionReply {
 
 message GetPublishListRequest {
   // 用户id
-  uint32 user_id = 1;
+  uint32 user_id = 1 [(validate.rules).uint32 = {gt: 0}];
   // 用户鉴权token
   string token = 2;
 }
@@ -236,7 +236,7 @@ message RelationActionRequest {
   // 对方用户id
   uint32 to_user_id = 2 [(validate.rules).uint32 = {gt: 0}];
   // 1-关注，2-取消关注
-  uint32 action_type = 3;
+  uint32 action_type = 3 [(validate.rules).uint32 = {in: [1, 2]}];
 }
 
 message RelationActionReply{
@@ -248,7 +248,7 @@ message RelationActionReply{
 
 message GetFollowerListRequest {
   // 用户id
-  uint32 user_id = 1;
+  uint32 user_id = 1 [(validate.rules).uint32 = {gt: 0}];
   // 用户鉴权token
   string token = 2;
 }
@@ -264,7 +264,7 @@ message GetFollowerListReply {
 
 message GetFollowListRequest {
   // 用户id
-  uint32 user_id = 1;
+  uint32 user_id = 1 [(validate.rules).uint32 = {gt: 0}];
   // 用户鉴权token
   string token = 2;
 }
@@ -313,9 +313,9 @@ message MessageActionRequest {
   // 对方用户id
   uint32 to_user_id = 2 [(validate.rules).uint32 = {gt: 0}];
   // 1-发送消息
-  uint32 action_type = 3;
+  uint32 action_type = 3 [(validate.rules).uint32 = {in: [1]}];
   // 消息内容
-  string content = 4;
+  string content = 4 [(validate.rules).string.min_len = 1];
 }
 
 message MessageActionReply {
@@ -327,7 +327,7 @@ message MessageActionReply {
 
 message GetFavoriteVideoListRequest {
   // 需要查询的用户 id
-  uint32 user_id = 1;
+  uint32 user_id = 1 [(validate.rules).uint32 = {gt: 0}];
   // 用户鉴权 token
   string token = 2;
 }
@@ -347,7 +347,7 @@ message FavoriteActionRequest {
   // 需要操作的视频 id
   uint32 video_id = 2 [(validate.rules).uint32 = {gt: 0}];
   // 1-点赞，2-取消点赞
-  uint32 action_type = 3;
+  uint32 action_type = 3 [(validate.rules).uint32 = {in: [1, 2]}];
 }
 
 message FavoriteActionReply {
@@ -379,7 +379,7 @@ message CommentActionRequest {
   // 视频id
   uint32 video_id = 2 [(validate.rules).uint32 = {gt: 0}];
   // 1-发布评论，2-删除评论
-  uint32 action_type = 3;
+  uint32 action_type = 3 [(validate.rules).uint32 = {in: [1, 2]}];
   // 用户填写的评论内容，在action_type=1的时候使用
   string comment_text = 4;
   // 要删除的评论id，在action_type=2的时候使用

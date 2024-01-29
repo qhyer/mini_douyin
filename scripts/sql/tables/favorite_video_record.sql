@@ -1,7 +1,7 @@
 CREATE TABLE `favorite_video_record` (
-                                         `id` INT(11) NOT NULL,
-                                         `user_id` INT(11) NOT NULL,
-                                         `video_id` INT(11) NOT NULL,
+                                         `id` BIGINT NOT NULL,
+                                         `user_id` BIGINT NOT NULL,
+                                         `video_id` BIGINT NOT NULL,
                                          `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                          `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                          `deleted_at` DATETIME NULL DEFAULT NULL,

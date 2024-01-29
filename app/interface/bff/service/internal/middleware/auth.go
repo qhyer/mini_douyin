@@ -2,12 +2,10 @@ package middleware
 
 import (
 	"context"
-
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
 
-	"douyin/common/constants"
 	"douyin/common/ecode"
 	"douyin/common/jwt"
 )
@@ -22,16 +20,11 @@ func Auth() middleware.Middleware {
 						tokenStr = hr.Request().Header.Get("token")
 					} else {
 						tokenStr = hr.Request().URL.Query().Get("token")
-						if tokenStr == "" {
-							// 游客
-							ctx = context.WithValue(ctx, "uid", constants.GuestUserID)
-							return handler(ctx, req)
-						}
 					}
 
 					// 解析JWT
 					id, err := jwt.ParseTokenToID(tokenStr)
-					if err != nil {
+					if isRouteRequireLogin(hr.Request().URL.Path) && err != nil {
 						return nil, ecode.AuthorizeErr
 					}
 					ctx = context.WithValue(ctx, "uid", id)
@@ -40,4 +33,31 @@ func Auth() middleware.Middleware {
 			return handler(ctx, req)
 		}
 	}
+}
+
+var RequireLogin = []string{
+	"/douyin/publish/action/",
+	"/douyin/favorite/action/",
+	"/douyin/comment/action/",
+	"/douyin/relation/action/",
+	"/relation/friend/list/",
+	"/message/action/",
+	"/message/chat/",
+
+	"/douyin/publish/action",
+	"/douyin/favorite/action",
+	"/douyin/comment/action",
+	"/douyin/relation/action",
+	"/relation/friend/list",
+	"/message/action",
+	"/message/chat",
+}
+
+func isRouteRequireLogin(path string) bool {
+	for _, v := range RequireLogin {
+		if v == path {
+			return true
+		}
+	}
+	return false
 }

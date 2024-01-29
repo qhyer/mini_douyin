@@ -17,6 +17,7 @@ func NewKafkaAsyncProducer(conf *Config) sarama.AsyncProducer {
 
 func NewKafkaSyncProducer(conf *Config) sarama.SyncProducer {
 	c := sarama.NewConfig()
+	c.Producer.Return.Successes = true
 	p, err := sarama.NewSyncProducer(conf.Addr, c)
 	if err != nil {
 		panic(err)
