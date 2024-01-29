@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
+	"strconv"
+
+	"github.com/jinzhu/copier"
+
 	v1 "douyin/api/bff"
 	"douyin/app/interface/bff/service/internal/biz"
 	"douyin/common/ecode"
-	"github.com/jinzhu/copier"
-	"strconv"
 )
 
 type BFFService struct {
@@ -21,7 +23,8 @@ type BFFService struct {
 }
 
 func NewBFFService(au *biz.AccountUsecase, fu *biz.FeedUsecase, ru *biz.RelationUsecase, cu *biz.CommentUsecase,
-	favu *biz.FavoriteUsecase, pu *biz.PublishUsecase) *BFFService {
+	favu *biz.FavoriteUsecase, pu *biz.PublishUsecase,
+) *BFFService {
 	return &BFFService{
 		accountUsecase:  au,
 		feedUsecase:     fu,

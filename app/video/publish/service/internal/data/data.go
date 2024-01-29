@@ -2,13 +2,7 @@ package data
 
 import (
 	"context"
-	seq "douyin/api/seq-server/service/v1"
-	"douyin/app/video/publish/service/internal/conf"
-	rdb "douyin/common/cache/redis"
-	"douyin/common/database/orm"
-	minio1 "douyin/common/minio"
-	"douyin/common/queue/kafka"
-	"douyin/common/sync/fanout"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
@@ -19,6 +13,14 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+
+	seq "douyin/api/seq-server/service/v1"
+	"douyin/app/video/publish/service/internal/conf"
+	rdb "douyin/common/cache/redis"
+	"douyin/common/database/orm"
+	minio1 "douyin/common/minio"
+	"douyin/common/queue/kafka"
+	"douyin/common/sync/fanout"
 )
 
 // ProviderSet is data providers.
@@ -36,7 +38,8 @@ type Data struct {
 
 // NewData .
 func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Client, kafka sarama.SyncProducer,
-	s seq.SeqClient, logger log.Logger) (*Data, func(), error) {
+	s seq.SeqClient, logger log.Logger,
+) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}

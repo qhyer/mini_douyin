@@ -2,6 +2,9 @@ package data
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/user/passport/common/constants"
 	do "douyin/app/user/passport/common/entity"
@@ -9,8 +12,7 @@ import (
 	po "douyin/app/user/passport/common/model"
 	"douyin/app/user/passport/service/internal/biz"
 	constants2 "douyin/common/constants"
-	"encoding/json"
-	"errors"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
 )

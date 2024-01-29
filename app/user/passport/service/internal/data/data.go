@@ -2,11 +2,7 @@ package data
 
 import (
 	"context"
-	seq "douyin/api/seq-server/service/v1"
-	"douyin/app/user/passport/service/internal/conf"
-	rdb "douyin/common/cache/redis"
-	"douyin/common/database/orm"
-	"douyin/common/sync/fanout"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -15,6 +11,12 @@ import (
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+
+	seq "douyin/api/seq-server/service/v1"
+	"douyin/app/user/passport/service/internal/conf"
+	rdb "douyin/common/cache/redis"
+	"douyin/common/database/orm"
+	"douyin/common/sync/fanout"
 )
 
 // ProviderSet is data providers.

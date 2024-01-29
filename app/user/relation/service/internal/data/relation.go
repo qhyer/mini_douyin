@@ -2,17 +2,19 @@ package data
 
 import (
 	"context"
+	"errors"
+	"strconv"
+
 	"douyin/app/user/relation/common/constants"
 	do "douyin/app/user/relation/common/entity"
 	po "douyin/app/user/relation/common/model"
 	"douyin/app/user/relation/service/internal/biz"
-	"errors"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/cast"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 type relationRepo struct {

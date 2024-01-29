@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
+
 	"douyin/app/user/account/common/mapper"
 	"douyin/app/user/account/service/internal/biz"
 	"douyin/common/ecode"
 
-	"douyin/api/user/account/service/v1"
+	v1 "douyin/api/user/account/service/v1"
 )
 
 type AccountService struct {
@@ -43,6 +44,7 @@ func (s *AccountService) GetUserInfoByUserId(ctx context.Context, req *v1.GetUse
 		User:       user,
 	}, nil
 }
+
 func (s *AccountService) MGetUserInfoByUserId(ctx context.Context, req *v1.MGetUserInfoByUserIdRequest) (*v1.MGetUserInfoByUserIdResponse, error) {
 	us, err := s.uc.MGetUserInfoByUserId(ctx, req.GetUserId(), req.GetToUserIds())
 	if err != nil {
@@ -67,6 +69,7 @@ func (s *AccountService) MGetUserInfoByUserId(ctx context.Context, req *v1.MGetU
 		Users:      users,
 	}, nil
 }
+
 func (s *AccountService) GetFollowListByUserId(ctx context.Context, req *v1.GetFollowListByUserIdRequest) (*v1.GetFollowListByUserIdResponse, error) {
 	res, err := s.uc.GetFollowListByUserId(ctx, req.GetUserId(), req.GetToUserId())
 	if err != nil {
@@ -92,6 +95,7 @@ func (s *AccountService) GetFollowListByUserId(ctx context.Context, req *v1.GetF
 		Users:      users,
 	}, nil
 }
+
 func (s *AccountService) GetFollowerListByUserId(ctx context.Context, req *v1.GetFollowerListByUserIdRequest) (*v1.GetFollowerListByUserIdResponse, error) {
 	res, err := s.uc.GetFollowerListByUserId(ctx, req.GetUserId(), req.GetToUserId())
 	if err != nil {
@@ -117,6 +121,7 @@ func (s *AccountService) GetFollowerListByUserId(ctx context.Context, req *v1.Ge
 		Users:      users,
 	}, nil
 }
+
 func (s *AccountService) GetFriendListByUserId(ctx context.Context, req *v1.GetFriendListByUserIdRequest) (*v1.GetFriendListByUserIdResponse, error) {
 	res, err := s.uc.GetFriendListByUserId(ctx, req.GetUserId())
 	if err != nil {

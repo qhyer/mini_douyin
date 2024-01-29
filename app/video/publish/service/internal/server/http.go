@@ -1,16 +1,17 @@
 package server
 
 import (
-	"douyin/app/video/publish/service/internal/conf"
-	"douyin/app/video/publish/service/internal/service"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/http"
+
+	"douyin/app/video/publish/service/internal/conf"
+	"douyin/app/video/publish/service/internal/service"
 )
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Server, publish *service.PublishService, logger log.Logger) *http.Server {
-	var opts = []http.ServerOption{
+	opts := []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
 		),

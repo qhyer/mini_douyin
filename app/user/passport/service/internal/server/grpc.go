@@ -1,7 +1,7 @@
 package server
 
 import (
-	"douyin/api/user/passport/service/v1"
+	v1 "douyin/api/user/passport/service/v1"
 	"douyin/app/user/passport/service/internal/conf"
 	"douyin/app/user/passport/service/internal/service"
 
@@ -12,7 +12,7 @@ import (
 
 // NewGRPCServer new a gRPC server.
 func NewGRPCServer(c *conf.Server, passport *service.PassportService, logger log.Logger) *grpc.Server {
-	var opts = []grpc.ServerOption{
+	opts := []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
 		),

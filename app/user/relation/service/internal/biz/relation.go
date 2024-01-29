@@ -2,11 +2,13 @@ package biz
 
 import (
 	"context"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"golang.org/x/sync/singleflight"
+
 	"douyin/app/user/relation/common/constants"
 	do "douyin/app/user/relation/common/entity"
 	"douyin/common/ecode"
-	"github.com/go-kratos/kratos/v2/log"
-	"golang.org/x/sync/singleflight"
 )
 
 type RelationRepo interface {

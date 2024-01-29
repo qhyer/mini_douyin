@@ -2,11 +2,7 @@ package data
 
 import (
 	"context"
-	seq "douyin/api/seq-server/service/v1"
-	"douyin/app/user/relation/job/internal/conf"
-	rdb "douyin/common/cache/redis"
-	"douyin/common/database/orm"
-	"douyin/common/queue/kafka"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -14,6 +10,12 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+
+	seq "douyin/api/seq-server/service/v1"
+	"douyin/app/user/relation/job/internal/conf"
+	rdb "douyin/common/cache/redis"
+	"douyin/common/database/orm"
+	"douyin/common/queue/kafka"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"

@@ -2,8 +2,10 @@ package biz
 
 import (
 	"context"
-	feed "douyin/api/video/feed/service/v1"
+
 	"github.com/go-kratos/kratos/v2/log"
+
+	feed "douyin/api/video/feed/service/v1"
 )
 
 type FeedRepo interface {

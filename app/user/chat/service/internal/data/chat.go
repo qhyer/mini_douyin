@@ -2,10 +2,12 @@ package data
 
 import (
 	"context"
+	"errors"
+
 	"douyin/app/user/chat/common/constants"
 	do "douyin/app/user/chat/common/entity"
 	"douyin/app/user/chat/service/internal/biz"
-	"errors"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"

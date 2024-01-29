@@ -61,5 +61,4 @@ func VideoToDTOs(vs []*do.Video) ([]*dto.VideoInfo, error) {
 		videos = append(videos, video)
 	}
 	return videos, nil
-
 }

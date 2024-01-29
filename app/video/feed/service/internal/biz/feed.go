@@ -2,11 +2,13 @@ package biz
 
 import (
 	"context"
-	"douyin/app/video/feed/common/constants"
-	do "douyin/app/video/feed/common/entity"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/singleflight"
+
+	"douyin/app/video/feed/common/constants"
+	do "douyin/app/video/feed/common/entity"
 )
 
 type FeedRepo interface {

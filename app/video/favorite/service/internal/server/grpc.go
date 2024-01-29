@@ -1,7 +1,7 @@
 package server
 
 import (
-	"douyin/api/video/favorite/service/v1"
+	v1 "douyin/api/video/favorite/service/v1"
 	"douyin/app/video/favorite/service/internal/conf"
 	"douyin/app/video/favorite/service/internal/service"
 
@@ -12,7 +12,7 @@ import (
 
 // NewGRPCServer new a gRPC server.
 func NewGRPCServer(c *conf.Server, favorite *service.FavoriteService, logger log.Logger) *grpc.Server {
-	var opts = []grpc.ServerOption{
+	opts := []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
 		),

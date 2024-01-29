@@ -12,7 +12,7 @@ ARG SERVICE_NAME
 ARG SERVICE_TYPE
 
 WORKDIR /douyin
-COPY . .
+COPY .. .
 
 RUN GOPROXY=https://goproxy.cn go build -o bin/${SERVICE_NAME}-${SERVICE_TYPE} /douyin/app/${BUSINESS_NAME}/${SERVICE_NAME}/${SERVICE_TYPE}/cmd/server
 

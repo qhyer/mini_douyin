@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	"github.com/go-kratos/kratos/v2/registry"
 	"os"
+
+	"github.com/go-kratos/kratos/v2/registry"
 
 	"douyin/app/video/favorite/job/internal/conf"
 

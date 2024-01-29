@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+
+	"github.com/IBM/sarama"
+	"github.com/go-kratos/kratos/v2/log"
+
 	v1 "douyin/api/video/favorite/job"
 	"douyin/app/video/favorite/common/constants"
 	do "douyin/app/video/favorite/common/entity"
 	"douyin/app/video/favorite/job/internal/biz"
-	"github.com/IBM/sarama"
-	"github.com/go-kratos/kratos/v2/log"
 )
 
 type FavoriteService struct {

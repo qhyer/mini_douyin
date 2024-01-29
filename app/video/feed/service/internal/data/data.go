@@ -2,12 +2,7 @@ package data
 
 import (
 	"context"
-	account "douyin/api/user/account/service/v1"
-	comment "douyin/api/video/comment/service/v1"
-	favorite "douyin/api/video/favorite/service/v1"
-	publish "douyin/api/video/publish/service/v1"
-	"douyin/app/video/feed/service/internal/conf"
-	rdb "douyin/common/cache/redis"
+
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -15,6 +10,13 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9"
+
+	account "douyin/api/user/account/service/v1"
+	comment "douyin/api/video/comment/service/v1"
+	favorite "douyin/api/video/favorite/service/v1"
+	publish "douyin/api/video/publish/service/v1"
+	"douyin/app/video/feed/service/internal/conf"
+	rdb "douyin/common/cache/redis"
 )
 
 // ProviderSet is data providers.
@@ -34,7 +36,8 @@ type Data struct {
 // NewData .
 func NewData(c *conf.Data, pc publish.PublishClient, fc favorite.FavoriteClient,
 	ac account.AccountClient, cc comment.CommentClient, r *redis.Client, m *memcache.Client,
-	logger log.Logger) (*Data, func(), error) {
+	logger log.Logger,
+) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}

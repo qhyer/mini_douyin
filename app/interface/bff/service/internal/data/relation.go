@@ -2,10 +2,12 @@ package data
 
 import (
 	"context"
+
+	"github.com/go-kratos/kratos/v2/log"
+
 	account "douyin/api/user/account/service/v1"
 	relation "douyin/api/user/relation/service/v1"
 	"douyin/app/interface/bff/service/internal/biz"
-	"github.com/go-kratos/kratos/v2/log"
 )
 
 type relationRepo struct {

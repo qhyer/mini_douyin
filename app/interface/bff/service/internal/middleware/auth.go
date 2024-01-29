@@ -2,12 +2,14 @@ package middleware
 
 import (
 	"context"
-	"douyin/common/constants"
-	"douyin/common/ecode"
-	"douyin/common/jwt"
+
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
+
+	"douyin/common/constants"
+	"douyin/common/ecode"
+	"douyin/common/jwt"
 )
 
 func Auth() middleware.Middleware {

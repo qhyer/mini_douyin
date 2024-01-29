@@ -1,10 +1,12 @@
 package main
 
 import (
-	"douyin/app/video/publish/service/internal/conf"
 	"flag"
-	"github.com/go-kratos/kratos/v2/registry"
 	"os"
+
+	"douyin/app/video/publish/service/internal/conf"
+
+	"github.com/go-kratos/kratos/v2/registry"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"

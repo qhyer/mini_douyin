@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+
+	"github.com/IBM/sarama"
+	"github.com/go-kratos/kratos/v2/log"
+
 	v1 "douyin/api/user/relation/job"
 	"douyin/app/user/relation/common/constants"
 	do "douyin/app/user/relation/common/entity"
 	"douyin/app/user/relation/job/internal/biz"
-	"github.com/IBM/sarama"
-	"github.com/go-kratos/kratos/v2/log"
 )
 
 type RelationService struct {

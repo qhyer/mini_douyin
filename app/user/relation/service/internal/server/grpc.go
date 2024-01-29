@@ -1,17 +1,18 @@
 package server
 
 import (
-	"douyin/api/user/relation/service/v1"
-	"douyin/app/user/relation/service/internal/conf"
-	"douyin/app/user/relation/service/internal/service"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+
+	v1 "douyin/api/user/relation/service/v1"
+	"douyin/app/user/relation/service/internal/conf"
+	"douyin/app/user/relation/service/internal/service"
 )
 
 // NewGRPCServer new a gRPC server.
 func NewGRPCServer(c *conf.Server, relation *service.RelationService, logger log.Logger) *grpc.Server {
-	var opts = []grpc.ServerOption{
+	opts := []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
 		),

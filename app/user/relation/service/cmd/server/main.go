@@ -1,10 +1,12 @@
 package main
 
 import (
-	"douyin/app/user/relation/service/internal/conf"
 	"flag"
-	"github.com/go-kratos/kratos/v2/registry"
 	"os"
+
+	"douyin/app/user/relation/service/internal/conf"
+
+	"github.com/go-kratos/kratos/v2/registry"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"

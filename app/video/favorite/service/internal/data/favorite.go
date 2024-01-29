@@ -2,15 +2,17 @@ package data
 
 import (
 	"context"
-	"douyin/app/video/favorite/common/constants"
-	do "douyin/app/video/favorite/common/entity"
-	po "douyin/app/video/favorite/common/model"
-	"douyin/app/video/favorite/service/internal/biz"
+	"strconv"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/cast"
-	"strconv"
+
+	"douyin/app/video/favorite/common/constants"
+	do "douyin/app/video/favorite/common/entity"
+	po "douyin/app/video/favorite/common/model"
+	"douyin/app/video/favorite/service/internal/biz"
 )
 
 type favoriteRepo struct {

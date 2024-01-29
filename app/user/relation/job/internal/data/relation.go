@@ -2,6 +2,11 @@ package data
 
 import (
 	"context"
+
+	"github.com/IBM/sarama"
+	"github.com/go-kratos/kratos/v2/log"
+	"gorm.io/gorm"
+
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/user/relation/common/constants"
 	do "douyin/app/user/relation/common/entity"
@@ -9,9 +14,6 @@ import (
 	po "douyin/app/user/relation/common/model"
 	"douyin/app/user/relation/job/internal/biz"
 	constants2 "douyin/common/constants"
-	"github.com/IBM/sarama"
-	"github.com/go-kratos/kratos/v2/log"
-	"gorm.io/gorm"
 )
 
 type relationRepo struct {

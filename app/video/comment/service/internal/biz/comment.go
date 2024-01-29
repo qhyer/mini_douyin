@@ -2,11 +2,13 @@ package biz
 
 import (
 	"context"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"golang.org/x/sync/singleflight"
+
 	"douyin/app/video/comment/common/constants"
 	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/common/mapper"
-	"github.com/go-kratos/kratos/v2/log"
-	"golang.org/x/sync/singleflight"
 )
 
 type CommentRepo interface {

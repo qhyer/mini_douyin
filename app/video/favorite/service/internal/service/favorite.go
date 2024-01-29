@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
-	"douyin/api/video/favorite/service/v1"
+	"time"
+
+	v1 "douyin/api/video/favorite/service/v1"
 	do "douyin/app/video/favorite/common/entity"
 	"douyin/app/video/favorite/service/internal/biz"
 	"douyin/common/ecode"
-	"time"
 )
 
 type FavoriteService struct {

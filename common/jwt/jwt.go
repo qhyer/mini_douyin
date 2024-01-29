@@ -1,9 +1,11 @@
 package jwt
 
 import (
-	"douyin/common/ecode"
-	"github.com/golang-jwt/jwt/v5"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+
+	"douyin/common/ecode"
 )
 
 var secretKey = []byte("Q16pjwj5w9Klzs32") // 用于签名和验证JWT的秘密密钥
@@ -30,7 +32,6 @@ func ParseTokenToID(tokenString string) (int64, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
-
 	if err != nil {
 		return 0, err
 	}

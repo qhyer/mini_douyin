@@ -2,6 +2,7 @@ package memcache
 
 import (
 	"fmt"
+
 	"github.com/bradfitz/gomemcache/memcache"
 )
 

@@ -2,11 +2,13 @@ package biz
 
 import (
 	"context"
+
+	"github.com/go-kratos/kratos/v2/log"
+
 	favorite "douyin/api/video/favorite/service/v1"
 	video "douyin/api/video/feed/service/v1"
 	do "douyin/app/video/favorite/common/entity"
 	"douyin/common/ecode"
-	"github.com/go-kratos/kratos/v2/log"
 )
 
 type FavoriteRepo interface {

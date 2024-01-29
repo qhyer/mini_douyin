@@ -1,11 +1,12 @@
 package data
 
 import (
-	"douyin/app/infra/seq-server/service/internal/conf"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc"
+
+	"douyin/app/infra/seq-server/service/internal/conf"
 )
 
 // ProviderSet is data providers.

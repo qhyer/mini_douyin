@@ -2,12 +2,7 @@ package data
 
 import (
 	"context"
-	seq "douyin/api/seq-server/service/v1"
-	"douyin/app/video/publish/job/internal/conf"
-	rdb "douyin/common/cache/redis"
-	"douyin/common/database/orm"
-	minio1 "douyin/common/minio"
-	"douyin/common/sync/fanout"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -16,6 +11,13 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+
+	seq "douyin/api/seq-server/service/v1"
+	"douyin/app/video/publish/job/internal/conf"
+	rdb "douyin/common/cache/redis"
+	"douyin/common/database/orm"
+	minio1 "douyin/common/minio"
+	"douyin/common/sync/fanout"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -36,7 +38,8 @@ type Data struct {
 
 // NewData .
 func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, minio *minio.Client, kafka sarama.Consumer,
-	logger log.Logger, s seq.SeqClient) (*Data, func(), error) {
+	logger log.Logger, s seq.SeqClient,
+) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}

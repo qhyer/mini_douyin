@@ -3,6 +3,11 @@ package service
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"image"
+	"image/jpeg"
+	"os"
+
 	v1 "douyin/api/video/publish/job"
 	"douyin/app/video/publish/common/constants"
 	do "douyin/app/video/publish/common/entity"
@@ -10,13 +15,10 @@ import (
 	"douyin/app/video/publish/job/internal/conf"
 	constants2 "douyin/common/constants"
 	"douyin/common/queue/kafka"
-	"fmt"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
-	"image"
-	"image/jpeg"
-	"os"
 )
 
 type PublishService struct {

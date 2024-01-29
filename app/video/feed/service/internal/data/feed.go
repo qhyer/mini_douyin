@@ -2,6 +2,8 @@ package data
 
 import (
 	"context"
+	"errors"
+
 	accountRPC "douyin/api/user/account/service/v1"
 	comRPC "douyin/api/video/comment/service/v1"
 	favRPC "douyin/api/video/favorite/service/v1"
@@ -11,7 +13,7 @@ import (
 	"douyin/app/video/feed/common/mapper"
 	"douyin/app/video/feed/service/internal/biz"
 	"douyin/common/ecode"
-	"errors"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
 )

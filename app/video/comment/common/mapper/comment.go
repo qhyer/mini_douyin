@@ -1,10 +1,11 @@
 package mapper
 
 import (
+	"fmt"
+
 	v1 "douyin/api/video/comment/service/v1"
 	do "douyin/app/video/comment/common/entity"
 	po "douyin/app/video/comment/common/model"
-	"fmt"
 )
 
 func CommentFromPO(c *po.Comment) (*do.Comment, error) {

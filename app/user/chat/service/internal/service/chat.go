@@ -2,13 +2,14 @@ package service
 
 import (
 	"context"
+	"time"
+
 	do "douyin/app/user/chat/common/entity"
 	"douyin/app/user/chat/common/mapper"
 	"douyin/app/user/chat/service/internal/biz"
 	"douyin/common/ecode"
-	"time"
 
-	"douyin/api/user/chat/service/v1"
+	v1 "douyin/api/user/chat/service/v1"
 )
 
 type ChatService struct {

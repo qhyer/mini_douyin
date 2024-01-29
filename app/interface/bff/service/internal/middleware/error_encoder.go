@@ -1,9 +1,11 @@
 package middleware
 
 import (
-	"douyin/common/ecode"
-	"github.com/go-kratos/kratos/v2/transport/http"
 	nethttp "net/http"
+
+	"github.com/go-kratos/kratos/v2/transport/http"
+
+	"douyin/common/ecode"
 )
 
 func ErrorEncoder(w nethttp.ResponseWriter, r *nethttp.Request, err error) {

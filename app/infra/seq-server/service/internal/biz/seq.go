@@ -2,16 +2,7 @@ package biz
 
 import (
 	"context"
-	"douyin/app/infra/seq-server/service/common/entity"
-	"douyin/app/infra/seq-server/service/internal/conf"
-	"douyin/common/ecode"
-	"douyin/common/network"
-	os1 "douyin/common/os"
 	"fmt"
-	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/spf13/cast"
-	clientv3 "go.etcd.io/etcd/client/v3"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -19,6 +10,17 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"douyin/app/infra/seq-server/service/common/entity"
+	"douyin/app/infra/seq-server/service/internal/conf"
+	"douyin/common/ecode"
+	"douyin/common/network"
+	os1 "douyin/common/os"
+
+	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/spf13/cast"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var (
@@ -102,7 +104,7 @@ func (u *SeqUsecase) GetID() (int64, error) {
 }
 
 func (u *SeqUsecase) tilNextMillis(lastTimestamp int64) int64 {
-	var ts = u.timeGen()
+	ts := u.timeGen()
 	for ts <= lastTimestamp {
 		ts = u.timeGen()
 	}

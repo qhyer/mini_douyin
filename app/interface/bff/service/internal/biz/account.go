@@ -2,9 +2,11 @@ package biz
 
 import (
 	"context"
+
+	"github.com/go-kratos/kratos/v2/log"
+
 	account "douyin/api/user/account/service/v1"
 	passport "douyin/api/user/passport/service/v1"
-	"github.com/go-kratos/kratos/v2/log"
 )
 
 type AccountRepo interface {

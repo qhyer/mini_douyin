@@ -2,10 +2,12 @@ package fanout
 
 import (
 	"context"
-	"douyin/common/ecode"
-	"github.com/go-kratos/kratos/v2/log"
 	"runtime"
 	"sync"
+
+	"github.com/go-kratos/kratos/v2/log"
+
+	"douyin/common/ecode"
 )
 
 type options struct {

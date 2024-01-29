@@ -1,15 +1,16 @@
 package data
 
 import (
+	"github.com/IBM/sarama"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
+
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/user/chat/service/internal/conf"
 	rdb "douyin/common/cache/redis"
 	"douyin/common/database/orm"
 	"douyin/common/queue/kafka"
 	"douyin/common/sync/fanout"
-	"github.com/IBM/sarama"
-	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"

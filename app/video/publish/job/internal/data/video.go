@@ -3,6 +3,12 @@ package data
 import (
 	"bytes"
 	"context"
+	"time"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/minio/minio-go/v7"
+	"gorm.io/gorm"
+
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/publish/common/constants"
 	do "douyin/app/video/publish/common/entity"
@@ -10,10 +16,6 @@ import (
 	po "douyin/app/video/publish/common/model"
 	"douyin/app/video/publish/job/internal/biz"
 	constants2 "douyin/common/constants"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/minio/minio-go/v7"
-	"gorm.io/gorm"
-	"time"
 )
 
 type videoRepo struct {

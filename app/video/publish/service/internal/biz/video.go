@@ -2,11 +2,13 @@ package biz
 
 import (
 	"context"
-	"douyin/app/video/publish/common/constants"
-	do "douyin/app/video/publish/common/entity"
+	"time"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/sync/singleflight"
-	"time"
+
+	"douyin/app/video/publish/common/constants"
+	do "douyin/app/video/publish/common/entity"
 )
 
 type VideoRepo interface {

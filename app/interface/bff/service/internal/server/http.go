@@ -1,11 +1,12 @@
 package server
 
 import (
+	"github.com/go-kratos/kratos/v2/middleware/validate"
+
 	v1 "douyin/api/bff"
 	"douyin/app/interface/bff/service/internal/conf"
 	"douyin/app/interface/bff/service/internal/middleware"
 	"douyin/app/interface/bff/service/internal/service"
-	"github.com/go-kratos/kratos/v2/middleware/validate"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -14,7 +15,7 @@ import (
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Server, bff *service.BFFService, logger log.Logger) *http.Server {
-	var opts = []http.ServerOption{
+	opts := []http.ServerOption{
 		http.ErrorEncoder(middleware.ErrorEncoder),
 		http.Middleware(
 			validate.Validator(),

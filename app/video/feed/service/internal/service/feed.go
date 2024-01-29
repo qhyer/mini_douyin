@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
+
 	"douyin/app/video/feed/common/mapper"
 	"douyin/app/video/feed/service/internal/biz"
 	"douyin/common/ecode"
 
-	"douyin/api/video/feed/service/v1"
+	v1 "douyin/api/video/feed/service/v1"
 )
 
 type FeedService struct {

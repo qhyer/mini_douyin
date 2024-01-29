@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	v1 "douyin/api/user/passport/service/v1"
 	do "douyin/app/user/passport/common/entity"
 	"douyin/app/user/passport/common/mapper"
@@ -26,7 +27,6 @@ func (s *PassportService) Register(ctx context.Context, req *v1.DouyinUserRegist
 		Name:     req.GetUsername(),
 		Password: req.GetPassword(),
 	})
-
 	// 创建用户失败
 	if err != nil {
 		err := ecode.ConvertErr(err)

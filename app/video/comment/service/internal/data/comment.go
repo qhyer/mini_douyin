@@ -2,13 +2,15 @@ package data
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+
 	"douyin/app/video/comment/common/constants"
 	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/common/mapper"
 	po "douyin/app/video/comment/common/model"
 	"douyin/app/video/comment/service/internal/biz"
-	"encoding/json"
-	"errors"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"
@@ -92,7 +94,6 @@ func (r *commentRepo) batchGetCommentInfoByVideoIdAndCommentIds(ctx context.Cont
 	}
 	comments, err := mapper.CommentFromPOs(cacheComments)
 	return comments, err
-
 }
 
 // CountCommentByVideoId 获取视频的评论数

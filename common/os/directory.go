@@ -1,12 +1,13 @@
 package os
 
 import (
-	"github.com/go-kratos/kratos/v2/log"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 func GetCurrentAbPath() string {

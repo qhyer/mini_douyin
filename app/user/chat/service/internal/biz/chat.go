@@ -2,8 +2,10 @@ package biz
 
 import (
 	"context"
-	do "douyin/app/user/chat/common/entity"
+
 	"github.com/go-kratos/kratos/v2/log"
+
+	do "douyin/app/user/chat/common/entity"
 )
 
 type ChatRepo interface {

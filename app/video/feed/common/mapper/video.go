@@ -1,10 +1,11 @@
 package mapper
 
 import (
+	"time"
+
 	feedDTO "douyin/api/video/feed/service/v1"
 	publishDTO "douyin/api/video/publish/service/v1"
 	do "douyin/app/video/feed/common/entity"
-	"time"
 )
 
 func VideoFromPublishDTO(d *publishDTO.VideoInfo) (*do.Video, error) {

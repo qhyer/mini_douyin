@@ -3,6 +3,9 @@ package data
 import (
 	"bytes"
 	"context"
+	"errors"
+	"time"
+
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/publish/common/constants"
 	do "douyin/app/video/publish/common/entity"
@@ -10,12 +13,11 @@ import (
 	po "douyin/app/video/publish/common/model"
 	"douyin/app/video/publish/service/internal/biz"
 	constants2 "douyin/common/constants"
-	"errors"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/minio/minio-go/v7"
 	"github.com/redis/go-redis/v9"
-	"time"
 )
 
 type videoRepo struct {

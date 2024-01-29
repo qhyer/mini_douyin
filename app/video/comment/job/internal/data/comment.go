@@ -2,6 +2,11 @@ package data
 
 import (
 	"context"
+
+	"github.com/IBM/sarama"
+	"github.com/go-kratos/kratos/v2/log"
+	"gorm.io/gorm"
+
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/comment/common/constants"
 	do "douyin/app/video/comment/common/entity"
@@ -9,9 +14,6 @@ import (
 	po "douyin/app/video/comment/common/model"
 	"douyin/app/video/comment/job/internal/biz"
 	constants2 "douyin/common/constants"
-	"github.com/IBM/sarama"
-	"github.com/go-kratos/kratos/v2/log"
-	"gorm.io/gorm"
 )
 
 type commentRepo struct {
@@ -37,7 +39,7 @@ func (r *commentRepo) UpdateVideoCommentCount(ctx context.Context, videoId int64
 }
 
 func (r *commentRepo) BatchUpdateVideoCommentCount(ctx context.Context, videoIds []int64, incr []int64) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -89,7 +91,7 @@ func (r *commentRepo) CreateComment(ctx context.Context, commentAct *do.CommentA
 }
 
 func (r *commentRepo) BatchCreateComment(ctx context.Context, comments []*do.CommentAction) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
@@ -113,6 +115,6 @@ func (r *commentRepo) DeleteComment(ctx context.Context, commentAct *do.CommentA
 }
 
 func (r *commentRepo) BatchDeleteComment(ctx context.Context, comments []*do.CommentAction) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }

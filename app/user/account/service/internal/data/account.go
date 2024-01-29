@@ -2,6 +2,9 @@ package data
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+
 	passportRPC "douyin/api/user/passport/service/v1"
 	relationRPC "douyin/api/user/relation/service/v1"
 	favoriteRPC "douyin/api/video/favorite/service/v1"
@@ -12,8 +15,7 @@ import (
 	"douyin/app/user/account/service/internal/biz"
 	constants2 "douyin/common/constants"
 	"douyin/common/ecode"
-	"encoding/json"
-	"errors"
+
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/redis/go-redis/v9"

@@ -2,9 +2,11 @@ package data
 
 import (
 	"context"
-	"douyin/app/infra/seq-server/service/internal/biz"
+
 	"github.com/go-kratos/kratos/v2/log"
 	clientv3 "go.etcd.io/etcd/client/v3"
+
+	"douyin/app/infra/seq-server/service/internal/biz"
 )
 
 type SeqRepo struct {

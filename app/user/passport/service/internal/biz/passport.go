@@ -2,11 +2,13 @@ package biz
 
 import (
 	"context"
-	"douyin/app/user/passport/common/constants"
-	do "douyin/app/user/passport/common/entity"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/sync/singleflight"
+
+	"douyin/app/user/passport/common/constants"
+	do "douyin/app/user/passport/common/entity"
 )
 
 type PassportRepo interface {

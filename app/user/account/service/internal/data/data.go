@@ -2,13 +2,7 @@ package data
 
 import (
 	"context"
-	passport "douyin/api/user/passport/service/v1"
-	relation "douyin/api/user/relation/service/v1"
-	favorite "douyin/api/video/favorite/service/v1"
-	publish "douyin/api/video/publish/service/v1"
-	"douyin/app/user/account/service/internal/conf"
-	rdb "douyin/common/cache/redis"
-	"douyin/common/sync/fanout"
+
 	"github.com/bluele/gcache"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
@@ -16,6 +10,14 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/redis/go-redis/v9"
+
+	passport "douyin/api/user/passport/service/v1"
+	relation "douyin/api/user/relation/service/v1"
+	favorite "douyin/api/video/favorite/service/v1"
+	publish "douyin/api/video/publish/service/v1"
+	"douyin/app/user/account/service/internal/conf"
+	rdb "douyin/common/cache/redis"
+	"douyin/common/sync/fanout"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -39,7 +41,8 @@ type Data struct {
 
 // NewData .
 func NewData(c *conf.Data, rc relation.RelationClient, pc passport.PassportClient, fc favorite.FavoriteClient,
-	pubc publish.PublishClient, rds *redis.Client, mem *memcache.Client, logger log.Logger) (*Data, func(), error) {
+	pubc publish.PublishClient, rds *redis.Client, mem *memcache.Client, logger log.Logger,
+) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}

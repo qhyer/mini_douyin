@@ -1,11 +1,12 @@
 package orm
 
 import (
+	"time"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"time"
 )
 
 // Config mysql config.

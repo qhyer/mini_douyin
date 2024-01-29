@@ -21,8 +21,7 @@ import (
 	"time"
 )
 
-type fakeTransitionerObj struct {
-}
+type fakeTransitionerObj struct{}
 
 func (t fakeTransitionerObj) transition(f *FSM) error {
 	return &InternalError{}

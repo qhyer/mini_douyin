@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+
+	"github.com/IBM/sarama"
+	"github.com/go-kratos/kratos/v2/log"
+
 	v1 "douyin/api/video/comment/job"
 	"douyin/app/video/comment/common/constants"
 	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/job/internal/biz"
-	"github.com/IBM/sarama"
-	"github.com/go-kratos/kratos/v2/log"
 )
 
 type CommentService struct {

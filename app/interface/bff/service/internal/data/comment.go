@@ -2,9 +2,11 @@ package data
 
 import (
 	"context"
+
+	"github.com/go-kratos/kratos/v2/log"
+
 	v1 "douyin/api/video/comment/service/v1"
 	"douyin/app/interface/bff/service/internal/biz"
-	"github.com/go-kratos/kratos/v2/log"
 )
 
 type commentRepo struct {

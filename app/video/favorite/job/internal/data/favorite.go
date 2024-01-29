@@ -2,6 +2,12 @@ package data
 
 import (
 	"context"
+	"time"
+
+	"github.com/IBM/sarama"
+	"github.com/go-kratos/kratos/v2/log"
+	"gorm.io/gorm"
+
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/favorite/common/constants"
 	do "douyin/app/video/favorite/common/entity"
@@ -9,10 +15,6 @@ import (
 	po "douyin/app/video/favorite/common/model"
 	"douyin/app/video/favorite/job/internal/biz"
 	constants2 "douyin/common/constants"
-	"github.com/IBM/sarama"
-	"github.com/go-kratos/kratos/v2/log"
-	"gorm.io/gorm"
-	"time"
 )
 
 type favoriteRepo struct {
@@ -137,27 +139,27 @@ func (r *favoriteRepo) DeleteFavorite(ctx context.Context, favorite *do.Favorite
 }
 
 func (r *favoriteRepo) BatchUpdateUserFavoriteCount(ctx context.Context, userIds []int64, incr []int64) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (r *favoriteRepo) BatchUpdateUserFavoritedCount(ctx context.Context, userIds []int64, incr []int64) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (r *favoriteRepo) BatchUpdateVideoFavoritedCount(ctx context.Context, videoIds []int64, incr []int64) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (r *favoriteRepo) BatchCreateFavorite(ctx context.Context, favorites []*do.FavoriteAction) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 
 func (r *favoriteRepo) BatchDeleteFavorite(ctx context.Context, favorites []*do.FavoriteAction) error {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
 

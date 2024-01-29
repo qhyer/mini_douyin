@@ -2,7 +2,8 @@ package service
 
 import (
 	"context"
-	"douyin/api/video/publish/service/v1"
+
+	v1 "douyin/api/video/publish/service/v1"
 	"douyin/app/video/publish/common/mapper"
 	"douyin/app/video/publish/service/internal/biz"
 	"douyin/common/ecode"
