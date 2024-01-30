@@ -12,22 +12,6 @@ services:
     networks:
       - douyin_net
     depends_on:
-      account-service:
-        condition: service_started
-      chat-service:
-        condition: service_started
-      passport-service:
-        condition: service_started
-      relation-service:
-        condition: service_started
-      publish-service:
-        condition: service_started
-      favorite-service:
-        condition: service_started
-      feed-service:
-        condition: service_started
-      comment-service:
-        condition: service_started
       bff-service:
         condition: service_started
 

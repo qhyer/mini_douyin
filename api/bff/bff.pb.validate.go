@@ -57,18 +57,18 @@ func (m *GetUserInfoRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for UserId
-
-	if utf8.RuneCountInString(m.GetToken()) < 1 {
+	if m.GetUserId() <= 0 {
 		err := GetUserInfoRequestValidationError{
-			field:  "Token",
-			reason: "value length must be at least 1 runes",
+			field:  "UserId",
+			reason: "value must be greater than 0",
 		}
 		if !all {
 			return err
 		}
 		errors = append(errors, err)
 	}
+
+	// no validation rules for Token
 
 	if len(errors) > 0 {
 		return GetUserInfoRequestMultiError(errors)
@@ -305,9 +305,27 @@ func (m *UserLoginRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Username
+	if l := utf8.RuneCountInString(m.GetUsername()); l < 1 || l > 32 {
+		err := UserLoginRequestValidationError{
+			field:  "Username",
+			reason: "value length must be between 1 and 32 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for Password
+	if l := utf8.RuneCountInString(m.GetPassword()); l < 6 || l > 32 {
+		err := UserLoginRequestValidationError{
+			field:  "Password",
+			reason: "value length must be between 6 and 32 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return UserLoginRequestMultiError(errors)
@@ -729,141 +747,6 @@ var _ interface {
 	ErrorName() string
 } = UserRegisterReplyValidationError{}
 
-// Validate checks the field values on PublishActionRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *PublishActionRequest) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on PublishActionRequest with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// PublishActionRequestMultiError, or nil if none found.
-func (m *PublishActionRequest) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *PublishActionRequest) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if utf8.RuneCountInString(m.GetToken()) < 1 {
-		err := PublishActionRequestValidationError{
-			field:  "Token",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(m.GetData()) < 100000 {
-		err := PublishActionRequestValidationError{
-			field:  "Data",
-			reason: "value length must be at least 100000 bytes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if utf8.RuneCountInString(m.GetTitle()) < 1 {
-		err := PublishActionRequestValidationError{
-			field:  "Title",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if len(errors) > 0 {
-		return PublishActionRequestMultiError(errors)
-	}
-
-	return nil
-}
-
-// PublishActionRequestMultiError is an error wrapping multiple validation
-// errors returned by PublishActionRequest.ValidateAll() if the designated
-// constraints aren't met.
-type PublishActionRequestMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m PublishActionRequestMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m PublishActionRequestMultiError) AllErrors() []error { return m }
-
-// PublishActionRequestValidationError is the validation error returned by
-// PublishActionRequest.Validate if the designated constraints aren't met.
-type PublishActionRequestValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e PublishActionRequestValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e PublishActionRequestValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e PublishActionRequestValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e PublishActionRequestValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e PublishActionRequestValidationError) ErrorName() string {
-	return "PublishActionRequestValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e PublishActionRequestValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sPublishActionRequest.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = PublishActionRequestValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = PublishActionRequestValidationError{}
-
 // Validate checks the field values on FeedRequest with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -1106,6 +989,141 @@ var _ interface {
 	ErrorName() string
 } = FeedReplyValidationError{}
 
+// Validate checks the field values on PublishActionRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *PublishActionRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PublishActionRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// PublishActionRequestMultiError, or nil if none found.
+func (m *PublishActionRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PublishActionRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetToken()) < 1 {
+		err := PublishActionRequestValidationError{
+			field:  "Token",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(m.GetData()) < 1 {
+		err := PublishActionRequestValidationError{
+			field:  "Data",
+			reason: "value length must be at least 1 bytes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetTitle()) < 1 {
+		err := PublishActionRequestValidationError{
+			field:  "Title",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return PublishActionRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// PublishActionRequestMultiError is an error wrapping multiple validation
+// errors returned by PublishActionRequest.ValidateAll() if the designated
+// constraints aren't met.
+type PublishActionRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PublishActionRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PublishActionRequestMultiError) AllErrors() []error { return m }
+
+// PublishActionRequestValidationError is the validation error returned by
+// PublishActionRequest.Validate if the designated constraints aren't met.
+type PublishActionRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PublishActionRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PublishActionRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PublishActionRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PublishActionRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PublishActionRequestValidationError) ErrorName() string {
+	return "PublishActionRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e PublishActionRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPublishActionRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PublishActionRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PublishActionRequestValidationError{}
+
 // Validate checks the field values on PublishActionReply with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -1234,7 +1252,16 @@ func (m *GetPublishListRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for UserId
+	if m.GetUserId() <= 0 {
+		err := GetPublishListRequestValidationError{
+			field:  "UserId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Token
 
@@ -1502,7 +1529,16 @@ func (m *RelationActionRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for ActionType
+	if _, ok := _RelationActionRequest_ActionType_InLookup[m.GetActionType()]; !ok {
+		err := RelationActionRequestValidationError{
+			field:  "ActionType",
+			reason: "value must be in list [1 2]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return RelationActionRequestMultiError(errors)
@@ -1583,6 +1619,11 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RelationActionRequestValidationError{}
+
+var _RelationActionRequest_ActionType_InLookup = map[int64]struct{}{
+	1: {},
+	2: {},
+}
 
 // Validate checks the field values on RelationActionReply with the rules
 // defined in the proto definition for this message. If any rules are
@@ -1712,7 +1753,16 @@ func (m *GetFollowerListRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for UserId
+	if m.GetUserId() <= 0 {
+		err := GetFollowerListRequestValidationError{
+			field:  "UserId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Token
 
@@ -1958,7 +2008,16 @@ func (m *GetFollowListRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for UserId
+	if m.GetUserId() <= 0 {
+		err := GetFollowListRequestValidationError{
+			field:  "UserId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Token
 
@@ -2747,9 +2806,27 @@ func (m *MessageActionRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for ActionType
+	if _, ok := _MessageActionRequest_ActionType_InLookup[m.GetActionType()]; !ok {
+		err := MessageActionRequestValidationError{
+			field:  "ActionType",
+			reason: "value must be in list [1]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
-	// no validation rules for Content
+	if utf8.RuneCountInString(m.GetContent()) < 1 {
+		err := MessageActionRequestValidationError{
+			field:  "Content",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return MessageActionRequestMultiError(errors)
@@ -2830,6 +2907,10 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = MessageActionRequestValidationError{}
+
+var _MessageActionRequest_ActionType_InLookup = map[uint32]struct{}{
+	1: {},
+}
 
 // Validate checks the field values on MessageActionReply with the rules
 // defined in the proto definition for this message. If any rules are
@@ -2959,7 +3040,16 @@ func (m *GetFavoriteVideoListRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for UserId
+	if m.GetUserId() <= 0 {
+		err := GetFavoriteVideoListRequestValidationError{
+			field:  "UserId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Token
 
@@ -3228,7 +3318,16 @@ func (m *FavoriteActionRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for ActionType
+	if _, ok := _FavoriteActionRequest_ActionType_InLookup[m.GetActionType()]; !ok {
+		err := FavoriteActionRequestValidationError{
+			field:  "ActionType",
+			reason: "value must be in list [1 2]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return FavoriteActionRequestMultiError(errors)
@@ -3309,6 +3408,11 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = FavoriteActionRequestValidationError{}
+
+var _FavoriteActionRequest_ActionType_InLookup = map[uint32]struct{}{
+	1: {},
+	2: {},
+}
 
 // Validate checks the field values on FavoriteActionReply with the rules
 // defined in the proto definition for this message. If any rules are
@@ -3713,7 +3817,16 @@ func (m *CommentActionRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	// no validation rules for ActionType
+	if _, ok := _CommentActionRequest_ActionType_InLookup[m.GetActionType()]; !ok {
+		err := CommentActionRequestValidationError{
+			field:  "ActionType",
+			reason: "value must be in list [1 2]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for CommentText
 
@@ -3798,6 +3911,11 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CommentActionRequestValidationError{}
+
+var _CommentActionRequest_ActionType_InLookup = map[uint32]struct{}{
+	1: {},
+	2: {},
+}
 
 // Validate checks the field values on CommentActionReply with the rules
 // defined in the proto definition for this message. If any rules are

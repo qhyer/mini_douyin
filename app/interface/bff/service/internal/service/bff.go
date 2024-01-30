@@ -47,7 +47,7 @@ func (s *BFFService) UserRegister(ctx context.Context, req *v1.UserRegisterReque
 	return &v1.UserRegisterReply{
 		StatusCode: res.GetStatusCode(),
 		StatusMsg:  res.GetStatusMsg(),
-		UserId:     uint32(res.GetUserId()),
+		UserId:     res.GetUserId(),
 		Token:      res.GetToken(),
 	}, nil
 }
@@ -64,7 +64,7 @@ func (s *BFFService) UserLogin(ctx context.Context, req *v1.UserLoginRequest) (*
 	return &v1.UserLoginReply{
 		StatusCode: res.GetStatusCode(),
 		StatusMsg:  res.GetStatusMsg(),
-		UserId:     uint32(res.GetUserId()),
+		UserId:     res.GetUserId(),
 		Token:      res.GetToken(),
 	}, nil
 }
@@ -73,7 +73,7 @@ func (s *BFFService) GetUserInfo(ctx context.Context, req *v1.GetUserInfoRequest
 	userId := ctx.Value("userId").(int64)
 	toUserId := req.GetUserId()
 
-	res, err := s.accountUsecase.GetUserInfo(ctx, userId, int64(toUserId))
+	res, err := s.accountUsecase.GetUserInfo(ctx, userId, toUserId)
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.GetUserInfoReply{
@@ -95,7 +95,7 @@ func (s *BFFService) GetUserInfo(ctx context.Context, req *v1.GetUserInfoRequest
 func (s *BFFService) GetPublishList(ctx context.Context, req *v1.GetPublishListRequest) (*v1.GetPublishListReply, error) {
 	userId := ctx.Value("userId").(int64)
 	toUserId := req.GetUserId()
-	res, err := s.publishUsecase.GetUserPublishedVideoList(ctx, userId, int64(toUserId))
+	res, err := s.publishUsecase.GetUserPublishedVideoList(ctx, userId, toUserId)
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.GetPublishListReply{
@@ -182,7 +182,7 @@ func (s *BFFService) Feed(ctx context.Context, req *v1.FeedRequest) (*v1.FeedRep
 func (s *BFFService) GetFollowerList(ctx context.Context, req *v1.GetFollowerListRequest) (*v1.GetFollowerListReply, error) {
 	userId := ctx.Value("userId").(int64)
 	toUserId := req.GetUserId()
-	res, err := s.relationUsecase.GetUserFollowerList(ctx, userId, int64(toUserId))
+	res, err := s.relationUsecase.GetUserFollowerList(ctx, userId, toUserId)
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.GetFollowerListReply{
@@ -210,7 +210,7 @@ func (s *BFFService) GetFollowerList(ctx context.Context, req *v1.GetFollowerLis
 func (s *BFFService) GetFollowList(ctx context.Context, req *v1.GetFollowListRequest) (*v1.GetFollowListReply, error) {
 	userId := ctx.Value("userId").(int64)
 	toUserId := req.GetUserId()
-	res, err := s.relationUsecase.GetUserFollowList(ctx, userId, int64(toUserId))
+	res, err := s.relationUsecase.GetUserFollowList(ctx, userId, toUserId)
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.GetFollowListReply{
@@ -239,7 +239,7 @@ func (s *BFFService) RelationAction(ctx context.Context, req *v1.RelationActionR
 	userId := ctx.Value("userId").(int64)
 	toUserId := req.GetToUserId()
 	action := req.GetActionType()
-	res, err := s.relationUsecase.RelationAction(ctx, userId, int64(toUserId), int32(action))
+	res, err := s.relationUsecase.RelationAction(ctx, userId, toUserId, int32(action))
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.RelationActionReply{
@@ -294,7 +294,7 @@ func (s *BFFService) MessageAction(ctx context.Context, req *v1.MessageActionReq
 func (s *BFFService) GetFavoriteVideoList(ctx context.Context, req *v1.GetFavoriteVideoListRequest) (*v1.GetFavoriteVideoListReply, error) {
 	userId := ctx.Value("userId").(int64)
 	toUserId := req.GetUserId()
-	res, err := s.favoriteUsecase.GetUserFavoriteVideoList(ctx, userId, int64(toUserId))
+	res, err := s.favoriteUsecase.GetUserFavoriteVideoList(ctx, userId, toUserId)
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.GetFavoriteVideoListReply{
@@ -325,7 +325,7 @@ func (s *BFFService) FavoriteAction(ctx context.Context, req *v1.FavoriteActionR
 	userId := ctx.Value("userId").(int64)
 	videoId := req.GetVideoId()
 	actionType := req.GetActionType()
-	res, err := s.favoriteUsecase.FavoriteAction(ctx, userId, int64(videoId), int32(actionType))
+	res, err := s.favoriteUsecase.FavoriteAction(ctx, userId, videoId, int32(actionType))
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.FavoriteActionReply{
@@ -342,7 +342,7 @@ func (s *BFFService) FavoriteAction(ctx context.Context, req *v1.FavoriteActionR
 
 func (s *BFFService) GetCommentList(ctx context.Context, req *v1.CommentListRequest) (*v1.CommentListReply, error) {
 	videoId := req.GetVideoId()
-	res, err := s.commentUsecase.GetCommentList(ctx, int64(videoId))
+	res, err := s.commentUsecase.GetCommentList(ctx, videoId)
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.CommentListReply{
@@ -375,7 +375,7 @@ func (s *BFFService) CommentAction(ctx context.Context, req *v1.CommentActionReq
 	content := req.GetCommentText()
 	action := req.GetActionType()
 	commentId := req.GetCommentId()
-	res, err := s.commentUsecase.CommentAction(ctx, userId, int64(videoId), int64(commentId), int32(action), content)
+	res, err := s.commentUsecase.CommentAction(ctx, userId, videoId, commentId, int32(action), content)
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.CommentActionReply{
