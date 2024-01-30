@@ -85,7 +85,7 @@ func (r *accountRepo) GetUserInfoByUserId(ctx context.Context, userId int64, toU
 		user.FollowerCount = usFollowerCnt
 		user.WorkCount = usWorkCnt
 		user.IsFollow = isFollow
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setUserInfoCache(ctx, user)
 		})
 		if err != nil {
@@ -382,7 +382,7 @@ func (r *accountRepo) GetFollowListByUserId(ctx context.Context, userId int64, t
 		return nil, err
 	}
 	// 设置缓存
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setUserFollowListCache(ctx, userId, users)
 	})
 	if err != nil {
@@ -449,7 +449,7 @@ func (r *accountRepo) GetFollowerListByUserId(ctx context.Context, userId int64,
 		return nil, err
 	}
 	// 设置缓存
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setUserFollowerListCache(ctx, userId, users)
 	})
 	if err != nil {
@@ -483,7 +483,7 @@ func (r *accountRepo) GetFriendListByUserId(ctx context.Context, userId int64) (
 		return nil, err
 	}
 	// 设置缓存
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setUserFriendListCache(ctx, userId, users)
 	})
 	if err != nil {

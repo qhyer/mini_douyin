@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
+	do "douyin/app/user/relation/common/event"
 
 	v1 "douyin/api/user/relation/service/v1"
-	do "douyin/app/user/relation/common/entity"
 	"douyin/app/user/relation/service/internal/biz"
 	"douyin/common/ecode"
 )

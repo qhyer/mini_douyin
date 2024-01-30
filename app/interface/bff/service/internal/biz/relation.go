@@ -2,12 +2,12 @@ package biz
 
 import (
 	"context"
+	"douyin/app/user/relation/common/event"
 
 	"github.com/go-kratos/kratos/v2/log"
 
 	account "douyin/api/user/account/service/v1"
 	relation "douyin/api/user/relation/service/v1"
-	do "douyin/app/user/relation/common/entity"
 	"douyin/common/ecode"
 )
 
@@ -71,7 +71,7 @@ func (uc *RelationUsecase) GetUserFriendList(ctx context.Context, userId int64) 
 }
 
 func isRelationActionTypeValid(actionType int32) bool {
-	if actionType == int32(do.RelationActionFollow) || actionType == int32(do.RelationActionUnFollow) {
+	if actionType == int32(event.RelationActionFollow) || actionType == int32(event.RelationActionUnFollow) {
 		return true
 	}
 	return false

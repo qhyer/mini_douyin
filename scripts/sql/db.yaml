@@ -25,7 +25,7 @@ tables:
     count: 1
   - name: "relation_count"
     count: 100
-  - name: "user_favorite_count"
+  - name: "user_favorite_video_count"
     count: 100
   - name: "video_favorited_count"
     count: 100

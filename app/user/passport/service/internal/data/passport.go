@@ -87,7 +87,7 @@ func (r *passportRepo) GetUserById(ctx context.Context, id int64) (*do.User, err
 		r.log.Errorf("get user from db err: %v", err)
 		return nil, err
 	}
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setUserCache(ctx, user, key)
 	})
 	if err != nil {
@@ -125,7 +125,7 @@ func (r *passportRepo) MGetUserById(ctx context.Context, ids []int64) ([]*do.Use
 		r.log.Errorf("get user from db err: %v", err)
 		return nil, err
 	}
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.batchSetUserCache(ctx, missedUsers)
 	})
 	if err != nil {

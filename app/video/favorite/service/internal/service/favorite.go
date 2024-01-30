@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
+	event "douyin/app/video/favorite/common/event"
 	"time"
 
 	v1 "douyin/api/video/favorite/service/v1"
-	do "douyin/app/video/favorite/common/entity"
 	"douyin/app/video/favorite/service/internal/biz"
 	"douyin/common/ecode"
 )
@@ -22,8 +22,8 @@ func NewFavoriteService(uc *biz.FavoriteUsecase) *FavoriteService {
 
 // FavoriteAction 视频点赞
 func (s *FavoriteService) FavoriteAction(ctx context.Context, req *v1.DouyinFavoriteActionRequest) (*v1.DouyinFavoriteActionResponse, error) {
-	err := s.uc.FavoriteAction(ctx, &do.FavoriteAction{
-		Type:      do.FavoriteActionType(req.GetActionType()),
+	err := s.uc.FavoriteAction(ctx, &event.FavoriteAction{
+		Type:      event.FavoriteActionType(req.GetActionType()),
 		UserId:    req.GetUserId(),
 		VideoId:   req.GetVideoId(),
 		CreatedAt: time.Now(),

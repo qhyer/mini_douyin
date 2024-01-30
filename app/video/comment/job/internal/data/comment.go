@@ -2,14 +2,14 @@ package data
 
 import (
 	"context"
-
+	"douyin/app/video/comment/common/event"
+	"douyin/common/ecode"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
 
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/comment/common/constants"
-	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/common/mapper"
 	po "douyin/app/video/comment/common/model"
 	"douyin/app/video/comment/job/internal/biz"
@@ -43,7 +43,7 @@ func (r *commentRepo) BatchUpdateVideoCommentCount(ctx context.Context, videoIds
 	panic("implement me")
 }
 
-func (r *commentRepo) CreateComment(ctx context.Context, commentAct *do.CommentAction) error {
+func (r *commentRepo) CreateComment(ctx context.Context, commentAct *event.CommentAction) error {
 	// 获取评论ID
 	cid, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{
 		BusinessId: constants2.CommentBusinessId,
@@ -90,12 +90,12 @@ func (r *commentRepo) CreateComment(ctx context.Context, commentAct *do.CommentA
 	return nil
 }
 
-func (r *commentRepo) BatchCreateComment(ctx context.Context, comments []*do.CommentAction) error {
+func (r *commentRepo) BatchCreateComment(ctx context.Context, comments []*event.CommentAction) error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (r *commentRepo) DeleteComment(ctx context.Context, commentAct *do.CommentAction) error {
+func (r *commentRepo) DeleteComment(ctx context.Context, commentAct *event.CommentAction) error {
 	comment, err := mapper.ParseCommentFromCommentAction(commentAct)
 	if err != nil {
 		r.log.Errorf("mapper.ParseCommentFromCommentAction error(%v)", err)
@@ -106,7 +106,31 @@ func (r *commentRepo) DeleteComment(ctx context.Context, commentAct *do.CommentA
 		r.log.Errorf("mapper.CommentToPO error(%v)", err)
 		return err
 	}
-	err = r.data.db.WithContext(ctx).Table(constants.CommentRecordTableName(com.VideoId)).Where("id = ? and user_id = ?", com.ID, com.UserId).Delete(com).Error
+	commentActByte, err := commentAct.MarshalJson()
+	if err != nil {
+		r.log.Errorf("commentAct.MarshalJson error(%v)", err)
+		return err
+	}
+	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		res := tx.Table(constants.CommentRecordTableName(com.VideoId)).Where("id = ?", com.ID).Delete(com)
+		if err != nil {
+			return err
+		}
+
+		if res.RowsAffected == 0 {
+			return ecode.CommentRecordNotFoundErr
+		}
+
+		_, _, err = r.data.kafkaProducer.SendMessage(&sarama.ProducerMessage{
+			Topic: constants.UpdateCommentCountTopic,
+			Key:   sarama.StringEncoder(constants.UpdateCommentCountKafkaKey(com.VideoId)),
+			Value: sarama.ByteEncoder(commentActByte),
+		})
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		r.log.Errorf("DeleteComment error(%v)", err)
 		return err
@@ -114,7 +138,7 @@ func (r *commentRepo) DeleteComment(ctx context.Context, commentAct *do.CommentA
 	return nil
 }
 
-func (r *commentRepo) BatchDeleteComment(ctx context.Context, comments []*do.CommentAction) error {
+func (r *commentRepo) BatchDeleteComment(ctx context.Context, comments []*event.CommentAction) error {
 	// TODO implement me
 	panic("implement me")
 }

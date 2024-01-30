@@ -3,18 +3,18 @@ package service
 import (
 	"bytes"
 	"context"
-	"fmt"
-	"image"
-	"image/jpeg"
-	"os"
-
 	v1 "douyin/api/video/publish/job"
 	"douyin/app/video/publish/common/constants"
 	do "douyin/app/video/publish/common/entity"
+	"douyin/app/video/publish/common/event"
 	"douyin/app/video/publish/job/internal/biz"
 	"douyin/app/video/publish/job/internal/conf"
 	constants2 "douyin/common/constants"
 	"douyin/common/queue/kafka"
+	"fmt"
+	"image"
+	"image/jpeg"
+	"os"
 
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
@@ -49,13 +49,20 @@ func (s *PublishService) PublishVideo() {
 	}
 	defer partitionConsumer.Close()
 	for message := range partitionConsumer.Messages() {
-		video := &do.Video{}
+		video := &event.VideoUpload{}
 		err := video.UnmarshalJson(message.Value)
 		if err != nil {
 			s.log.Errorf("UnmarshalJson error: %v", err)
 			continue
 		}
-		err = s.uc.CreateVideo(context.Background(), video)
+		err = s.uc.CreateVideo(context.Background(), &do.Video{
+			ID:        video.ID,
+			AuthorID:  video.AuthorID,
+			Title:     video.Title,
+			PlayURL:   constants2.VideoOSSURL + video.VideoFileName + ".mp4",
+			CoverURL:  constants2.VideoOSSURL + video.VideoFileName + ".jpg",
+			CreatedAt: video.CreatedAt,
+		})
 		if err != nil {
 			s.log.Errorf("CreateVideo error: %v", err)
 		}
@@ -69,18 +76,18 @@ func (s *PublishService) UploadCover() {
 	}
 	defer partitionConsumer.Close()
 	for message := range partitionConsumer.Messages() {
-		video := &do.Video{}
+		video := &event.VideoUpload{}
 		err := video.UnmarshalJson(message.Value)
 		if err != nil {
 			s.log.Errorf("UnmarshalJson error: %v", err)
 			continue
 		}
-		coverBytes, err := readFrameAsJpeg(constants2.VideoOSSURL + video.VideoFileName)
+		coverBytes, err := readFrameAsJpeg(fmt.Sprintf("%s%s.mp4", constants2.VideoOSSURL, video.VideoFileName))
 		if err != nil {
 			s.log.Errorf("readFrameAsJpeg error: %v", err)
 			continue
 		}
-		err = s.uc.UploadCover(context.Background(), coverBytes, video.VideoFileName)
+		err = s.uc.UploadCover(context.Background(), coverBytes, video.VideoFileName+".jpg")
 		if err != nil {
 			s.log.Errorf("UploadCover error: %v", err)
 		}

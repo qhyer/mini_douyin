@@ -2,12 +2,12 @@ package biz
 
 import (
 	"context"
+	"douyin/app/video/favorite/common/event"
 
 	"github.com/go-kratos/kratos/v2/log"
 
 	favorite "douyin/api/video/favorite/service/v1"
 	video "douyin/api/video/feed/service/v1"
-	do "douyin/app/video/favorite/common/entity"
 	"douyin/common/ecode"
 )
 
@@ -47,7 +47,7 @@ func (uc *FavoriteUsecase) GetUserFavoriteVideoList(ctx context.Context, userId,
 }
 
 func isFavoriteActionTypeValid(actionType int32) bool {
-	if actionType == int32(do.FavoriteActionAdd) || actionType == int32(do.FavoriteActionDelete) {
+	if actionType == int32(event.FavoriteActionAdd) || actionType == int32(event.FavoriteActionDelete) {
 		return true
 	}
 	return false

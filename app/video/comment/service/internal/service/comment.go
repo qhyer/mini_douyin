@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
+	"douyin/app/video/comment/common/event"
 	"time"
 
-	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/common/mapper"
 	"douyin/app/video/comment/service/internal/biz"
 	"douyin/common/ecode"
@@ -24,8 +24,8 @@ func NewCommentService(uc *biz.CommentUsecase) *CommentService {
 
 // CommentAction 发布/删除评论
 func (s *CommentService) CommentAction(ctx context.Context, req *v1.CommentActionRequest) (*v1.CommentActionResponse, error) {
-	comment, err := s.uc.CommentAction(ctx, &do.CommentAction{
-		Type:      do.CommentActionType(req.GetActionType()),
+	comment, err := s.uc.CommentAction(ctx, &event.CommentAction{
+		Type:      event.CommentActionType(req.GetActionType()),
 		UserId:    req.GetUserId(),
 		VideoId:   req.GetVideoId(),
 		Content:   req.GetCommentText(),

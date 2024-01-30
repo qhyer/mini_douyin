@@ -64,8 +64,8 @@ func (s *PublishService) GetPublishedVideosByUserId(ctx context.Context, req *v1
 	}, nil
 }
 
-// GetPublishedVideosByLatestTime 获取小于某个时间的视频列表
-func (s *PublishService) GetPublishedVideosByLatestTime(ctx context.Context, req *v1.GetPublishedVideoByLatestTimeRequest) (*v1.GetPublishedVideoByLatestTimeResponse, error) {
+// GetPublishedVideoByLatestTime 获取小于某个时间的视频列表
+func (s *PublishService) GetPublishedVideoByLatestTime(ctx context.Context, req *v1.GetPublishedVideoByLatestTimeRequest) (*v1.GetPublishedVideoByLatestTimeResponse, error) {
 	videos, err := s.uc.GetPublishedVideosByLatestTime(ctx, req.GetLatestTime(), videoQueryLimit)
 	if err != nil {
 		err := ecode.ConvertErr(err)
@@ -140,5 +140,22 @@ func (s *PublishService) MGetVideoByIds(ctx context.Context, req *v1.MGetVideoIn
 		StatusCode: ecode.Success.ErrCode,
 		StatusMsg:  &ecode.Success.ErrMsg,
 		VideoList:  vs,
+	}, nil
+}
+
+// CountUserPublishedVideoByUserId 获取用户发布视频数量
+func (s *PublishService) CountUserPublishedVideoByUserId(ctx context.Context, req *v1.CountUserPublishedVideoByUserIdRequest) (*v1.CountUserPublishedVideoByUserIdResponse, error) {
+	count, err := s.uc.CountUserPublishedVideoByUserId(ctx, req.GetUserId())
+	if err != nil {
+		err := ecode.ConvertErr(err)
+		return &v1.CountUserPublishedVideoByUserIdResponse{
+			StatusCode: err.ErrCode,
+			StatusMsg:  &err.ErrMsg,
+		}, nil
+	}
+	return &v1.CountUserPublishedVideoByUserIdResponse{
+		StatusCode: ecode.Success.ErrCode,
+		StatusMsg:  &ecode.Success.ErrMsg,
+		Count:      count,
 	}, nil
 }

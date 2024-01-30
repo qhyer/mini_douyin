@@ -2,19 +2,17 @@ package biz
 
 import (
 	"context"
-
+	"douyin/app/video/comment/common/event"
 	"github.com/go-kratos/kratos/v2/log"
-
-	do "douyin/app/video/comment/common/entity"
 )
 
 type CommentRepo interface {
 	UpdateVideoCommentCount(ctx context.Context, videoId int64, incr int64) error
 	BatchUpdateVideoCommentCount(ctx context.Context, videoIds []int64, incr []int64) error
-	CreateComment(ctx context.Context, comment *do.CommentAction) error
-	BatchCreateComment(ctx context.Context, comments []*do.CommentAction) error
-	DeleteComment(ctx context.Context, comment *do.CommentAction) error
-	BatchDeleteComment(ctx context.Context, comments []*do.CommentAction) error
+	CreateComment(ctx context.Context, comment *event.CommentAction) error
+	BatchCreateComment(ctx context.Context, comments []*event.CommentAction) error
+	DeleteComment(ctx context.Context, comment *event.CommentAction) error
+	BatchDeleteComment(ctx context.Context, comments []*event.CommentAction) error
 }
 
 type CommentUsecase struct {
@@ -26,7 +24,7 @@ func NewCommentUsecase(repo CommentRepo, logger log.Logger) *CommentUsecase {
 	return &CommentUsecase{repo: repo, log: log.NewHelper(logger)}
 }
 
-func (uc *CommentUsecase) CreateComment(ctx context.Context, comment *do.CommentAction) error {
+func (uc *CommentUsecase) CreateComment(ctx context.Context, comment *event.CommentAction) error {
 	err := uc.repo.CreateComment(ctx, comment)
 	if err != nil {
 		uc.log.Errorf("CreateComment error(%v)", err)
@@ -35,8 +33,8 @@ func (uc *CommentUsecase) CreateComment(ctx context.Context, comment *do.Comment
 	return nil
 }
 
-func (uc *CommentUsecase) BatchCreateComment(ctx context.Context, comments []*do.CommentAction) error {
-	err := uc.repo.BatchCreateComment(ctx, comments)
+func (uc *CommentUsecase) BatchCreateComment(ctx context.Context, commentActs []*event.CommentAction) error {
+	err := uc.repo.BatchCreateComment(ctx, commentActs)
 	if err != nil {
 		uc.log.Errorf("BatchCreateComment error(%v)", err)
 		return err
@@ -44,7 +42,7 @@ func (uc *CommentUsecase) BatchCreateComment(ctx context.Context, comments []*do
 	return nil
 }
 
-func (uc *CommentUsecase) DeleteComment(ctx context.Context, comment *do.CommentAction) error {
+func (uc *CommentUsecase) DeleteComment(ctx context.Context, comment *event.CommentAction) error {
 	err := uc.repo.DeleteComment(ctx, comment)
 	if err != nil {
 		uc.log.Errorf("DeleteComment error(%v)", err)
@@ -53,8 +51,8 @@ func (uc *CommentUsecase) DeleteComment(ctx context.Context, comment *do.Comment
 	return nil
 }
 
-func (uc *CommentUsecase) BatchDeleteComment(ctx context.Context, comments []*do.CommentAction) error {
-	err := uc.repo.BatchDeleteComment(ctx, comments)
+func (uc *CommentUsecase) BatchDeleteComment(ctx context.Context, commentActs []*event.CommentAction) error {
+	err := uc.repo.BatchDeleteComment(ctx, commentActs)
 	if err != nil {
 		uc.log.Errorf("BatchDeleteComment error(%v)", err)
 		return err

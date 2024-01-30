@@ -2,17 +2,18 @@ package biz
 
 import (
 	"context"
+	do "douyin/app/video/comment/common/entity"
+	"douyin/app/video/comment/common/event"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/sync/singleflight"
 
 	"douyin/app/video/comment/common/constants"
-	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/common/mapper"
 )
 
 type CommentRepo interface {
-	CommentAction(ctx context.Context, comment *do.CommentAction) error
+	CommentAction(ctx context.Context, comment *event.CommentAction) error
 	GetCommentListByVideoId(ctx context.Context, videoId int64) ([]*do.Comment, error)
 	CountCommentByVideoId(ctx context.Context, videoId int64) (int64, error)
 	MCountCommentByVideoId(ctx context.Context, videoIds []int64) ([]int64, error)
@@ -33,7 +34,7 @@ func NewCommentUsecase(repo CommentRepo, logger log.Logger) *CommentUsecase {
 }
 
 // CommentAction 发布/删除评论
-func (u *CommentUsecase) CommentAction(ctx context.Context, comment *do.CommentAction) (res *do.Comment, err error) {
+func (u *CommentUsecase) CommentAction(ctx context.Context, comment *event.CommentAction) (res *do.Comment, err error) {
 	// TODO 发布评论过滤敏感词，返回过滤后的评论
 	err = u.repo.CommentAction(ctx, comment)
 	if err != nil {

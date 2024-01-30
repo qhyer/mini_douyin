@@ -58,7 +58,7 @@ func (r *chatRepo) GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime(ctx context
 		r.log.Errorf("r.data.db.WithContext(ctx).Table(%s).Where(%s).Order(%s).Limit(%d).Find(&messagesFromDb) error(%v)", tableName, "(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)", "id DESC", limit, res.Error)
 		return nil, res.Error
 	}
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setMessageListByMyUserIdAndHisUserIdAndPreMsgTimeCache(ctx, myUserId, hisUserId, preMsgTime, limit, messagesFromDb)
 	})
 	if err != nil {
@@ -81,7 +81,7 @@ func (r *chatRepo) GetLatestMsgByMyUserIdAndHisUserId(ctx context.Context, myUse
 		r.log.Errorf("r.data.db.WithContext(ctx).Table(%s).Where(%s).Order(%s).First(&message) error(%v)", tableName, "(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)", "id DESC", res.Error)
 		return nil, res.Error
 	}
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setLatestMsgCache(ctx, message)
 	})
 	if err != nil {

@@ -3,6 +3,7 @@ package data
 import (
 	"bytes"
 	"context"
+	"douyin/app/video/publish/common/event"
 	"errors"
 	"time"
 
@@ -33,7 +34,7 @@ func NewVideoRepo(data *Data, logger log.Logger) biz.VideoRepo {
 }
 
 // PublishVideo 发布视频
-func (r *videoRepo) PublishVideo(ctx context.Context, video *do.Video) error {
+func (r *videoRepo) PublishVideo(ctx context.Context, video *event.VideoUpload) error {
 	res, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{BusinessId: constants2.PublishBusinessId})
 	if err != nil || !res.GetIsOk() {
 		r.log.Errorf("seq rpc error: %v", err)
@@ -76,7 +77,7 @@ func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64
 			r.log.Errorf("db error: %v", err)
 			return nil, err
 		}
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setUserPublishedVidListCache(ctx, userId, vs)
 		})
 		if err != nil {
@@ -97,7 +98,7 @@ func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64
 // GetPublishedVideosByLatestTime 获取小于某个时间的视频列表
 func (r *videoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTime int64, limit int) ([]*do.Video, error) {
 	vids := make([]int64, limit)
-	if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("created_at < ?", time.Unix(latestTime, 0)).Order("created_at desc").Limit(limit).Pluck("id", &vids).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("created_at < ?", time.UnixMicro(latestTime)).Order("created_at desc").Limit(limit).Pluck("id", &vids).Error; err != nil {
 		r.log.Errorf("db error: %v", err)
 		return nil, err
 	}
@@ -121,7 +122,7 @@ func (r *videoRepo) GetVideoById(ctx context.Context, id int64) (*do.Video, erro
 			r.log.Errorf("db error: %v", err)
 			return nil, err
 		}
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setVideoCache(ctx, video)
 		})
 		if err != nil {
@@ -173,7 +174,7 @@ func (r *videoRepo) CountUserPublishedVideoByUserId(ctx context.Context, userId 
 		r.log.Errorf("db error: %v", err)
 		return 0, err
 	}
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setUserPublishedVidCountCache(ctx, userId, count)
 	})
 	if err != nil {
@@ -280,9 +281,9 @@ func (r *videoRepo) setUserPublishedVidCountCache(ctx context.Context, uid int64
 }
 
 // UploadVideo minio上传视频
-func (r *videoRepo) UploadVideo(ctx context.Context, data []byte, objectName string) (string, error) {
+func (r *videoRepo) UploadVideo(ctx context.Context, data []byte, objectName string) error {
 	_, err := r.putObject(ctx, constants.VideoBucketName, objectName, data)
-	return objectName, err
+	return err
 }
 
 // minio上传文件

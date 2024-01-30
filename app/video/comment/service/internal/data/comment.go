@@ -2,11 +2,12 @@ package data
 
 import (
 	"context"
+	do "douyin/app/video/comment/common/entity"
+	"douyin/app/video/comment/common/event"
 	"encoding/json"
 	"errors"
 
 	"douyin/app/video/comment/common/constants"
-	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/common/mapper"
 	po "douyin/app/video/comment/common/model"
 	"douyin/app/video/comment/service/internal/biz"
@@ -30,7 +31,7 @@ func NewCommentRepo(data *Data, logger log.Logger) biz.CommentRepo {
 }
 
 // CommentAction 发布/删除评论
-func (r *commentRepo) CommentAction(ctx context.Context, comment *do.CommentAction) error {
+func (r *commentRepo) CommentAction(ctx context.Context, comment *event.CommentAction) error {
 	b, err := comment.MarshalJson()
 	if err != nil {
 		r.log.Errorf("CommentAction err:%v", err)
@@ -60,7 +61,7 @@ func (r *commentRepo) GetCommentListByVideoId(ctx context.Context, videoId int64
 			r.log.Errorf("GetCommentListByVideoId err:%v", err)
 			return nil, err
 		}
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setCommentIdListCache(ctx, videoId, dbComments)
 			r.batchSetCommentInfoCache(ctx, dbComments)
 		})
@@ -84,7 +85,7 @@ func (r *commentRepo) batchGetCommentInfoByVideoIdAndCommentIds(ctx context.Cont
 			r.log.Errorf("batchGetCommentInfoByVideoIdAndCommentIds err:%v", err)
 			return nil, err
 		}
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.batchSetCommentInfoCache(ctx, comments)
 		})
 		if err != nil {
@@ -107,7 +108,7 @@ func (r *commentRepo) CountCommentByVideoId(ctx context.Context, videoId int64) 
 			r.log.Errorf("CountCommentByVideoId err:%v", err)
 			return 0, err
 		}
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setCommentCountCache(ctx, videoId, res)
 		})
 		if err != nil {

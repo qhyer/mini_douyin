@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	event "douyin/app/video/favorite/common/event"
 	"strconv"
 
 	"github.com/IBM/sarama"
@@ -10,7 +11,6 @@ import (
 	"github.com/spf13/cast"
 
 	"douyin/app/video/favorite/common/constants"
-	do "douyin/app/video/favorite/common/entity"
 	po "douyin/app/video/favorite/common/model"
 	"douyin/app/video/favorite/service/internal/biz"
 )
@@ -34,11 +34,11 @@ func (r *favoriteRepo) CountVideoFavoritedByVideoId(ctx context.Context, videoId
 		if err != redis.Nil {
 			r.log.Errorf("redis error: %v", err)
 		}
-		if err := r.data.db.WithContext(ctx).Table(constants.VideoFavoritedCountTableName(videoId)).Where("video_id = ?", videoId).Pluck("favd_count", &count).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(constants.VideoFavoritedCountTableName(videoId)).Where("video_id = ?", videoId).Pluck("favorited_count", &count).Error; err != nil {
 			r.log.Errorf("db error: %v", err)
 			return 0, err
 		}
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setVideoFavoritedCountCache(ctx, videoId, count)
 		})
 		if err != nil {
@@ -67,7 +67,7 @@ func (r *favoriteRepo) IsUserFavoriteVideoList(ctx context.Context, userId int64
 }
 
 // FavoriteVideo 点赞视频
-func (r *favoriteRepo) FavoriteVideo(ctx context.Context, fav *do.FavoriteAction) error {
+func (r *favoriteRepo) FavoriteVideo(ctx context.Context, fav *event.FavoriteAction) error {
 	b, err := fav.MarshalJson()
 	if err != nil {
 		r.log.Errorf("json marshal error: %v", err)
@@ -97,7 +97,7 @@ func (r *favoriteRepo) GetFavoriteVideoIdListByUserId(ctx context.Context, userI
 			r.log.Errorf("db error: %v", err)
 			return nil, err
 		}
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setUserFavoriteVideoIdListCache(ctx, userId, favs)
 		})
 		if err != nil {
@@ -134,10 +134,10 @@ func (r *favoriteRepo) CountUserFavoriteByUserId(ctx context.Context, userId int
 		if err != redis.Nil {
 			log.Errorf("redis error: %v", err)
 		}
-		if err := r.data.db.WithContext(ctx).Table(constants.UserFavoriteVideoCountTableName(userId)).Where("user_id = ?", userId).Pluck("fav_count", &count).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(constants.UserFavoriteVideoCountTableName(userId)).Where("user_id = ?", userId).Pluck("favorite_count", &count).Error; err != nil {
 			return 0, err
 		}
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setUserFavoriteCountCache(ctx, userId, count)
 		})
 		if err != nil {
@@ -154,10 +154,10 @@ func (r *favoriteRepo) CountUserFavoritedByUserId(ctx context.Context, userId in
 		if err != redis.Nil {
 			log.Errorf("redis error: %v", err)
 		}
-		if err := r.data.db.WithContext(ctx).Table(constants.UserFavoriteVideoCountTableName(userId)).Where("user_id = ?", userId).Pluck("favd_count", &count).Error; err != nil {
+		if err := r.data.db.WithContext(ctx).Table(constants.UserFavoriteVideoCountTableName(userId)).Where("user_id = ?", userId).Pluck("favorited_count", &count).Error; err != nil {
 			return 0, err
 		}
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setUserFavoritedCountCache(ctx, userId, count)
 		})
 		if err != nil {

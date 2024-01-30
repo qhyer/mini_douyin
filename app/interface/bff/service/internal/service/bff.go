@@ -87,8 +87,9 @@ func (s *BFFService) GetUserInfo(ctx context.Context, req *v1.GetUserInfoRequest
 	reply := &v1.GetUserInfoReply{
 		StatusCode: res.GetStatusCode(),
 		StatusMsg:  res.GetStatusMsg(),
+		User:       &v1.User{},
 	}
-	copier.Copy(&reply.User, &user)
+	err = copier.Copy(&reply.User, &user)
 	return reply, nil
 }
 

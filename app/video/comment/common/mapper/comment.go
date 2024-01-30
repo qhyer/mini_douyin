@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"douyin/app/video/comment/common/event"
 	"fmt"
 
 	v1 "douyin/api/video/comment/service/v1"
@@ -83,7 +84,7 @@ func CommentToDTOs(comments []*do.Comment) ([]*v1.CommentInfo, error) {
 	return res, nil
 }
 
-func ParseCommentFromCommentAction(commentAction *do.CommentAction) (*do.Comment, error) {
+func ParseCommentFromCommentAction(commentAction *event.CommentAction) (*do.Comment, error) {
 	return &do.Comment{
 		ID:      commentAction.ID,
 		VideoId: commentAction.VideoId,
@@ -93,4 +94,20 @@ func ParseCommentFromCommentAction(commentAction *do.CommentAction) (*do.Comment
 		Content:   commentAction.Content,
 		CreatedAt: commentAction.CreatedAt,
 	}, nil
+}
+
+func ParseCommentFromCommentActions(commentActions []*event.CommentAction) ([]*do.Comment, error) {
+	res := make([]*do.Comment, 0, len(commentActions))
+	for _, v := range commentActions {
+		res = append(res, &do.Comment{
+			ID:      v.ID,
+			VideoId: v.VideoId,
+			User: &do.User{
+				ID: v.UserId,
+			},
+			Content:   v.Content,
+			CreatedAt: v.CreatedAt,
+		})
+	}
+	return res, nil
 }

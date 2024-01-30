@@ -2,6 +2,8 @@ package data
 
 import (
 	"context"
+	"douyin/app/video/favorite/common/event"
+	"douyin/common/ecode"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -10,7 +12,6 @@ import (
 
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/favorite/common/constants"
-	do "douyin/app/video/favorite/common/entity"
 	"douyin/app/video/favorite/common/mapper"
 	po "douyin/app/video/favorite/common/model"
 	"douyin/app/video/favorite/job/internal/biz"
@@ -59,7 +60,7 @@ func (r *favoriteRepo) UpdateVideoFavoritedCount(ctx context.Context, videoId in
 	return nil
 }
 
-func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.FavoriteAction) error {
+func (r *favoriteRepo) CreateFavorite(ctx context.Context, favoriteAction *event.FavoriteAction) error {
 	// 获取点赞ID
 	fid, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{
 		BusinessId: constants2.FavoriteBusinessId,
@@ -68,36 +69,41 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.Favorite
 		r.log.Errorf("Get seq num error(%v)", err)
 		return err
 	}
-	favorite.ID = fid.GetID()
+	favoriteAction.ID = fid.GetID()
+	favorite, err := mapper.ParseFavoriteFromFavoriteAction(favoriteAction)
+	if err != nil {
+		r.log.Errorf("CreateFavorite error(%v)", err)
+		return err
+	}
 	fav, err := mapper.FavoriteToPO(favorite)
 	if err != nil {
 		r.log.Errorf("CreateFavorite error(%v)", err)
 		return err
 	}
 	// 删除用户喜欢缓存
-	err = r.delUserFavoriteListCache(ctx, favorite.UserId)
+	err = r.delUserFavoriteListCache(ctx, favoriteAction.UserId)
 	if err != nil {
 		r.log.Errorf("CreateFavorite error(%v)", err)
 	}
 	// 创建喜欢
 	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// 创建点赞记录
-		err := tx.Table(constants.FavoriteVideoRecordTableName(favorite.UserId)).Create(fav).Error
+		err := tx.Table(constants.FavoriteVideoRecordTableName(favoriteAction.UserId)).Create(fav).Error
 		if err != nil {
 			return err
 		}
 
 		// 更新用户点赞数
-		err = tx.Table(constants.UserFavoriteVideoCountTableName(favorite.UserId)).FirstOrInit(&po.UserFavoriteCount{UserId: favorite.UserId}, po.UserFavoriteCount{UserId: favorite.UserId}).Update("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error
+		err = tx.Table(constants.UserFavoriteVideoCountTableName(favoriteAction.UserId)).FirstOrInit(&po.UserFavoriteCount{UserId: favoriteAction.UserId}, po.UserFavoriteCount{UserId: favoriteAction.UserId}).Update("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error
 		if err != nil {
 			return err
 		}
 
 		// 异步更新视频获赞数和用户获赞数
-		b, err := favorite.MarshalJson()
+		b, err := favoriteAction.MarshalJson()
 		_, _, err = r.data.kafkaProducer.SendMessage(&sarama.ProducerMessage{
 			Topic: constants.UpdateVideoFavoritedCountTopic,
-			Key:   sarama.StringEncoder(constants.UpdateVideoFavoritedCountKafkaKey(favorite.VideoId)),
+			Key:   sarama.StringEncoder(constants.UpdateVideoFavoritedCountKafkaKey(favoriteAction.VideoId)),
 			Value: sarama.ByteEncoder(b),
 		})
 		if err != nil {
@@ -111,9 +117,9 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.Favorite
 	}
 
 	// 延时删除用户喜欢缓存
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		time.Sleep(100 * time.Millisecond)
-		err = r.delUserFavoriteListCache(ctx, favorite.UserId)
+		err = r.delUserFavoriteListCache(ctx, favoriteAction.UserId)
 		if err != nil {
 			r.log.Errorf("DelUserFavoriteCache error(%v)", err)
 		}
@@ -124,13 +130,52 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, favorite *do.Favorite
 	return nil
 }
 
-func (r *favoriteRepo) DeleteFavorite(ctx context.Context, favorite *do.FavoriteAction) error {
+func (r *favoriteRepo) DeleteFavorite(ctx context.Context, favoriteAction *event.FavoriteAction) error {
+	favorite, err := mapper.ParseFavoriteFromFavoriteAction(favoriteAction)
+	if err != nil {
+		r.log.Errorf("DeleteFavorite error(%v)", err)
+		return err
+	}
 	fav, err := mapper.FavoriteToPO(favorite)
 	if err != nil {
 		r.log.Errorf("DeleteFavorite error(%v)", err)
 		return err
 	}
-	err = r.data.db.WithContext(ctx).Table(constants.FavoriteVideoRecordTableName(favorite.UserId)).Where("user_id = ? and video_id = ?", fav.UserId, fav.VideoId).Delete(fav).Error
+	// 删除用户喜欢缓存
+	err = r.delUserFavoriteListCache(ctx, favoriteAction.UserId)
+	if err != nil {
+		r.log.Errorf("DeleteFavorite error(%v)", err)
+	}
+	// 删除喜欢
+	err = r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// 删除点赞记录
+		res := tx.Table(constants.FavoriteVideoRecordTableName(favoriteAction.UserId)).Where("user_id = ? and video_id = ?", fav.UserId, fav.VideoId).Delete(fav)
+		if err != nil {
+			return err
+		}
+
+		if res.RowsAffected == 0 {
+			return ecode.FavoriteRecordNotFoundErr
+		}
+
+		// 更新用户点赞数
+		err := tx.Table(constants.UserFavoriteVideoCountTableName(favoriteAction.UserId)).FirstOrInit(&po.UserFavoriteCount{UserId: favoriteAction.UserId}, po.UserFavoriteCount{UserId: favoriteAction.UserId}).Update("favorite_count", gorm.Expr("favorite_count - ?", 1)).Error
+		if err != nil {
+			return err
+		}
+
+		// 异步更新视频获赞数和用户获赞数
+		b, err := favoriteAction.MarshalJson()
+		_, _, err = r.data.kafkaProducer.SendMessage(&sarama.ProducerMessage{
+			Topic: constants.UpdateVideoFavoritedCountTopic,
+			Key:   sarama.StringEncoder(constants.UpdateVideoFavoritedCountKafkaKey(favoriteAction.VideoId)),
+			Value: sarama.ByteEncoder(b),
+		})
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		r.log.Errorf("DeleteFavorite error(%v)", err)
 		return err
@@ -153,12 +198,12 @@ func (r *favoriteRepo) BatchUpdateVideoFavoritedCount(ctx context.Context, video
 	panic("implement me")
 }
 
-func (r *favoriteRepo) BatchCreateFavorite(ctx context.Context, favorites []*do.FavoriteAction) error {
+func (r *favoriteRepo) BatchCreateFavorite(ctx context.Context, favorites []*event.FavoriteAction) error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (r *favoriteRepo) BatchDeleteFavorite(ctx context.Context, favorites []*do.FavoriteAction) error {
+func (r *favoriteRepo) BatchDeleteFavorite(ctx context.Context, favorites []*event.FavoriteAction) error {
 	// TODO implement me
 	panic("implement me")
 }

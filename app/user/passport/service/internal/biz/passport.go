@@ -53,18 +53,12 @@ func (u *PassportUsecase) CreateUser(ctx context.Context, user *do.User) (uid in
 
 // VerifyPassword 验证密码
 func (u *PassportUsecase) VerifyPassword(ctx context.Context, user *do.User) (verified bool, uid int64, err error) {
-	pwd := []byte(user.Password)
-	hashedPassword, err := bcrypt.GenerateFromPassword(pwd, bcrypt.DefaultCost)
-	if err != nil {
-		u.log.Errorf("verify password error(%v)", err)
-		return false, 0, err
-	}
 	us, err := u.repo.GetUserByName(ctx, user.Name)
 	if err != nil {
 		u.log.Errorf("get user by name error(%v)", err)
 		return false, 0, err
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(us.EncryptedPassword), hashedPassword)
+	err = bcrypt.CompareHashAndPassword([]byte(us.EncryptedPassword), []byte(user.Password))
 	if err != nil {
 		return false, 0, err
 	}

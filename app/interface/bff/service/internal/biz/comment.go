@@ -2,11 +2,10 @@ package biz
 
 import (
 	"context"
-
+	"douyin/app/video/comment/common/event"
 	"github.com/go-kratos/kratos/v2/log"
 
 	comment "douyin/api/video/comment/service/v1"
-	do "douyin/app/video/comment/common/entity"
 	"douyin/common/ecode"
 )
 
@@ -46,7 +45,7 @@ func (uc *CommentUsecase) GetCommentList(ctx context.Context, videoId int64) (*c
 }
 
 func isCommentActionTypeValid(actionType int32) bool {
-	if actionType == int32(do.CommentActionPublish) || actionType == int32(do.CommentActionDelete) {
+	if actionType == int32(event.CommentActionPublish) || actionType == int32(event.CommentActionDelete) {
 		return true
 	}
 	return false

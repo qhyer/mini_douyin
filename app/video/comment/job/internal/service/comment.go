@@ -2,13 +2,12 @@ package service
 
 import (
 	"context"
-
+	"douyin/app/video/comment/common/event"
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 
 	v1 "douyin/api/video/comment/job"
 	"douyin/app/video/comment/common/constants"
-	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/job/internal/biz"
 )
 
@@ -34,18 +33,18 @@ func (s *CommentService) CommentAction() {
 	}
 	defer partitionConsumer.Close()
 	for message := range partitionConsumer.Messages() {
-		commentAct := do.CommentAction{}
+		commentAct := event.CommentAction{}
 		err := commentAct.UnmarshalJson(message.Value)
 		if err != nil {
 			s.log.Errorf("CommentAction UnmarshalJson error: %v", err)
 			return
 		}
-		if commentAct.Type == do.CommentActionPublish {
+		if commentAct.Type == event.CommentActionPublish {
 			err := s.uc.CreateComment(context.Background(), &commentAct)
 			if err != nil {
 				s.log.Errorf("PublishComment error: %v", err)
 			}
-		} else if commentAct.Type == do.CommentActionDelete {
+		} else if commentAct.Type == event.CommentActionDelete {
 			err := s.uc.DeleteComment(context.Background(), &commentAct)
 			if err != nil {
 				s.log.Errorf("DeleteComment error: %v", err)

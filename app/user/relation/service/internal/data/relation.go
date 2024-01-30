@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"douyin/app/user/relation/common/event"
 	"errors"
 	"strconv"
 
@@ -30,7 +31,7 @@ func NewRelationRepo(data *Data, logger log.Logger) biz.RelationRepo {
 }
 
 // RelationAction 关注/取消关注
-func (r *relationRepo) RelationAction(ctx context.Context, relation *do.RelationAction) error {
+func (r *relationRepo) RelationAction(ctx context.Context, relation *event.RelationAction) error {
 	b, err := relation.MarshalJson()
 	if err != nil {
 		r.log.Errorf("json marshal error: %v", err)
@@ -67,7 +68,7 @@ func (r *relationRepo) GetFollowListByUserId(ctx context.Context, userId int64) 
 	for _, relation := range relations {
 		ids = append(ids, relation.ToUserId)
 	}
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setUserFollowListCache(ctx, userId, relations)
 	})
 	if err != nil {
@@ -94,7 +95,7 @@ func (r *relationRepo) GetFollowerListByUserId(ctx context.Context, userId int64
 	for _, relation := range relations {
 		ids = append(ids, relation.FromUserId)
 	}
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setUserFollowerListCache(ctx, userId, relations)
 	})
 	if err != nil {
@@ -121,7 +122,7 @@ func (r *relationRepo) GetFriendListByUserId(ctx context.Context, userId int64) 
 	for _, relation := range relations {
 		ids = append(ids, relation.ToUserId)
 	}
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setUserFriendListCache(ctx, userId, relations)
 	})
 	if err != nil {
@@ -142,7 +143,7 @@ func (r *relationRepo) CountFollowByUserId(ctx context.Context, userId int64) (i
 	if err := r.data.db.WithContext(ctx).Table(constants.RelationCountTable(userId)).Where("user_id = ?", userId).Pluck("follow_count", &res).Error; err != nil {
 		return 0, err
 	}
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setFollowCountByUserId(ctx, userId, res)
 	})
 	if err != nil {
@@ -163,7 +164,7 @@ func (r *relationRepo) CountFollowerByUserId(ctx context.Context, userId int64) 
 	if err := r.data.db.WithContext(ctx).Table(constants.RelationCountTable(userId)).Where("user_id = ?", userId).Pluck("follower_count", &res).Error; err != nil {
 		return 0, err
 	}
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setFollowerCountByUserId(ctx, userId, res)
 	})
 	if err != nil {
@@ -180,7 +181,7 @@ func (r *relationRepo) IsFollowByUserId(ctx context.Context, userId, toUserId in
 		return false, nil
 	}
 	if err == redis.Nil {
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setUserFollowBloom(ctx, userId)
 		})
 		if err != nil {
@@ -217,7 +218,7 @@ func (r *relationRepo) IsFollowByUserIds(ctx context.Context, userId int64, toUs
 		return res, nil
 	}
 	if err == redis.Nil {
-		err := r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setUserFollowBloom(ctx, userId)
 		})
 		if err != nil {

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"github.com/go-kratos/kratos/v2/log"
 
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
@@ -17,18 +18,19 @@ func Auth() middleware.Middleware {
 			if tr, ok := transport.FromServerContext(ctx); ok {
 				if hr, ok := tr.(*http.Transport); ok {
 					var tokenStr string
-					if hr.Request().Method == "POST" && hr.Request().Header.Get("Content-Type") == "application/json" {
-						tokenStr = hr.Request().Header.Get("token")
-					} else {
+					tokenStr = hr.Request().PostFormValue("token")
+					if tokenStr == "" {
 						tokenStr = hr.Request().URL.Query().Get("token")
 					}
 
+					log.Debugf("tokenStr: %s", tokenStr)
 					// 解析JWT
 					id, err := jwt.ParseTokenToID(tokenStr)
 					if isRouteRequireLogin(hr.Request().URL.Path) && err != nil {
+						log.Debugf("ParseTokenToID err: %v", err)
 						return nil, ecode.AuthorizeErr
 					}
-					ctx = context.WithValue(ctx, "uid", id)
+					ctx = context.WithValue(ctx, "userId", id)
 				}
 			}
 			return handler(ctx, req)

@@ -8,11 +8,12 @@ import (
 
 func UserFromPO(u *po.User) (us *do.User, err error) {
 	us = &do.User{
-		ID:              u.ID,
-		Name:            u.Name,
-		Avatar:          "https://p3-pc.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-i-0813_442293a2db8f4c719ecbd8fb6e35ae21.jpeg",
-		BackgroundImage: "https://lf6-cdn-tos.douyinstatic.com/obj/venus/pc-theme/spring/20230411-162827.jpeg",
-		Signature:       "暂无个性签名",
+		ID:                u.ID,
+		Name:              u.Name,
+		EncryptedPassword: u.EncryptedPassword,
+		Avatar:            "https://p3-pc.douyinpic.com/aweme/100x100/aweme-avatar/tos-cn-i-0813_442293a2db8f4c719ecbd8fb6e35ae21.jpeg",
+		BackgroundImage:   "https://lf6-cdn-tos.douyinstatic.com/obj/venus/pc-theme/spring/20230411-162827.jpeg",
+		Signature:         "暂无个性签名",
 	}
 	return us, nil
 }

@@ -51,7 +51,7 @@ func (r *videoRepo) CreateVideo(ctx context.Context, video *do.Video) error {
 		return err
 	}
 	// 清除缓存
-	err = r.delUserPublishCache(ctx, v.AuthorID)
+	err = r.delUserPublishedVideoListCache(ctx, v.AuthorID)
 	if err != nil {
 		r.log.Errorf("clear cache error: %v", err)
 	}
@@ -77,9 +77,9 @@ func (r *videoRepo) CreateVideo(ctx context.Context, video *do.Video) error {
 	}
 
 	// 延时清除缓存
-	err = r.data.cacheFan.Do(ctx, func(ctx context.Context) {
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		time.Sleep(100 * time.Millisecond)
-		err := r.delUserPublishCache(ctx, v.AuthorID)
+		err := r.delUserPublishedVideoListCache(ctx, v.AuthorID)
 		if err != nil {
 			r.log.Errorf("clear cache error: %v", err)
 		}
@@ -90,7 +90,7 @@ func (r *videoRepo) CreateVideo(ctx context.Context, video *do.Video) error {
 	return nil
 }
 
-func (r *videoRepo) delUserPublishCache(ctx context.Context, userId int64) error {
+func (r *videoRepo) delUserPublishedVideoListCache(ctx context.Context, userId int64) error {
 	pipe := r.data.redis.Pipeline()
 	pipe.Del(ctx, constants.UserPublishedVidCountCacheKey(userId))
 	pipe.Del(ctx, constants.UserPublishedVidListCacheKey(userId))

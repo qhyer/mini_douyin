@@ -1,4 +1,4 @@
-CREATE TABLE `user_favorite_count` (
+CREATE TABLE `user_favorite_video_count` (
     `user_id` BIGINT NOT NULL,
     `favorite_count` BIGINT NOT NULL,
     `favorited_count` BIGINT NOT NULL,

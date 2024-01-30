@@ -29,7 +29,7 @@ for table in db_config['tables']:
     with open(os.path.join(directory, f'{table_name}.sql'), 'r') as file:
         sql = file.read()
 
-        for i in range(1, int(count) + 1):
+        for i in range(0, int(count)):
             if count == 1:
                 real_table_name = table_name
             else:

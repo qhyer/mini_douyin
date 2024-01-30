@@ -2,6 +2,9 @@ package biz
 
 import (
 	"context"
+	"douyin/app/video/publish/common/event"
+	"fmt"
+	"github.com/google/uuid"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -12,12 +15,12 @@ import (
 )
 
 type VideoRepo interface {
-	PublishVideo(ctx context.Context, video *do.Video) error
+	PublishVideo(ctx context.Context, video *event.VideoUpload) error
 	GetPublishedVideosByUserId(ctx context.Context, userId int64) ([]*do.Video, error)
 	GetPublishedVideosByLatestTime(ctx context.Context, latestTime int64, limit int) ([]*do.Video, error)
 	GetVideoById(ctx context.Context, id int64) (*do.Video, error)
 	MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Video, error)
-	UploadVideo(ctx context.Context, data []byte, objectName string) (string, error)
+	UploadVideo(ctx context.Context, data []byte, objectName string) error
 	CountUserPublishedVideoByUserId(ctx context.Context, userId int64) (int64, error)
 }
 
@@ -37,12 +40,13 @@ func NewVideoUsecase(repo VideoRepo, logger log.Logger) *VideoUsecase {
 
 // PublishVideo 发布视频
 func (u *VideoUsecase) PublishVideo(ctx context.Context, video []byte, uid int64, title string) error {
-	filename, err := u.repo.UploadVideo(ctx, video, "")
+	filename := fmt.Sprintf("%d%s", time.Now().UnixNano(), uuid.New().String())
+	err := u.repo.UploadVideo(ctx, video, filename+".mp4")
 	if err != nil {
 		u.log.Errorf("upload video error: %v", err)
 		return err
 	}
-	err = u.repo.PublishVideo(ctx, &do.Video{
+	err = u.repo.PublishVideo(ctx, &event.VideoUpload{
 		AuthorID:      uid,
 		Title:         title,
 		VideoFileName: filename,

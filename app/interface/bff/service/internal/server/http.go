@@ -17,6 +17,7 @@ import (
 func NewHTTPServer(c *conf.Server, bff *service.BFFService, logger log.Logger) *http.Server {
 	opts := []http.ServerOption{
 		http.ErrorEncoder(middleware.ErrorEncoder),
+		http.RequestDecoder(PublishActionDecoder),
 		http.Middleware(
 			validate.Validator(),
 			recovery.Recovery(),

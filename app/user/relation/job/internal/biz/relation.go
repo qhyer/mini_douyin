@@ -2,10 +2,9 @@ package biz
 
 import (
 	"context"
+	do "douyin/app/user/relation/common/event"
 
 	"github.com/go-kratos/kratos/v2/log"
-
-	do "douyin/app/user/relation/common/entity"
 )
 
 type RelationRepo interface {

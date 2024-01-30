@@ -2,12 +2,12 @@ package biz
 
 import (
 	"context"
+	do "douyin/app/user/relation/common/event"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/sync/singleflight"
 
 	"douyin/app/user/relation/common/constants"
-	do "douyin/app/user/relation/common/entity"
 	"douyin/common/ecode"
 )
 

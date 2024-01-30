@@ -1,7 +1,7 @@
 package mapper
 
 import (
-	do "douyin/app/user/relation/common/entity"
+	do "douyin/app/user/relation/common/event"
 	po "douyin/app/user/relation/common/model"
 )
 
