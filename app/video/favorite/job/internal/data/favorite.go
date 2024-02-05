@@ -10,12 +10,10 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
 
-	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/favorite/common/constants"
 	"douyin/app/video/favorite/common/mapper"
 	po "douyin/app/video/favorite/common/model"
 	"douyin/app/video/favorite/job/internal/biz"
-	constants2 "douyin/common/constants"
 )
 
 type favoriteRepo struct {
@@ -32,7 +30,7 @@ func NewFavoriteRepo(data *Data, logger log.Logger) biz.FavoriteRepo {
 
 func (r *favoriteRepo) UpdateUserFavoriteCount(ctx context.Context, userId int64, incr int64) error {
 	usFav := po.UserFavoriteCount{UserId: userId}
-	err := r.data.db.WithContext(ctx).Table(constants.UserFavoriteVideoCountTableName(userId)).FirstOrInit(&usFav, usFav).Update("favorite_count", gorm.Expr("favorite_count + ?", incr)).Error
+	err := r.data.db.WithContext(ctx).Table(constants.UserFavoriteVideoCountTableName(userId)).FirstOrCreate(&usFav, usFav).Update("favorite_count", gorm.Expr("favorite_count + ?", incr)).Error
 	if err != nil {
 		r.log.Errorf("UpdateUserFavoriteCount error(%v)", err)
 		return err
@@ -42,7 +40,7 @@ func (r *favoriteRepo) UpdateUserFavoriteCount(ctx context.Context, userId int64
 
 func (r *favoriteRepo) UpdateUserFavoritedCount(ctx context.Context, userId int64, incr int64) error {
 	usFav := po.UserFavoriteCount{UserId: userId}
-	err := r.data.db.WithContext(ctx).Table(constants.UserFavoriteVideoCountTableName(userId)).FirstOrInit(&usFav, usFav).Update("favorited_count", gorm.Expr("favorited_count + ?", incr)).Error
+	err := r.data.db.WithContext(ctx).Table(constants.UserFavoriteVideoCountTableName(userId)).FirstOrCreate(&usFav, usFav).Update("favorited_count", gorm.Expr("favorited_count + ?", incr)).Error
 	if err != nil {
 		r.log.Errorf("UpdateUserFavoritedCount error(%v)", err)
 		return err
@@ -52,7 +50,7 @@ func (r *favoriteRepo) UpdateUserFavoritedCount(ctx context.Context, userId int6
 
 func (r *favoriteRepo) UpdateVideoFavoritedCount(ctx context.Context, videoId int64, incr int64) error {
 	videoFav := po.VideoFavoritedCount{VideoId: videoId}
-	err := r.data.db.WithContext(ctx).Table(constants.VideoFavoritedCountTableName(videoId)).FirstOrInit(&videoFav, videoFav).Update("favorited_count", gorm.Expr("favorited_count + ?", incr)).Error
+	err := r.data.db.WithContext(ctx).Table(constants.VideoFavoritedCountTableName(videoId)).FirstOrCreate(&videoFav, videoFav).Update("favorited_count", gorm.Expr("favorited_count + ?", incr)).Error
 	if err != nil {
 		r.log.Errorf("UpdateVideoFavoritedCount error(%v)", err)
 		return err
@@ -61,15 +59,6 @@ func (r *favoriteRepo) UpdateVideoFavoritedCount(ctx context.Context, videoId in
 }
 
 func (r *favoriteRepo) CreateFavorite(ctx context.Context, favoriteAction *event.FavoriteAction) error {
-	// 获取点赞ID
-	fid, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{
-		BusinessId: constants2.FavoriteBusinessId,
-	})
-	if err != nil || !fid.GetIsOk() {
-		r.log.Errorf("Get seq num error(%v)", err)
-		return err
-	}
-	favoriteAction.ID = fid.GetID()
 	favorite, err := mapper.ParseFavoriteFromFavoriteAction(favoriteAction)
 	if err != nil {
 		r.log.Errorf("CreateFavorite error(%v)", err)
@@ -94,7 +83,7 @@ func (r *favoriteRepo) CreateFavorite(ctx context.Context, favoriteAction *event
 		}
 
 		// 更新用户点赞数
-		err = tx.Table(constants.UserFavoriteVideoCountTableName(favoriteAction.UserId)).FirstOrInit(&po.UserFavoriteCount{UserId: favoriteAction.UserId}, po.UserFavoriteCount{UserId: favoriteAction.UserId}).Update("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error
+		err = tx.Table(constants.UserFavoriteVideoCountTableName(favoriteAction.UserId)).FirstOrCreate(&po.UserFavoriteCount{UserId: favoriteAction.UserId}, po.UserFavoriteCount{UserId: favoriteAction.UserId}).Update("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error
 		if err != nil {
 			return err
 		}
@@ -159,7 +148,7 @@ func (r *favoriteRepo) DeleteFavorite(ctx context.Context, favoriteAction *event
 		}
 
 		// 更新用户点赞数
-		err := tx.Table(constants.UserFavoriteVideoCountTableName(favoriteAction.UserId)).FirstOrInit(&po.UserFavoriteCount{UserId: favoriteAction.UserId}, po.UserFavoriteCount{UserId: favoriteAction.UserId}).Update("favorite_count", gorm.Expr("favorite_count - ?", 1)).Error
+		err := tx.Table(constants.UserFavoriteVideoCountTableName(favoriteAction.UserId)).FirstOrCreate(&po.UserFavoriteCount{UserId: favoriteAction.UserId}, po.UserFavoriteCount{UserId: favoriteAction.UserId}).Update("favorite_count", gorm.Expr("favorite_count - ?", 1)).Error
 		if err != nil {
 			return err
 		}
@@ -179,6 +168,17 @@ func (r *favoriteRepo) DeleteFavorite(ctx context.Context, favoriteAction *event
 	if err != nil {
 		r.log.Errorf("DeleteFavorite error(%v)", err)
 		return err
+	}
+	// 延时删除用户喜欢缓存
+	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
+		time.Sleep(100 * time.Millisecond)
+		err = r.delUserFavoriteListCache(ctx, favoriteAction.UserId)
+		if err != nil {
+			r.log.Errorf("DelUserFavoriteCache error(%v)", err)
+		}
+	})
+	if err != nil {
+		r.log.Errorf("Fanout error(%v)", err)
 	}
 	return nil
 }

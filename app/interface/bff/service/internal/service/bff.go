@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/go-kratos/kratos/v2/log"
 	"strconv"
 
 	"github.com/jinzhu/copier"
@@ -20,11 +21,12 @@ type BFFService struct {
 	commentUsecase  *biz.CommentUsecase
 	favoriteUsecase *biz.FavoriteUsecase
 	publishUsecase  *biz.PublishUsecase
+
+	log *log.Helper
 }
 
 func NewBFFService(au *biz.AccountUsecase, fu *biz.FeedUsecase, ru *biz.RelationUsecase, cu *biz.CommentUsecase,
-	favu *biz.FavoriteUsecase, pu *biz.PublishUsecase,
-) *BFFService {
+	favu *biz.FavoriteUsecase, pu *biz.PublishUsecase, logger log.Logger) *BFFService {
 	return &BFFService{
 		accountUsecase:  au,
 		feedUsecase:     fu,
@@ -32,6 +34,7 @@ func NewBFFService(au *biz.AccountUsecase, fu *biz.FeedUsecase, ru *biz.Relation
 		commentUsecase:  cu,
 		favoriteUsecase: favu,
 		publishUsecase:  pu,
+		log:             log.NewHelper(logger),
 	}
 }
 
@@ -111,8 +114,14 @@ func (s *BFFService) GetPublishList(ctx context.Context, req *v1.GetPublishListR
 	for _, video := range publishList {
 		user := video.GetAuthor()
 		v := &v1.Video{Author: &v1.User{}}
-		copier.Copy(&v, &video)
-		copier.Copy(&v.Author, &user)
+		err := copier.Copy(&v, &video)
+		if err != nil {
+			s.log.Errorf("copier.Copy error(%v)", err)
+		}
+		err = copier.Copy(&v.Author, &user)
+		if err != nil {
+			s.log.Errorf("copier.Copy error(%v)", err)
+		}
 		publishListReply = append(publishListReply, v)
 	}
 
@@ -169,8 +178,14 @@ func (s *BFFService) Feed(ctx context.Context, req *v1.FeedRequest) (*v1.FeedRep
 	for _, video := range videoList {
 		user := video.GetAuthor()
 		v := &v1.Video{Author: &v1.User{}}
-		copier.Copy(&v, &video)
-		copier.Copy(&v.Author, &user)
+		err := copier.Copy(&v, &video)
+		if err != nil {
+			s.log.Errorf("copier.Copy error(%v)", err)
+		}
+		err = copier.Copy(&v.Author, &user)
+		if err != nil {
+			s.log.Errorf("copier.Copy error(%v)", err)
+		}
 		videoListReply = append(videoListReply, v)
 	}
 	return &v1.FeedReply{
@@ -197,7 +212,10 @@ func (s *BFFService) GetFollowerList(ctx context.Context, req *v1.GetFollowerLis
 	followerListReply := make([]*v1.User, 0, len(followerList))
 	for _, user := range followerList {
 		u := &v1.User{}
-		copier.Copy(&u, &user)
+		err := copier.Copy(&u, &user)
+		if err != nil {
+			s.log.Errorf("copier.Copy error(%v)", err)
+		}
 		followerListReply = append(followerListReply, u)
 	}
 
@@ -225,7 +243,10 @@ func (s *BFFService) GetFollowList(ctx context.Context, req *v1.GetFollowListReq
 	followListReply := make([]*v1.User, 0, len(followList))
 	for _, user := range followList {
 		u := &v1.User{}
-		copier.Copy(&u, &user)
+		err := copier.Copy(&u, &user)
+		if err != nil {
+			s.log.Errorf("copier.Copy error(%v)", err)
+		}
 		followListReply = append(followListReply, u)
 	}
 
@@ -271,7 +292,10 @@ func (s *BFFService) GetFriendList(ctx context.Context, req *v1.GetFriendListReq
 	friendListReply := make([]*v1.User, 0, len(friendList))
 	for _, user := range friendList {
 		u := &v1.User{}
-		copier.Copy(&u, &user)
+		err := copier.Copy(&u, &user)
+		if err != nil {
+			s.log.Errorf("copier.Copy error(%v)", err)
+		}
 		friendListReply = append(friendListReply, u)
 	}
 
@@ -310,8 +334,14 @@ func (s *BFFService) GetFavoriteVideoList(ctx context.Context, req *v1.GetFavori
 	for _, video := range favoriteList {
 		user := video.GetAuthor()
 		v := &v1.Video{Author: &v1.User{}}
-		copier.Copy(&v, &video)
-		copier.Copy(&v.Author, &user)
+		err := copier.Copy(&v, &video)
+		if err != nil {
+			s.log.Errorf("copier.Copy error(%v)", err)
+		}
+		err = copier.Copy(&v.Author, &user)
+		if err != nil {
+			s.log.Errorf("copier.Copy error(%v)", err)
+		}
 		favoriteListReply = append(favoriteListReply, v)
 	}
 
@@ -358,8 +388,14 @@ func (s *BFFService) GetCommentList(ctx context.Context, req *v1.CommentListRequ
 	for _, comment := range commentList {
 		user := comment.GetUser()
 		c := &v1.Comment{User: &v1.User{}}
-		copier.Copy(&c, &comment)
-		copier.Copy(&c.User, &user)
+		err := copier.Copy(&c, &comment)
+		if err != nil {
+			s.log.Errorf("copier.Copy error(%v)", err)
+		}
+		err = copier.Copy(&c.User, &user)
+		if err != nil {
+			s.log.Errorf("copier.Copy error(%v)", err)
+		}
 		commentListReply = append(commentListReply, c)
 	}
 

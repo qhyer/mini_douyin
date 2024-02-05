@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"douyin/common/queue/kafka"
 
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
@@ -24,7 +25,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewVideoRepo, NewSeqClient)
+var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewMinio, NewVideoRepo, NewSeqClient, NewKafka)
 
 // Data .
 type Data struct {
@@ -94,4 +95,10 @@ func NewSeqClient(r registry.Discovery, logger log.Logger) seq.SeqClient {
 		panic(err)
 	}
 	return seq.NewSeqClient(conn)
+}
+
+func NewKafka(c *conf.Data) sarama.Consumer {
+	return kafka.NewKafkaConsumer(&kafka.Config{
+		Addr: c.GetKafka().GetAddr(),
+	})
 }

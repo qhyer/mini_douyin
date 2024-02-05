@@ -8,9 +8,7 @@ import (
 	do "douyin/app/video/publish/common/entity"
 	"douyin/app/video/publish/common/event"
 	"douyin/app/video/publish/job/internal/biz"
-	"douyin/app/video/publish/job/internal/conf"
 	constants2 "douyin/common/constants"
-	"douyin/common/queue/kafka"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -27,12 +25,6 @@ type PublishService struct {
 	uc    *biz.VideoUsecase
 	kafka sarama.Consumer
 	log   *log.Helper
-}
-
-func NewKafka(c *conf.Data) sarama.Consumer {
-	return kafka.NewKafkaConsumer(&kafka.Config{
-		Addr: c.GetKafka().GetAddr(),
-	})
 }
 
 func NewPublishService(uc *biz.VideoUsecase, kafka sarama.Consumer, logger log.Logger) *PublishService {

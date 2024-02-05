@@ -2,8 +2,11 @@ package data
 
 import (
 	"context"
+	v1 "douyin/api/seq-server/service/v1"
 	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/common/event"
+	constants2 "douyin/common/constants"
+	"douyin/common/ecode"
 	"encoding/json"
 	"errors"
 
@@ -32,6 +35,12 @@ func NewCommentRepo(data *Data, logger log.Logger) biz.CommentRepo {
 
 // CommentAction 发布/删除评论
 func (r *commentRepo) CommentAction(ctx context.Context, comment *event.CommentAction) error {
+	id, err := r.data.seqRPC.GetID(ctx, &v1.GetIDRequest{BusinessId: constants2.CommentBusinessId})
+	if err != nil || !id.GetIsOk() {
+		r.log.Errorf("seq rpc error: %v", err)
+		return ecode.GetSeqIdFailedErr
+	}
+	comment.ID = id.GetID()
 	b, err := comment.MarshalJson()
 	if err != nil {
 		r.log.Errorf("CommentAction err:%v", err)
@@ -59,7 +68,6 @@ func (r *commentRepo) GetCommentListByVideoId(ctx context.Context, videoId int64
 		dbComments := make([]*po.Comment, 0, constants.CommentQueryLimit)
 		if err := r.data.db.WithContext(ctx).Table(constants.CommentRecordTableName(videoId)).Where("video_id = ?", videoId).Limit(constants.CommentQueryLimit).Find(&dbComments).Error; err != nil {
 			r.log.Errorf("GetCommentListByVideoId err:%v", err)
-			return nil, err
 		}
 		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setCommentIdListCache(ctx, videoId, dbComments)
@@ -83,7 +91,6 @@ func (r *commentRepo) batchGetCommentInfoByVideoIdAndCommentIds(ctx context.Cont
 		var comments []*po.Comment
 		if err := r.data.db.WithContext(ctx).Table(constants.CommentRecordTableName(videoId)).Where("video_id = ? and id in (?)", videoId, missed).Find(&comments).Error; err != nil {
 			r.log.Errorf("batchGetCommentInfoByVideoIdAndCommentIds err:%v", err)
-			return nil, err
 		}
 		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.batchSetCommentInfoCache(ctx, comments)
@@ -106,7 +113,6 @@ func (r *commentRepo) CountCommentByVideoId(ctx context.Context, videoId int64) 
 		}
 		if err := r.data.db.WithContext(ctx).Table(constants.CommentCountTableName(videoId)).Where("video_id = ?", videoId).Pluck("comment_count", &res).Error; err != nil {
 			r.log.Errorf("CountCommentByVideoId err:%v", err)
-			return 0, err
 		}
 		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setCommentCountCache(ctx, videoId, res)

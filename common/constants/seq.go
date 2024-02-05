@@ -6,4 +6,5 @@ const (
 	CommentBusinessId
 	FavoriteBusinessId
 	PassportBusinessId
+	ChatBusinessId
 )

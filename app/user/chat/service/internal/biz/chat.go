@@ -28,12 +28,9 @@ func (uc *ChatUsecase) SendMessage(ctx context.Context, message *do.Message) err
 }
 
 func (uc *ChatUsecase) GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime(ctx context.Context, myUserId, hisUserId, preMsgTime int64, limit int) ([]*do.Message, error) {
-	// TODO
-
-	return nil, nil
+	return uc.repo.GetMessageListByMyUserIdAndHisUserIdAndPreMsgTime(ctx, myUserId, hisUserId, preMsgTime, limit)
 }
 
 func (uc *ChatUsecase) GetLatestMsgByMyUserIdAndHisUserId(ctx context.Context, myUserId, hisUserId int64) (*do.Message, error) {
-	// TODO
-	return nil, nil
+	return uc.repo.GetLatestMsgByMyUserIdAndHisUserId(ctx, myUserId, hisUserId)
 }

@@ -6,6 +6,9 @@ import (
 )
 
 func MessageToDTO(msg *do.Message) (*dto.Message, error) {
+	if msg == nil {
+		return &dto.Message{}, nil
+	}
 	return &dto.Message{
 		Id:         msg.ID,
 		ToUserId:   msg.ToUserId,

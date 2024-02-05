@@ -9,6 +9,9 @@ import (
 )
 
 func VideoFromPublishDTO(d *publishDTO.VideoInfo) (*do.Video, error) {
+	if d == nil {
+		return &do.Video{}, nil
+	}
 	return &do.Video{
 		ID: d.GetId(),
 		User: &do.User{
@@ -22,6 +25,9 @@ func VideoFromPublishDTO(d *publishDTO.VideoInfo) (*do.Video, error) {
 }
 
 func VideoFromPublishDTOs(dtos []*publishDTO.VideoInfo) ([]*do.Video, error) {
+	if dtos == nil {
+		return []*do.Video{}, nil
+	}
 	videos := make([]*do.Video, 0, len(dtos))
 	for _, d := range dtos {
 		v, err := VideoFromPublishDTO(d)
@@ -34,6 +40,9 @@ func VideoFromPublishDTOs(dtos []*publishDTO.VideoInfo) ([]*do.Video, error) {
 }
 
 func VideoToFeedDTO(v *do.Video) (*feedDTO.Video, error) {
+	if v == nil {
+		return &feedDTO.Video{}, nil
+	}
 	return &feedDTO.Video{
 		Id: v.ID,
 		Author: &feedDTO.User{
@@ -52,6 +61,9 @@ func VideoToFeedDTO(v *do.Video) (*feedDTO.Video, error) {
 }
 
 func VideoToFeedDTOs(vs []*do.Video) ([]*feedDTO.Video, error) {
+	if vs == nil {
+		return []*feedDTO.Video{}, nil
+	}
 	videos := make([]*feedDTO.Video, 0, len(vs))
 	for _, v := range vs {
 		v, err := VideoToFeedDTO(v)

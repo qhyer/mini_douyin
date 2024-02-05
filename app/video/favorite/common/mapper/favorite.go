@@ -7,6 +7,9 @@ import (
 )
 
 func FavoriteFromPO(po *po.Favorite) (*do.Favorite, error) {
+	if po == nil {
+		return &do.Favorite{}, nil
+	}
 	return &do.Favorite{
 		ID:        po.ID,
 		UserId:    po.UserId,
@@ -16,6 +19,9 @@ func FavoriteFromPO(po *po.Favorite) (*do.Favorite, error) {
 }
 
 func FavoriteToPO(do *do.Favorite) (*po.Favorite, error) {
+	if do == nil {
+		return &po.Favorite{}, nil
+	}
 	return &po.Favorite{
 		ID:        do.ID,
 		UserId:    do.UserId,
@@ -25,6 +31,9 @@ func FavoriteToPO(do *do.Favorite) (*po.Favorite, error) {
 }
 
 func FavoriteFromPOs(pos []*po.Favorite) ([]*do.Favorite, error) {
+	if pos == nil {
+		return []*do.Favorite{}, nil
+	}
 	var dos []*do.Favorite
 	for _, p := range pos {
 		d, err := FavoriteFromPO(p)
@@ -37,6 +46,9 @@ func FavoriteFromPOs(pos []*po.Favorite) ([]*do.Favorite, error) {
 }
 
 func FavoriteToPOs(dos []*do.Favorite) ([]*po.Favorite, error) {
+	if dos == nil {
+		return []*po.Favorite{}, nil
+	}
 	var pos []*po.Favorite
 	for _, d := range dos {
 		p, err := FavoriteToPO(d)
@@ -49,6 +61,9 @@ func FavoriteToPOs(dos []*do.Favorite) ([]*po.Favorite, error) {
 }
 
 func ParseFavoriteFromFavoriteAction(favoriteAction *event.FavoriteAction) (*do.Favorite, error) {
+	if favoriteAction == nil {
+		return &do.Favorite{}, nil
+	}
 	return &do.Favorite{
 		ID:        favoriteAction.ID,
 		UserId:    favoriteAction.UserId,

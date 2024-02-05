@@ -8,12 +8,10 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
 
-	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/comment/common/constants"
 	"douyin/app/video/comment/common/mapper"
 	po "douyin/app/video/comment/common/model"
 	"douyin/app/video/comment/job/internal/biz"
-	constants2 "douyin/common/constants"
 )
 
 type commentRepo struct {
@@ -30,7 +28,7 @@ func NewCommentRepo(data *Data, logger log.Logger) biz.CommentRepo {
 
 func (r *commentRepo) UpdateVideoCommentCount(ctx context.Context, videoId int64, incr int64) error {
 	comCnt := po.CommentCount{VideoId: videoId}
-	err := r.data.db.WithContext(ctx).Table(constants.CommentCountTableName(videoId)).FirstOrInit(&comCnt, comCnt).Update("comment_count", gorm.Expr("comment_count + ?", incr)).Error
+	err := r.data.db.WithContext(ctx).Table(constants.CommentCountTableName(videoId)).FirstOrCreate(&comCnt, comCnt).Update("comment_count", gorm.Expr("comment_count + ?", incr)).Error
 	if err != nil {
 		r.log.Errorf("UpdateVideoCommentCount error(%v)", err)
 		return err
@@ -44,15 +42,6 @@ func (r *commentRepo) BatchUpdateVideoCommentCount(ctx context.Context, videoIds
 }
 
 func (r *commentRepo) CreateComment(ctx context.Context, commentAct *event.CommentAction) error {
-	// 获取评论ID
-	cid, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{
-		BusinessId: constants2.CommentBusinessId,
-	})
-	if err != nil || !cid.GetIsOk() {
-		r.log.Errorf("seqRPC.GetID error(%v)", err)
-		return err
-	}
-	commentAct.ID = cid.GetID()
 	comment, err := mapper.ParseCommentFromCommentAction(commentAct)
 	if err != nil {
 		r.log.Errorf("mapper.ParseCommentFromCommentAction error(%v)", err)

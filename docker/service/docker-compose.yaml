@@ -1,7 +1,7 @@
 version: "3"
 services:
   nginx:
-    image: nginx:1.24.0
+    image: nginx:latest
     container_name: nginx
     restart: always
     ports:
@@ -33,7 +33,7 @@ services:
       - douyin_net
 
   mysql:
-    image: mysql/mysql-server:8.0.32
+    image: mysql/mysql-server:latest
     container_name: mysql
     privileged: true
     restart: always
@@ -52,14 +52,15 @@ services:
       --explicit_defaults_for_timestamp=true
       --lower_case_table_names=1
     healthcheck:
-      test: [ "CMD", "mysql", "-uroot", "-puvVFljcDfc2an4U" ]
-      interval: 5s
+      test: [ "CMD", "mysql", "-u root", "-p uvVFljcDfc2an4U" ]
+      interval: 10s
+      timeout: 5s
       retries: 3
     networks:
       - douyin_net
 
   redis:
-    image: redis:7.0.12
+    image: redis/redis-stack-server:latest
     container_name: redis
     privileged: true
     restart: always
@@ -67,9 +68,9 @@ services:
       - "16379:6379"
     environment:
       TZ: Asia/Shanghai
+      REDIS_ARGS: "--requirepass uvVFljcDfc2an4U --appendonly yes"
     volumes:
       - ../../_data/redis/data:/data:rw
-    command: "redis-server --requirepass uvVFljcDfc2an4U  --appendonly yes"
     healthcheck:
       test: [ "CMD", "redis-cli", "-a", "uvVFljcDfc2an4U", "ping" ]
       interval: 5s
@@ -98,7 +99,7 @@ services:
       - douyin_net
 
   kafka:
-    image: docker.io/bitnami/kafka:3.5.1
+    image: docker.io/bitnami/kafka:latest
     restart: always
     user: root
     container_name: kafka
@@ -159,17 +160,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
 
   account-service:
@@ -187,38 +188,38 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
-  #  chat-job:
-  #    build:
-  #      context: ../../
-  #      dockerfile: docker/build/Dockerfile
-  #      args:
-  #        - BUSINESS_NAME=user
-  #        - SERVICE_NAME=chat
-  #        - SERVICE_TYPE=job
-  #    container_name: chat-job
-  #    privileged: true
-  #    restart: always
-  #    networks:
-  #      - douyin_net
-  #    depends_on:
-  #      mysql:
-  #        condition: service_healthy
-  #      kafka:
-  #        condition: service_healthy
-  #      redis:
-  #        condition: service_healthy
+  chat-job:
+    build:
+      context: ../../
+      dockerfile: docker/build/Dockerfile
+      args:
+        - BUSINESS_NAME=user
+        - SERVICE_NAME=chat
+        - SERVICE_TYPE=job
+    container_name: chat-job
+    privileged: true
+    restart: always
+    networks:
+      - douyin_net
+    depends_on:
+      mysql:
+        condition: service_started
+      kafka:
+        condition: service_started
+      redis:
+        condition: service_started
 
   chat-service:
     build:
@@ -235,17 +236,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
   passport-service:
     build:
@@ -262,17 +263,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
   relation-job:
     build:
@@ -289,17 +290,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
   relation-service:
     build:
@@ -316,17 +317,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
   publish-job:
     build:
@@ -343,17 +344,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
   publish-service:
     build:
@@ -370,17 +371,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
   favorite-job:
     build:
@@ -397,17 +398,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
   favorite-service:
     build:
@@ -424,17 +425,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
   feed-service:
     build:
@@ -451,17 +452,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
   comment-job:
     build:
@@ -478,17 +479,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
   comment-service:
     build:
@@ -505,17 +506,17 @@ services:
       - douyin_net
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
       kafka:
-        condition: service_healthy
+        condition: service_started
       memcached:
-        condition: service_healthy
+        condition: service_started
       minio:
-        condition: service_healthy
+        condition: service_started
       etcd:
-        condition: service_healthy
+        condition: service_started
 
   bff-service:
     build:
@@ -532,7 +533,7 @@ services:
       - douyin_net
     depends_on:
       etcd:
-        condition: service_healthy
+        condition: service_started
 
 networks:
   douyin_net:

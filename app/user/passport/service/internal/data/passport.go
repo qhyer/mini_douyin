@@ -144,7 +144,6 @@ func (r *passportRepo) MGetUserById(ctx context.Context, ids []int64) ([]*do.Use
 func (r *passportRepo) getUserFromCache(ctx context.Context, key string) (*po.User, error) {
 	result, err := r.data.redis.Get(ctx, key).Result()
 	if err != nil {
-		r.log.Errorf("get user from cache err: %v", err)
 		return nil, err
 	}
 	user := &po.User{}
@@ -162,7 +161,6 @@ func (r *passportRepo) batchGetUserFromCache(ctx context.Context, keys []string)
 	}
 	results, err := pipe.Exec(ctx)
 	if err != nil {
-		r.log.Errorf("batch get user cache err: %v", err)
 		return nil, keys, err
 	}
 	res = make([]*po.User, 0, len(keys))

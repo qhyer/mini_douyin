@@ -6,6 +6,9 @@ import (
 )
 
 func RelationActionToPO(rel *do.RelationAction) (*po.Relation, error) {
+	if rel == nil {
+		return &po.Relation{}, nil
+	}
 	return &po.Relation{
 		ID:         rel.ID,
 		FromUserId: rel.FromUserId,

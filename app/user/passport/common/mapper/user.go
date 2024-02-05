@@ -7,6 +7,9 @@ import (
 )
 
 func UserFromPO(u *po.User) (us *do.User, err error) {
+	if u == nil {
+		return &do.User{}, nil
+	}
 	us = &do.User{
 		ID:                u.ID,
 		Name:              u.Name,
@@ -30,6 +33,9 @@ func UserFromPOs(us []*po.User) (dos []*do.User, err error) {
 }
 
 func UserToPO(u *do.User) (us *po.User, err error) {
+	if u == nil {
+		return &po.User{}, nil
+	}
 	us = &po.User{
 		ID:                u.ID,
 		Name:              u.Name,
@@ -39,6 +45,9 @@ func UserToPO(u *do.User) (us *po.User, err error) {
 }
 
 func UserToDTO(u *do.User) (us *dto.UserInfo, err error) {
+	if u == nil {
+		return &dto.UserInfo{}, nil
+	}
 	us = &dto.UserInfo{
 		Id:              u.ID,
 		Name:            u.Name,

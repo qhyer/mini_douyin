@@ -27,9 +27,11 @@ message Server {
 }
 
 message Data {
-  message Database {
-    string driver = 1;
-    string source = 2;
+  message Orm {
+    string dsn = 1;
+    int32 active = 2;
+    int32 idle = 3;
+    google.protobuf.Duration idle_timeout = 4;
   }
   message Redis {
     string network = 1;
@@ -37,8 +39,12 @@ message Data {
     google.protobuf.Duration read_timeout = 3;
     google.protobuf.Duration write_timeout = 4;
   }
-  Database database = 1;
+  message Kafka {
+    repeated string addr = 1;
+  }
+  Orm orm = 1;
   Redis redis = 2;
+  Kafka kafka = 3;
 }
 
 message Registry {

@@ -1,3 +1,3 @@
 package constants
 
-const VideoOSSURL = "http://douyin.qhyer.com/video/"
+const VideoOSSURL = "https://douyin.qhyer.com/video/"

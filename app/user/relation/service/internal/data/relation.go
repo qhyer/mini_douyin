@@ -2,7 +2,10 @@ package data
 
 import (
 	"context"
+	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/user/relation/common/event"
+	constants2 "douyin/common/constants"
+	"douyin/common/ecode"
 	"errors"
 	"strconv"
 
@@ -32,6 +35,15 @@ func NewRelationRepo(data *Data, logger log.Logger) biz.RelationRepo {
 
 // RelationAction 关注/取消关注
 func (r *relationRepo) RelationAction(ctx context.Context, relation *event.RelationAction) error {
+	// 获取关系ID
+	rid, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{
+		BusinessId: constants2.RelationBusinessId,
+	})
+	if err != nil || !rid.GetIsOk() {
+		r.log.Errorf("seq rpc error: %v", err)
+		return ecode.GetSeqIdFailedErr
+	}
+	relation.ID = rid.GetID()
 	b, err := relation.MarshalJson()
 	if err != nil {
 		r.log.Errorf("json marshal error: %v", err)
@@ -55,14 +67,12 @@ func (r *relationRepo) GetFollowListByUserId(ctx context.Context, userId int64) 
 	if err == nil {
 		return res, nil
 	}
-	if err != redis.Nil {
-		log.Errorf("redis error: %v", err)
+	if !errors.Is(err, redis.Nil) {
+		r.log.Errorf("redis error: %v", err)
 	}
 	var relations []*po.Relation
-	// todo
 	if err := r.data.db.WithContext(ctx).Table(constants.FollowRecordTable(userId)).Where("from_user_id = ?", userId).Find(&relations).Error; err != nil {
 		r.log.Errorf("mysql error: %v", err)
-		return nil, err
 	}
 	ids := make([]int64, 0, len(relations))
 	for _, relation := range relations {
@@ -81,14 +91,15 @@ func (r *relationRepo) GetFollowListByUserId(ctx context.Context, userId int64) 
 func (r *relationRepo) GetFollowerListByUserId(ctx context.Context, userId int64) ([]int64, error) {
 	res, err := r.getFollowerListFromCache(ctx, userId)
 	if err == nil {
+		r.log.Debugf("get follower list from cache: %v", res)
 		return res, nil
 	}
-	if err != redis.Nil {
-		log.Errorf("redis error: %v", err)
+	if !errors.Is(err, redis.Nil) {
+		r.log.Errorf("redis error: %v", err)
 	}
 	var relations []*po.Relation
-	// todo
 	if err := r.data.db.WithContext(ctx).Table(constants.FollowerRecordTable(userId)).Where("from_user_id = ?", userId).Find(&relations).Error; err != nil {
+		r.log.Errorf("mysql error: %v", err)
 		return nil, err
 	}
 	ids := make([]int64, 0, len(relations))
@@ -110,13 +121,12 @@ func (r *relationRepo) GetFriendListByUserId(ctx context.Context, userId int64) 
 	if err == nil {
 		return res, nil
 	}
-	if err != redis.Nil {
-		log.Errorf("redis error: %v", err)
+	if !errors.Is(err, redis.Nil) {
+		r.log.Errorf("redis error: %v", err)
 	}
 	var relations []*po.Relation
-	// todo
 	if err := r.data.db.WithContext(ctx).Table(constants.FollowRecordTable(userId)).Where("from_user_id = ? and type = ?", userId, do.RelationFollowed).Find(&relations).Error; err != nil {
-		return nil, err
+		r.log.Errorf("mysql error: %v", err)
 	}
 	ids := make([]int64, 0, len(relations))
 	for _, relation := range relations {
@@ -137,11 +147,11 @@ func (r *relationRepo) CountFollowByUserId(ctx context.Context, userId int64) (i
 	if err == nil {
 		return res, nil
 	}
-	if err != redis.Nil {
-		log.Errorf("redis error: %v", err)
+	if !errors.Is(err, redis.Nil) {
+		r.log.Errorf("redis error: %v", err)
 	}
 	if err := r.data.db.WithContext(ctx).Table(constants.RelationCountTable(userId)).Where("user_id = ?", userId).Pluck("follow_count", &res).Error; err != nil {
-		return 0, err
+		r.log.Errorf("mysql error: %v", err)
 	}
 	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setFollowCountByUserId(ctx, userId, res)
@@ -158,11 +168,11 @@ func (r *relationRepo) CountFollowerByUserId(ctx context.Context, userId int64) 
 	if err == nil {
 		return res, nil
 	}
-	if err != redis.Nil {
-		log.Errorf("redis error: %v", err)
+	if !errors.Is(err, redis.Nil) {
+		r.log.Errorf("redis error: %v", err)
 	}
 	if err := r.data.db.WithContext(ctx).Table(constants.RelationCountTable(userId)).Where("user_id = ?", userId).Pluck("follower_count", &res).Error; err != nil {
-		return 0, err
+		r.log.Errorf("mysql error: %v", err)
 	}
 	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setFollowerCountByUserId(ctx, userId, res)
@@ -180,7 +190,7 @@ func (r *relationRepo) IsFollowByUserId(ctx context.Context, userId, toUserId in
 	if err == nil && !res {
 		return false, nil
 	}
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setUserFollowBloom(ctx, userId)
 		})
@@ -213,11 +223,15 @@ func (r *relationRepo) IsFollowByUserId(ctx context.Context, userId, toUserId in
 // IsFollowByUserIds 批量获取是否关注
 func (r *relationRepo) IsFollowByUserIds(ctx context.Context, userId int64, toUserIds []int64) ([]bool, error) {
 	// 从布隆过滤器获取
-	res, err := r.data.redis.BFMExists(ctx, constants.UserFollowBloomCacheKey(userId), toUserIds).Result()
+	toUserIdBytes := make([]byte, len(toUserIds))
+	for i, toUserId := range toUserIds {
+		toUserIdBytes[i] = byte(toUserId)
+	}
+	res, err := r.data.redis.BFMExists(ctx, constants.UserFollowBloomCacheKey(userId), toUserIdBytes).Result()
 	if err == nil {
 		return res, nil
 	}
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setUserFollowBloom(ctx, userId)
 		})
@@ -239,7 +253,6 @@ func (r *relationRepo) IsFollowByUserIds(ctx context.Context, userId int64, toUs
 	var relations []*po.Relation
 	if err := r.data.db.WithContext(ctx).Table(constants.FollowRecordTable(userId)).Where("from_user_id = ? and to_user_id in ?", userId, toUserIds).Find(&relations).Error; err != nil {
 		r.log.Errorf("mysql error: %v", err)
-		return nil, err
 	}
 	isFollowMap := make(map[int64]bool)
 	for _, relation := range relations {
@@ -274,9 +287,20 @@ func (r *relationRepo) getFollowerCountByUserIdFromCache(ctx context.Context, us
 
 // 从缓存获取关注列表
 func (r *relationRepo) getFollowListFromCache(ctx context.Context, userId int64) ([]int64, error) {
+	ok, err := r.data.redis.Exists(ctx, constants.UserFollowListCacheKey(userId)).Result()
+	if err != nil {
+		if !errors.Is(err, redis.Nil) {
+			r.log.Errorf("redis error: %v", err)
+		}
+		return nil, err
+	}
+	if ok == 0 {
+		r.log.Debugf("redis key not exists: %v", constants.UserFollowListCacheKey(userId))
+		return nil, redis.Nil
+	}
 	res, err := r.data.redis.ZRevRange(ctx, constants.UserFollowListCacheKey(userId), 0, -1).Result()
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("redis error: %v", err)
 		}
 		return nil, err
@@ -291,9 +315,20 @@ func (r *relationRepo) getFollowListFromCache(ctx context.Context, userId int64)
 
 // 从缓存获取粉丝列表
 func (r *relationRepo) getFollowerListFromCache(ctx context.Context, userId int64) ([]int64, error) {
+	ok, err := r.data.redis.Exists(ctx, constants.UserFollowerListCacheKey(userId)).Result()
+	if err != nil {
+		if !errors.Is(err, redis.Nil) {
+			r.log.Errorf("redis error: %v", err)
+		}
+		return nil, err
+	}
+	if ok == 0 {
+		r.log.Debugf("redis key not exists: %v", constants.UserFollowerListCacheKey(userId))
+		return nil, redis.Nil
+	}
 	res, err := r.data.redis.ZRevRange(ctx, constants.UserFollowerListCacheKey(userId), 0, -1).Result()
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("redis error: %v", err)
 		}
 		return nil, err
@@ -308,9 +343,20 @@ func (r *relationRepo) getFollowerListFromCache(ctx context.Context, userId int6
 
 // 从缓存获取好友列表
 func (r *relationRepo) getFriendListFromCache(ctx context.Context, userId int64) ([]int64, error) {
+	ok, err := r.data.redis.Exists(ctx, constants.UserFriendListCacheKey(userId)).Result()
+	if err != nil {
+		if !errors.Is(err, redis.Nil) {
+			r.log.Errorf("redis error: %v", err)
+		}
+		return nil, err
+	}
+	if ok == 0 {
+		r.log.Debugf("redis key not exists: %v", constants.UserFriendListCacheKey(userId))
+		return nil, redis.Nil
+	}
 	res, err := r.data.redis.ZRevRange(ctx, constants.UserFriendListCacheKey(userId), 0, -1).Result()
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("redis error: %v", err)
 		}
 		return nil, err
@@ -378,9 +424,9 @@ func (r *relationRepo) setUserFollowBloom(ctx context.Context, userId int64) {
 		r.log.Errorf("mysql error: %v", err)
 		return
 	}
-	userIds := make([]int64, 0, len(relations))
+	userIds := make([]byte, 0, len(relations))
 	for _, relation := range relations {
-		userIds = append(userIds, relation.ToUserId)
+		userIds = append(userIds, []byte(strconv.FormatInt(relation.ToUserId, 10))...)
 	}
 	err := r.data.redis.BFMAdd(ctx, constants.UserFollowBloomCacheKey(userId), userIds)
 	if err != nil {
@@ -392,7 +438,7 @@ func (r *relationRepo) setUserFollowBloom(ctx context.Context, userId int64) {
 func (r *relationRepo) isUserFollowFromCache(ctx context.Context, userId, toUserId int64) (bool, error) {
 	res, err := r.data.redis.ZScore(ctx, constants.UserFollowBloomCacheKey(userId), strconv.FormatInt(toUserId, 10)).Result()
 	if err != nil {
-		if err != redis.Nil {
+		if !errors.Is(err, redis.Nil) {
 			r.log.Errorf("redis error: %v", err)
 		}
 		return false, err

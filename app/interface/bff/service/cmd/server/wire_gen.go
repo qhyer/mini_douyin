@@ -7,15 +7,16 @@
 package main
 
 import (
-	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/log"
-
 	"douyin/app/interface/bff/service/internal/biz"
 	"douyin/app/interface/bff/service/internal/conf"
 	"douyin/app/interface/bff/service/internal/data"
 	"douyin/app/interface/bff/service/internal/server"
 	"douyin/app/interface/bff/service/internal/service"
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/log"
+)
 
+import (
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -48,7 +49,7 @@ func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Da
 	favoriteUsecase := biz.NewFavoriteUsecase(favoriteRepo, logger)
 	publishRepo := data.NewPublishRepo(dataData, logger)
 	publishUsecase := biz.NewPublishUsecase(publishRepo, logger)
-	bffService := service.NewBFFService(accountUsecase, feedUsecase, relationUsecase, commentUsecase, favoriteUsecase, publishUsecase)
+	bffService := service.NewBFFService(accountUsecase, feedUsecase, relationUsecase, commentUsecase, favoriteUsecase, publishUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, bffService, logger)
 	httpServer := server.NewHTTPServer(confServer, bffService, logger)
 	registrar := server.NewRegistrar(client)

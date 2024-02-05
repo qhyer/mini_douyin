@@ -13,7 +13,6 @@ import (
 	do "douyin/app/user/account/common/entity"
 	"douyin/app/user/account/common/mapper"
 	"douyin/app/user/account/service/internal/biz"
-	constants2 "douyin/common/constants"
 	"douyin/common/ecode"
 
 	"github.com/bradfitz/gomemcache/memcache"
@@ -97,37 +96,11 @@ func (r *accountRepo) GetUserInfoByUserId(ctx context.Context, userId int64, toU
 
 // MGetUserInfoByUserId 批量获取用户信息（只获取基本信息）
 func (r *accountRepo) MGetUserInfoByUserId(ctx context.Context, userId int64, userIds []int64) ([]*do.User, error) {
-	// 目前只转发请求到passport和relation，不做缓存
-	g := errgroup.Group{}
-	users := make([]*do.User, 0, len(userIds))
-	isFollows := make([]bool, 0, len(userIds))
 	// 获取用户信息
-	g.Go(func() error {
-		us, err := r.batchGetUserInfoByUserIdFromPassportRPC(ctx, userIds)
-		if err != nil {
-			return err
-		}
-		users = append(users, us...)
-		return nil
-	})
-	// 如果是登陆用户，获取是否关注
-	if userId != constants2.GuestUserID {
-		g.Go(func() error {
-			isFol, err := r.batchGetIsFollowByUserIdFromRelationRPC(ctx, userId, userIds)
-			if err != nil {
-				return err
-			}
-			isFollows = append(isFollows, isFol...)
-			return nil
-		})
-	}
-	err := g.Wait()
+	users, err := r.batchGetUserInfoByUserIdFromPassportRPC(ctx, userIds)
 	if err != nil {
 		r.log.Errorf("batch get user info err: %v", err)
 		return nil, err
-	}
-	for i, isFollow := range isFollows {
-		users[i].IsFollow = isFollow
 	}
 	return users, nil
 }
@@ -300,6 +273,7 @@ func (r *accountRepo) batchGetUserInfoByUserIdFromPassportRPC(ctx context.Contex
 		r.log.Errorf("passport rpc batch get user info err: %v", err)
 		return nil, err
 	}
+	r.log.Debugf("passport rpc batch get user info res: %v", res)
 	if res.GetStatusCode() != ecode.Success.ErrCode {
 		r.log.Errorf("passport rpc batch get user info err: %v", res.GetStatusCode())
 		return nil, ecode.NewErrNo(res.GetStatusCode(), res.GetStatusMsg(), "Passport rpc batch get userinfo failed")
@@ -322,6 +296,7 @@ func (r *accountRepo) batchGetIsFollowByUserIdFromRelationRPC(ctx context.Contex
 		r.log.Errorf("relation rpc batch get is follow err: %v", err)
 		return nil, err
 	}
+	r.log.Debugf("relation rpc batch get is follow res: %v", res)
 	if res.GetStatusCode() != ecode.Success.ErrCode {
 		r.log.Errorf("relation rpc batch get is follow err: %v", res.GetStatusCode())
 		return nil, ecode.NewErrNo(res.GetStatusCode(), res.GetStatusMsg(), "Relation rpc batch get is follow failed")
@@ -360,20 +335,18 @@ func (r *accountRepo) GetFollowListByUserId(ctx context.Context, userId int64, t
 	isFollows := make([]bool, 0, len(userIds))
 	// 获取用户信息
 	g.Go(func() error {
-		us, err := r.MGetUserInfoByUserId(ctx, userId, userIds)
+		users, err = r.MGetUserInfoByUserId(ctx, userId, userIds)
 		if err != nil {
 			return err
 		}
-		users = append(users, us...)
 		return nil
 	})
 	// 获取是否关注
 	g.Go(func() error {
-		rel, err := r.batchGetIsFollowByUserIdFromRelationRPC(ctx, userId, userIds)
+		isFollows, err = r.batchGetIsFollowByUserIdFromRelationRPC(ctx, userId, userIds)
 		if err != nil {
 			return err
 		}
-		isFollows = append(isFollows, rel...)
 		return nil
 	})
 	err = g.Wait()
@@ -390,8 +363,12 @@ func (r *accountRepo) GetFollowListByUserId(ctx context.Context, userId int64, t
 	}
 
 	// 判断是否关注要放在设置缓存后
-	for i, isFollow := range isFollows {
-		users[i].IsFollow = isFollow
+	isFollowMap := make(map[int64]bool, len(userIds))
+	for i, id := range userIds {
+		isFollowMap[id] = isFollows[i]
+	}
+	for i, user := range users {
+		users[i].IsFollow = isFollowMap[user.ID]
 	}
 	return users, nil
 }
@@ -427,20 +404,18 @@ func (r *accountRepo) GetFollowerListByUserId(ctx context.Context, userId int64,
 	isFollows := make([]bool, 0, len(userIds))
 	// 获取用户信息
 	g.Go(func() error {
-		us, err := r.MGetUserInfoByUserId(ctx, userId, userIds)
+		users, err = r.MGetUserInfoByUserId(ctx, userId, userIds)
 		if err != nil {
 			return err
 		}
-		users = append(users, us...)
 		return nil
 	})
 	// 获取是否关注
 	g.Go(func() error {
-		rel, err := r.batchGetIsFollowByUserIdFromRelationRPC(ctx, userId, userIds)
+		isFollows, err = r.batchGetIsFollowByUserIdFromRelationRPC(ctx, userId, userIds)
 		if err != nil {
 			return err
 		}
-		isFollows = append(isFollows, rel...)
 		return nil
 	})
 	err = g.Wait()
@@ -457,8 +432,12 @@ func (r *accountRepo) GetFollowerListByUserId(ctx context.Context, userId int64,
 	}
 
 	// 判断是否关注要放在设置缓存后
-	for i, isFollow := range isFollows {
-		users[i].IsFollow = isFollow
+	isFollowMap := make(map[int64]bool, len(userIds))
+	for i, id := range userIds {
+		isFollowMap[id] = isFollows[i]
+	}
+	for i, user := range users {
+		users[i].IsFollow = isFollowMap[user.ID]
 	}
 	return users, nil
 }
@@ -521,6 +500,7 @@ func (r *accountRepo) getFollowerListByUserIdFromRelationRPC(ctx context.Context
 		r.log.Errorf("relation rpc get follower list err: %v", err)
 		return nil, err
 	}
+	r.log.Debugf("relation rpc get follower list res: %v", res)
 	if res.GetStatusCode() != ecode.Success.ErrCode {
 		r.log.Errorf("relation rpc get follower list err: %v", res.GetStatusCode())
 		return nil, ecode.NewErrNo(res.GetStatusCode(), res.GetStatusMsg(), "Relation rpc get follower list failed")
@@ -568,6 +548,8 @@ func (r *accountRepo) getUserFollowListFromCache(ctx context.Context, userId int
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
 			r.log.Errorf("memcached get user follow list err: %v", err)
+		} else {
+			r.log.Debugf("memcached get user follow list err: %v", err)
 		}
 		return nil, err
 	}

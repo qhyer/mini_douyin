@@ -6,6 +6,9 @@ import (
 )
 
 func UserFromAccountDTO(dto *account.User) (*do.User, error) {
+	if dto == nil {
+		return &do.User{}, nil
+	}
 	return &do.User{
 		ID:       dto.GetId(),
 		Name:     dto.GetName(),
@@ -15,6 +18,9 @@ func UserFromAccountDTO(dto *account.User) (*do.User, error) {
 }
 
 func UserFromAccountDTOs(dtos []*account.User) ([]*do.User, error) {
+	if dtos == nil {
+		return []*do.User{}, nil
+	}
 	users := make([]*do.User, 0, len(dtos))
 	for _, dto := range dtos {
 		user, err := UserFromAccountDTO(dto)

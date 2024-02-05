@@ -10,6 +10,9 @@ import (
 )
 
 func CommentFromPO(c *po.Comment) (*do.Comment, error) {
+	if c == nil {
+		return &do.Comment{}, nil
+	}
 	return &do.Comment{
 		ID: c.ID,
 		User: &do.User{
@@ -36,6 +39,9 @@ func CommentFromPOs(c []*po.Comment) ([]*do.Comment, error) {
 }
 
 func CommentToPO(c *do.Comment) (*po.Comment, error) {
+	if c == nil {
+		return &po.Comment{}, nil
+	}
 	return &po.Comment{
 		ID:        c.ID,
 		UserId:    c.User.ID,
@@ -46,8 +52,14 @@ func CommentToPO(c *do.Comment) (*po.Comment, error) {
 }
 
 func CommentToPOs(c []*do.Comment) ([]*po.Comment, error) {
+	if c == nil {
+		return []*po.Comment{}, nil
+	}
 	res := make([]*po.Comment, 0, len(c))
 	for _, v := range c {
+		if v == nil {
+			continue
+		}
 		res = append(res, &po.Comment{
 			ID:        v.ID,
 			UserId:    v.User.ID,
@@ -60,6 +72,9 @@ func CommentToPOs(c []*do.Comment) ([]*po.Comment, error) {
 }
 
 func CommentToDTO(comment *do.Comment) (*v1.CommentInfo, error) {
+	if comment == nil {
+		return &v1.CommentInfo{}, nil
+	}
 	return &v1.CommentInfo{
 		Id: comment.ID,
 		User: &v1.User{
@@ -73,8 +88,14 @@ func CommentToDTO(comment *do.Comment) (*v1.CommentInfo, error) {
 }
 
 func CommentToDTOs(comments []*do.Comment) ([]*v1.CommentInfo, error) {
+	if comments == nil {
+		return []*v1.CommentInfo{}, nil
+	}
 	res := make([]*v1.CommentInfo, 0, len(comments))
 	for _, v := range comments {
+		if v == nil {
+			continue
+		}
 		res = append(res, &v1.CommentInfo{
 			Id:         v.ID,
 			Content:    v.Content,
@@ -85,6 +106,9 @@ func CommentToDTOs(comments []*do.Comment) ([]*v1.CommentInfo, error) {
 }
 
 func ParseCommentFromCommentAction(commentAction *event.CommentAction) (*do.Comment, error) {
+	if commentAction == nil {
+		return &do.Comment{}, nil
+	}
 	return &do.Comment{
 		ID:      commentAction.ID,
 		VideoId: commentAction.VideoId,
@@ -97,8 +121,14 @@ func ParseCommentFromCommentAction(commentAction *event.CommentAction) (*do.Comm
 }
 
 func ParseCommentFromCommentActions(commentActions []*event.CommentAction) ([]*do.Comment, error) {
+	if commentActions == nil {
+		return []*do.Comment{}, nil
+	}
 	res := make([]*do.Comment, 0, len(commentActions))
 	for _, v := range commentActions {
+		if v == nil {
+			continue
+		}
 		res = append(res, &do.Comment{
 			ID:      v.ID,
 			VideoId: v.VideoId,

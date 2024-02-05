@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"douyin/app/video/publish/common/event"
+	"douyin/common/ecode"
 	"errors"
 	"time"
 
@@ -38,7 +39,7 @@ func (r *videoRepo) PublishVideo(ctx context.Context, video *event.VideoUpload) 
 	res, err := r.data.seqRPC.GetID(ctx, &seq.GetIDRequest{BusinessId: constants2.PublishBusinessId})
 	if err != nil || !res.GetIsOk() {
 		r.log.Errorf("seq rpc error: %v", err)
-		return err
+		return ecode.GetSeqIdFailedErr
 	}
 	video.ID = res.GetID()
 	b, err := video.MarshalJson()
@@ -75,7 +76,6 @@ func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64
 		vs := make([]*po.Video, 0)
 		if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("user_id = ?", userId).Find(&vs).Error; err != nil {
 			r.log.Errorf("db error: %v", err)
-			return nil, err
 		}
 		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setUserPublishedVidListCache(ctx, userId, vs)
@@ -100,7 +100,6 @@ func (r *videoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTi
 	vids := make([]int64, limit)
 	if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("created_at < ?", time.UnixMicro(latestTime)).Order("created_at desc").Limit(limit).Pluck("id", &vids).Error; err != nil {
 		r.log.Errorf("db error: %v", err)
-		return nil, err
 	}
 	videos, err := r.MGetVideoByIds(ctx, vids)
 	if err != nil {
@@ -120,7 +119,6 @@ func (r *videoRepo) GetVideoById(ctx context.Context, id int64) (*do.Video, erro
 		video = &po.Video{}
 		if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("id = ?", id).First(video).Error; err != nil {
 			r.log.Errorf("db error: %v", err)
-			return nil, err
 		}
 		err := r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 			r.setVideoCache(ctx, video)
@@ -147,7 +145,6 @@ func (r *videoRepo) MGetVideoByIds(ctx context.Context, ids []int64) ([]*do.Vide
 		missedVideos := make([]*po.Video, 0, len(missed))
 		if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("id in (?)", missed).Find(&missedVideos).Error; err != nil {
 			r.log.Errorf("db error: %v", err)
-			return nil, err
 		}
 		r.batchSetVideoCache(ctx, missedVideos)
 		videos = append(videos, missedVideos...)
@@ -167,12 +164,11 @@ func (r *videoRepo) CountUserPublishedVideoByUserId(ctx context.Context, userId 
 		return res, nil
 	}
 	if !errors.Is(err, redis.Nil) {
-		log.Errorf("redis error: %v", err)
+		r.log.Errorf("redis error: %v", err)
 	}
 	var count int64
 	if err := r.data.db.WithContext(ctx).Table(constants.PublishCountTableName(userId)).Where("user_id = ?", userId).Pluck("count", &count).Error; err != nil {
 		r.log.Errorf("db error: %v", err)
-		return 0, err
 	}
 	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setUserPublishedVidCountCache(ctx, userId, count)

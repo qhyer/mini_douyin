@@ -2,14 +2,13 @@ package service
 
 import (
 	"context"
+	"douyin/common/constants"
 
 	v1 "douyin/api/video/publish/service/v1"
 	"douyin/app/video/publish/common/mapper"
 	"douyin/app/video/publish/service/internal/biz"
 	"douyin/common/ecode"
 )
-
-var videoQueryLimit = 30
 
 type PublishService struct {
 	v1.UnimplementedPublishServer
@@ -66,7 +65,7 @@ func (s *PublishService) GetPublishedVideosByUserId(ctx context.Context, req *v1
 
 // GetPublishedVideoByLatestTime 获取小于某个时间的视频列表
 func (s *PublishService) GetPublishedVideoByLatestTime(ctx context.Context, req *v1.GetPublishedVideoByLatestTimeRequest) (*v1.GetPublishedVideoByLatestTimeResponse, error) {
-	videos, err := s.uc.GetPublishedVideosByLatestTime(ctx, req.GetLatestTime(), videoQueryLimit)
+	videos, err := s.uc.GetPublishedVideosByLatestTime(ctx, req.GetLatestTime(), constants.VideoQueryLimit)
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.GetPublishedVideoByLatestTimeResponse{

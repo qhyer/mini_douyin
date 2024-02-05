@@ -7,6 +7,9 @@ import (
 )
 
 func UserFromPassportDTO(u *passport.UserInfo) (*do.User, error) {
+	if u == nil {
+		return &do.User{}, nil
+	}
 	return &do.User{
 		ID:              u.GetId(),
 		Name:            u.GetName(),
@@ -29,6 +32,9 @@ func UserFromPassportDTOs(us []*passport.UserInfo) ([]*do.User, error) {
 }
 
 func UserToDTO(u *do.User) (*account.User, error) {
+	if u == nil {
+		return &account.User{}, nil
+	}
 	return &account.User{
 		Id:              u.ID,
 		Name:            u.Name,

@@ -1,7 +1,12 @@
 package data
 
 import (
+	"context"
 	"github.com/IBM/sarama"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
@@ -17,7 +22,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewKafka, NewChatRepo)
+var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewKafka, NewSeqClient, NewChatRepo)
 
 // Data .
 type Data struct {
@@ -64,4 +69,20 @@ func NewKafka(c *conf.Data) sarama.SyncProducer {
 	return kafka.NewKafkaSyncProducer(&kafka.Config{
 		Addr: c.GetKafka().GetAddr(),
 	})
+}
+
+func NewSeqClient(r registry.Discovery, logger log.Logger) seq.SeqClient {
+	conn, err := grpc.DialInsecure(
+		context.Background(),
+		grpc.WithEndpoint("discovery:///douyin.seq.service"),
+		grpc.WithDiscovery(r),
+		grpc.WithMiddleware(
+			recovery.Recovery(),
+			logging.Client(logger),
+		),
+	)
+	if err != nil {
+		panic(err)
+	}
+	return seq.NewSeqClient(conn)
 }
