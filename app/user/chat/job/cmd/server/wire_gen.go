@@ -7,15 +7,16 @@
 package main
 
 import (
-	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/log"
-
 	"douyin/app/user/chat/job/internal/biz"
 	"douyin/app/user/chat/job/internal/conf"
 	"douyin/app/user/chat/job/internal/data"
 	"douyin/app/user/chat/job/internal/server"
 	"douyin/app/user/chat/job/internal/service"
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/log"
+)
 
+import (
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -23,17 +24,20 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
+	db := data.NewOrm(confData)
+	client := data.NewRedis(confData)
+	dataData, cleanup, err := data.NewData(confData, db, client, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, logger)
-	client := server.NewEtcdCli(registry)
-	registrar := server.NewRegistrar(client)
+	chatRepo := data.NewChatRepo(dataData, logger)
+	chatUsecase := biz.NewChatUsecase(chatRepo, logger)
+	consumer := data.NewKafka(confData)
+	chatService := service.NewChatService(chatUsecase, consumer, logger)
+	grpcServer := server.NewGRPCServer(confServer, chatService, logger)
+	httpServer := server.NewHTTPServer(confServer, chatService, logger)
+	clientv3Client := server.NewEtcdCli(registry)
+	registrar := server.NewRegistrar(clientv3Client)
 	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {
 		cleanup()

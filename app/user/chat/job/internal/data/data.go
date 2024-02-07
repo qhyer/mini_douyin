@@ -1,19 +1,23 @@
 package data
 
 import (
+	"github.com/IBM/sarama"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
+
+	"douyin/common/queue/kafka"
+
 	"douyin/app/user/chat/job/internal/conf"
 	rdb "douyin/common/cache/redis"
 	"douyin/common/database/orm"
 	"douyin/common/sync/fanout"
-	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewChatRepo)
+var ProviderSet = wire.NewSet(NewData, NewOrm, NewRedis, NewKafka, NewChatRepo)
 
 // Data .
 type Data struct {
@@ -28,8 +32,9 @@ func NewData(c *conf.Data, orm *gorm.DB, redis *redis.Client, logger log.Logger)
 		log.NewHelper(logger).Info("closing the data resources")
 	}
 	return &Data{
-		db:    orm,
-		redis: redis,
+		db:       orm,
+		redis:    redis,
+		cacheFan: fanout.New(fanout.Worker(10), fanout.Buffer(10240)),
 	}, cleanup, nil
 }
 
@@ -51,5 +56,11 @@ func NewRedis(c *conf.Data) *redis.Client {
 		DialTimeout:  c.GetRedis().GetDialTimeout().AsDuration(),
 		ReadTimeout:  c.GetRedis().GetReadTimeout().AsDuration(),
 		WriteTimeout: c.GetRedis().GetWriteTimeout().AsDuration(),
+	})
+}
+
+func NewKafka(c *conf.Data) sarama.Consumer {
+	return kafka.NewKafkaConsumer(&kafka.Config{
+		Addr: c.GetKafka().GetAddr(),
 	})
 }

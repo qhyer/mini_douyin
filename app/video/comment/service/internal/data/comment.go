@@ -2,13 +2,14 @@ package data
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+
 	v1 "douyin/api/seq-server/service/v1"
 	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/common/event"
 	constants2 "douyin/common/constants"
 	"douyin/common/ecode"
-	"encoding/json"
-	"errors"
 
 	"douyin/app/video/comment/common/constants"
 	"douyin/app/video/comment/common/mapper"

@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"

@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+
 	"douyin/app/user/relation/common/event"
 	"douyin/common/ecode"
 

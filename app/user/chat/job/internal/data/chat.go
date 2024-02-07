@@ -2,11 +2,13 @@ package data
 
 import (
 	"context"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/redis/go-redis/v9"
+
 	"douyin/app/user/chat/common/constants"
 	do "douyin/app/user/chat/common/entity"
 	"douyin/app/user/chat/job/internal/biz"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/redis/go-redis/v9"
 )
 
 type chatRepo struct {

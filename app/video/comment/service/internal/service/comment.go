@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"douyin/app/video/comment/common/event"
 	"time"
+
+	"douyin/app/video/comment/common/event"
 
 	"douyin/app/video/comment/common/mapper"
 	"douyin/app/video/comment/service/internal/biz"

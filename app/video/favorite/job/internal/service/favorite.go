@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	do "douyin/app/video/favorite/common/event"
 
 	"github.com/IBM/sarama"

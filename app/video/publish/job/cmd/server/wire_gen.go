@@ -26,7 +26,7 @@ func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Da
 	db := data.NewOrm(confData)
 	client := data.NewRedis(confData)
 	minioClient := data.NewMinio(confData)
-	consumer := service.NewKafka(confData)
+	consumer := data.NewKafka(confData)
 	clientv3Client := server.NewEtcdCli(registry)
 	discovery := server.NewDiscovery(clientv3Client)
 	seqClient := data.NewSeqClient(discovery, logger)

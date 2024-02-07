@@ -2,12 +2,13 @@ package data
 
 import (
 	"context"
+	"errors"
+	"strconv"
+
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/user/relation/common/event"
 	constants2 "douyin/common/constants"
 	"douyin/common/ecode"
-	"errors"
-	"strconv"
 
 	"douyin/app/user/relation/common/constants"
 	do "douyin/app/user/relation/common/entity"

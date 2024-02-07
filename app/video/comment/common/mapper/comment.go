@@ -1,8 +1,9 @@
 package mapper
 
 import (
-	"douyin/app/video/comment/common/event"
 	"fmt"
+
+	"douyin/app/video/comment/common/event"
 
 	v1 "douyin/api/video/comment/service/v1"
 	do "douyin/app/video/comment/common/entity"

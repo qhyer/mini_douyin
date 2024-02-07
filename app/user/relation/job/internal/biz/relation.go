@@ -2,14 +2,15 @@ package biz
 
 import (
 	"context"
-	do "douyin/app/user/relation/common/event"
+
+	"douyin/app/user/relation/common/event"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
 
 type RelationRepo interface {
-	CreateRelation(ctx context.Context, relation *do.RelationAction) error
-	DeleteRelation(ctx context.Context, relation *do.RelationAction) error
+	CreateRelation(ctx context.Context, relation *event.RelationAction) error
+	DeleteRelation(ctx context.Context, relation *event.RelationAction) error
 	UpdateUserFollowCount(ctx context.Context, userId int64, incr int64) error
 	UpdateUserFollowerCount(ctx context.Context, userId int64, incr int64) error
 }
@@ -23,11 +24,11 @@ func NewRelationUsecase(repo RelationRepo, logger log.Logger) *RelationUsecase {
 	return &RelationUsecase{repo: repo, log: log.NewHelper(logger)}
 }
 
-func (uc *RelationUsecase) CreateRelation(ctx context.Context, relation *do.RelationAction) error {
+func (uc *RelationUsecase) CreateRelation(ctx context.Context, relation *event.RelationAction) error {
 	return uc.repo.CreateRelation(ctx, relation)
 }
 
-func (uc *RelationUsecase) DeleteRelation(ctx context.Context, relation *do.RelationAction) error {
+func (uc *RelationUsecase) DeleteRelation(ctx context.Context, relation *event.RelationAction) error {
 	return uc.repo.DeleteRelation(ctx, relation)
 }
 

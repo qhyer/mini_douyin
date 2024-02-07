@@ -2,12 +2,13 @@ package data
 
 import (
 	"context"
-	v1 "douyin/api/seq-server/service/v1"
-	"douyin/app/user/chat/common/event"
-	constants2 "douyin/common/constants"
 	"errors"
 	"strconv"
 	"time"
+
+	v1 "douyin/api/seq-server/service/v1"
+	"douyin/app/user/chat/common/event"
+	constants2 "douyin/common/constants"
 
 	"douyin/app/user/chat/common/constants"
 	do "douyin/app/user/chat/common/entity"

@@ -26,7 +26,10 @@ func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Da
 	db := data.NewOrm(confData)
 	client := data.NewRedis(confData)
 	syncProducer := data.NewKafka(confData)
-	dataData, cleanup, err := data.NewData(confData, db, client, syncProducer, logger)
+	clientv3Client := server.NewEtcdCli(registry)
+	discovery := server.NewDiscovery(clientv3Client)
+	seqClient := data.NewSeqClient(discovery, logger)
+	dataData, cleanup, err := data.NewData(confData, db, client, syncProducer, seqClient, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -35,7 +38,6 @@ func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Da
 	relationService := service.NewRelationService(relationUsecase)
 	grpcServer := server.NewGRPCServer(confServer, relationService, logger)
 	httpServer := server.NewHTTPServer(confServer, logger)
-	clientv3Client := server.NewEtcdCli(registry)
 	registrar := server.NewRegistrar(clientv3Client)
 	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {

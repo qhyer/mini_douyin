@@ -2,9 +2,10 @@ package data
 
 import (
 	"context"
+	"time"
+
 	"douyin/app/video/favorite/common/event"
 	"douyin/common/ecode"
-	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"

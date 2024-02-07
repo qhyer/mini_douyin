@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+
 	"douyin/common/queue/kafka"
 
 	"github.com/IBM/sarama"

@@ -18,3 +18,5 @@ var UserPublishedVidListCacheKey = func(uid int64) string {
 var UserPublishedVidCountCacheKey = func(uid int64) string {
 	return fmt.Sprintf("USER_PUB_VID_COUNT_%d", uid)
 }
+
+const FeedVideoIdListCacheKey = "FEED_VIDEO_ID_LIST"

@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
-	"douyin/app/video/comment/common/event"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
+
+	"douyin/app/video/comment/common/event"
 
 	v1 "douyin/api/video/comment/job"
 	"douyin/app/video/comment/common/constants"

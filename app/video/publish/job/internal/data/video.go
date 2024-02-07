@@ -3,6 +3,7 @@ package data
 import (
 	"bytes"
 	"context"
+	"github.com/redis/go-redis/v9"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -75,6 +76,38 @@ func (r *videoRepo) CreateVideo(ctx context.Context, video *do.Video) error {
 	})
 	if err != nil {
 		r.log.Errorf("clear cache error: %v", err)
+	}
+
+	err = r.updateFeedListCache(ctx)
+	if err != nil {
+		r.log.Errorf("update feed list cache error: %v", err)
+	}
+	return nil
+}
+
+func (r *videoRepo) updateFeedListCache(ctx context.Context) error {
+	videos := make([]*po.Video, 0)
+	err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Order("created_at desc").Limit(500).Find(&videos).Error
+	if err != nil {
+		r.log.Errorf("get video list error: %v", err)
+		return err
+	}
+	pipe := r.data.redis.Pipeline()
+	pipe.Del(ctx, constants.FeedVideoIdListCacheKey)
+	for _, v := range videos {
+		err := pipe.ZAdd(ctx, constants.FeedVideoIdListCacheKey, redis.Z{
+			Score:  float64(v.CreatedAt.UnixMicro()),
+			Member: v.ID,
+		}).Err()
+		if err != nil {
+			r.log.Errorf("update feed list cache error: %v", err)
+			return err
+		}
+	}
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+		r.log.Errorf("update feed list cache error: %v", err)
+		return err
 	}
 	return nil
 }

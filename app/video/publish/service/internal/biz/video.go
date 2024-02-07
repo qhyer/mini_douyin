@@ -2,10 +2,12 @@ package biz
 
 import (
 	"context"
-	"douyin/app/video/publish/common/event"
 	"fmt"
-	"github.com/google/uuid"
 	"time"
+
+	"douyin/app/video/publish/common/event"
+
+	"github.com/google/uuid"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/sync/singleflight"

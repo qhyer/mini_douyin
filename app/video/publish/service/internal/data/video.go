@@ -3,10 +3,12 @@ package data
 import (
 	"bytes"
 	"context"
+	"errors"
+	"strconv"
+	"time"
+
 	"douyin/app/video/publish/common/event"
 	"douyin/common/ecode"
-	"errors"
-	"time"
 
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/video/publish/common/constants"
@@ -97,7 +99,15 @@ func (r *videoRepo) GetPublishedVideosByUserId(ctx context.Context, userId int64
 
 // GetPublishedVideosByLatestTime 获取小于某个时间的视频列表
 func (r *videoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTime int64, limit int) ([]*do.Video, error) {
-	vids := make([]int64, limit)
+	vids, err := r.getPublishedVideosByLatestTimeFromCache(ctx, latestTime, limit)
+	if err == nil && len(vids) == limit {
+		videos, err := r.MGetVideoByIds(ctx, vids)
+		if err != nil {
+			r.log.Errorf("MGetVideoByIds err: %v", err)
+			return nil, err
+		}
+		return videos, nil
+	}
 	if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("created_at < ?", time.UnixMicro(latestTime)).Order("created_at desc").Limit(limit).Pluck("id", &vids).Error; err != nil {
 		r.log.Errorf("db error: %v", err)
 	}
@@ -107,6 +117,27 @@ func (r *videoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTi
 		return nil, err
 	}
 	return videos, nil
+}
+
+func (r *videoRepo) getPublishedVideosByLatestTimeFromCache(ctx context.Context, latestTime int64, limit int) ([]int64, error) {
+	vids, err := r.data.redis.ZRevRangeByScore(ctx, constants.FeedVideoIdListCacheKey, &redis.ZRangeBy{
+		Min:   "-inf",
+		Max:   strconv.FormatInt(latestTime, 10),
+		Count: int64(limit),
+	}).Result()
+	if err != nil {
+		r.log.Errorf("redis error: %v", err)
+		return nil, err
+	}
+	ids := make([]int64, 0, len(vids))
+	for _, vid := range vids {
+		id, err := strconv.ParseInt(vid, 10, 64)
+		if err != nil {
+			continue
+		}
+		ids = append(ids, id)
+	}
+	return ids, nil
 }
 
 // GetVideoById 获取视频信息

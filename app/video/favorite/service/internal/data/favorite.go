@@ -2,12 +2,13 @@ package data
 
 import (
 	"context"
+	"errors"
+	"strconv"
+
 	seq "douyin/api/seq-server/service/v1"
 	event "douyin/app/video/favorite/common/event"
 	constants2 "douyin/common/constants"
 	"douyin/common/ecode"
-	"errors"
-	"strconv"
 
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"

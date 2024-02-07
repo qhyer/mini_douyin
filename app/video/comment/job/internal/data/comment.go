@@ -2,11 +2,13 @@ package data
 
 import (
 	"context"
-	"douyin/app/video/comment/common/event"
-	"douyin/common/ecode"
+
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
+
+	"douyin/app/video/comment/common/event"
+	"douyin/common/ecode"
 
 	"douyin/app/video/comment/common/constants"
 	"douyin/app/video/comment/common/mapper"

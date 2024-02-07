@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"github.com/go-kratos/kratos/v2/log"
 	"strconv"
+
+	"github.com/go-kratos/kratos/v2/log"
 
 	"github.com/jinzhu/copier"
 
@@ -26,7 +27,8 @@ type BFFService struct {
 }
 
 func NewBFFService(au *biz.AccountUsecase, fu *biz.FeedUsecase, ru *biz.RelationUsecase, cu *biz.CommentUsecase,
-	favu *biz.FavoriteUsecase, pu *biz.PublishUsecase, logger log.Logger) *BFFService {
+	favu *biz.FavoriteUsecase, pu *biz.PublishUsecase, logger log.Logger,
+) *BFFService {
 	return &BFFService{
 		accountUsecase:  au,
 		feedUsecase:     fu,

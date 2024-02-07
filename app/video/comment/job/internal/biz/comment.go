@@ -2,8 +2,10 @@ package biz
 
 import (
 	"context"
-	"douyin/app/video/comment/common/event"
+
 	"github.com/go-kratos/kratos/v2/log"
+
+	"douyin/app/video/comment/common/event"
 )
 
 type CommentRepo interface {

@@ -1,7 +1,6 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	v1 "douyin/api/video/publish/job"
 	"douyin/app/video/publish/common/constants"
@@ -9,14 +8,11 @@ import (
 	"douyin/app/video/publish/common/event"
 	"douyin/app/video/publish/job/internal/biz"
 	constants2 "douyin/common/constants"
+	"douyin/common/ffmpeg"
 	"fmt"
-	"image"
-	"image/jpeg"
-	"os"
 
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
-	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
 type PublishService struct {
@@ -74,7 +70,7 @@ func (s *PublishService) UploadCover() {
 			s.log.Errorf("UnmarshalJson error: %v", err)
 			continue
 		}
-		coverBytes, err := readFrameAsJpeg(fmt.Sprintf("%s%s.mp4", constants2.VideoOSSURL, video.VideoFileName))
+		coverBytes, err := ffmpeg.ReadFrameAsJpeg(fmt.Sprintf("%s%s.mp4", constants2.VideoOSSURL, video.VideoFileName))
 		if err != nil {
 			s.log.Errorf("readFrameAsJpeg error: %v", err)
 			continue
@@ -84,29 +80,4 @@ func (s *PublishService) UploadCover() {
 			s.log.Errorf("UploadCover error: %v", err)
 		}
 	}
-}
-
-func readFrameAsJpeg(inFileName string) ([]byte, error) {
-	reader := bytes.NewBuffer(nil)
-	err := ffmpeg.Input(inFileName).
-		Filter("select", ffmpeg.Args{fmt.Sprintf("gte(n,%d)", 1)}).
-		Output("pipe:", ffmpeg.KwArgs{"vframes": 1, "format": "image2", "vcodec": "mjpeg"}).
-		WithOutput(reader, os.Stdout).
-		Run()
-	if err != nil {
-		return nil, err
-	}
-
-	img, _, err := image.Decode(reader)
-	if err != nil {
-		return nil, err
-	}
-
-	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, img, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), err
 }
