@@ -175,7 +175,7 @@ func (r *chatRepo) setMessageListByMyUserIdAndHisUserIdAndPreMsgTimeCache(ctx co
 			r.log.Errorf("message.MarshalJson() error(%v)", err)
 			return
 		}
-		z = append(z, redis.Z{Score: float64(message.CreatedAt.UnixMicro()), Member: b})
+		z = append(z, redis.Z{Score: float64(message.CreatedAt.UnixMilli()), Member: b})
 	}
 	err := r.data.redis.ZAdd(ctx, key, z...).Err()
 	if err != nil {

@@ -96,7 +96,7 @@ func (r *videoRepo) updateFeedListCache(ctx context.Context) error {
 	pipe.Del(ctx, constants.FeedVideoIdListCacheKey)
 	for _, v := range videos {
 		err := pipe.ZAdd(ctx, constants.FeedVideoIdListCacheKey, redis.Z{
-			Score:  float64(v.CreatedAt.UnixMicro()),
+			Score:  float64(v.CreatedAt.UnixMilli()),
 			Member: v.ID,
 		}).Err()
 		if err != nil {

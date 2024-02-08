@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"sync"
+	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/go-kratos/kratos/v2/log"
@@ -16,15 +18,28 @@ import (
 type CommentService struct {
 	v1.UnimplementedCommentServer
 
-	uc    *biz.CommentUsecase
-	kafka sarama.Consumer
-	log   *log.Helper
+	uc     *biz.CommentUsecase
+	kafka  sarama.Consumer
+	log    *log.Helper
+	waiter sync.WaitGroup
+
+	statCh []chan *event.CommentStat
 }
 
 func NewCommentService(uc *biz.CommentUsecase, kafka sarama.Consumer, logger log.Logger) *CommentService {
-	s := &CommentService{uc: uc, kafka: kafka, log: log.NewHelper(logger)}
+	s := &CommentService{
+		uc:     uc,
+		kafka:  kafka,
+		log:    log.NewHelper(logger),
+		statCh: make([]chan *event.CommentStat, constants.CommentCountSharding),
+	}
 	go s.CommentAction()
 	go s.CommentStat()
+	for i := 0; i < constants.CommentCountSharding; i++ {
+		s.statCh[i] = make(chan *event.CommentStat, 1024)
+		s.waiter.Add(1)
+		go s.CommentStatProc(i)
+	}
 	return s
 }
 
@@ -63,7 +78,47 @@ func (s *CommentService) CommentStat() {
 		panic(err)
 	}
 	defer partitionConsumer.Close()
-	//for message := range partitionConsumer.Messages() {
-	// todo
-	//}
+	for message := range partitionConsumer.Messages() {
+		commentStst := event.CommentStat{}
+		err := commentStst.UnmarshalJson(message.Value)
+		if err != nil {
+			s.log.Errorf("CommentStat UnmarshalJson error: %v", err)
+			return
+		}
+		s.statCh[commentStst.VideoId%constants.CommentCountSharding] <- &commentStst
+	}
+}
+
+func (s *CommentService) CommentStatProc(procId int) {
+	defer s.waiter.Done()
+	ch := s.statCh[procId]
+	ts := time.Now()
+	for {
+		m, ok := <-ch
+		if !ok {
+			s.log.Info("CommentStatProc exit")
+			return
+		}
+		err := s.uc.UpdateVideoCommentTempCountCache(context.Background(), procId, m)
+		if err != nil {
+			s.log.Errorf("UpdateCommentCount error: %v", err)
+		}
+		if time.Now().Sub(ts) > time.Second*10 {
+			ts = time.Now()
+			res, err := s.uc.GetVideoCommentTempCountCache(context.Background(), procId)
+			if err != nil {
+				s.log.Errorf("GetCommentCount error: %v", err)
+				continue
+			}
+			err = s.uc.BatchUpdateVideoCommentCount(context.Background(), res)
+			if err != nil {
+				s.log.Errorf("BatchUpdateCommentCount error: %v", err)
+				continue
+			}
+			err = s.uc.PurgeVideoCommentTempCountCache(context.Background(), procId)
+			if err != nil {
+				s.log.Errorf("PurgeCommentCount error: %v", err)
+			}
+		}
+	}
 }

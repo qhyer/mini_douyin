@@ -28,3 +28,15 @@ var VideoFavoritedCountCacheKey = func(videoId int64) string {
 }
 
 const VideoFavoritedCountCacheExpiration = 3 * time.Minute
+
+var UserFavoriteStatTempCacheKey = func(procId int) string {
+	return fmt.Sprintf("USER_FAV_STAT_TEMP:%d", procId)
+}
+
+var UserFavoritedStatTempCacheKey = func(procId int) string {
+	return fmt.Sprintf("USER_FAVD_STAT_TEMP:%d", procId)
+}
+
+var VideoFavoritedStatTempCacheKey = func(procId int) string {
+	return fmt.Sprintf("VIDEO_FAVD_STAT_TEMP:%d", procId)
+}

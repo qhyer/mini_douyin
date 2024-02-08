@@ -38,3 +38,11 @@ const UserFollowerListCacheExpiration = 3 * time.Minute
 var UserFollowBloomCacheKey = func(userId int64) string {
 	return fmt.Sprintf("USER_FOLLOW_BLOOM:%d", userId)
 }
+
+var UserFollowTempCountKey = func(procId int) string {
+	return fmt.Sprintf("USER_FOLLOW_TEMP_COUNT:%d", procId)
+}
+
+var UserFollowerTempCountKey = func(procId int) string {
+	return fmt.Sprintf("USER_FOLLOWER_TEMP_COUNT:%d", procId)
+}

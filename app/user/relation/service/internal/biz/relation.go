@@ -3,7 +3,7 @@ package biz
 import (
 	"context"
 
-	do "douyin/app/user/relation/common/event"
+	"douyin/app/user/relation/common/event"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/sync/singleflight"
@@ -13,7 +13,7 @@ import (
 )
 
 type RelationRepo interface {
-	RelationAction(ctx context.Context, relation *do.RelationAction) error
+	RelationAction(ctx context.Context, relation *event.RelationAction) error
 	GetFollowListByUserId(ctx context.Context, userId int64) ([]int64, error)
 	GetFollowerListByUserId(ctx context.Context, userId int64) ([]int64, error)
 	GetFriendListByUserId(ctx context.Context, userId int64) ([]int64, error)
@@ -37,11 +37,11 @@ func NewRelationUsecase(repo RelationRepo, logger log.Logger) *RelationUsecase {
 	}
 }
 
-func (uc *RelationUsecase) RelationAction(ctx context.Context, relation *do.RelationAction) error {
+func (uc *RelationUsecase) RelationAction(ctx context.Context, relation *event.RelationAction) error {
 	if relation.FromUserId == relation.ToUserId {
 		return ecode.RelationFollowSelfBannedErr
 	}
-	if relation.Type != do.RelationActionFollow && relation.Type != do.RelationActionUnFollow {
+	if relation.Type != event.RelationActionFollow && relation.Type != event.RelationActionUnFollow {
 		return ecode.ParamErr
 	}
 	err := uc.repo.RelationAction(ctx, relation)

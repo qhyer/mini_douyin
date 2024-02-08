@@ -108,7 +108,7 @@ func (r *videoRepo) GetPublishedVideosByLatestTime(ctx context.Context, latestTi
 		}
 		return videos, nil
 	}
-	if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("created_at < ?", time.UnixMicro(latestTime)).Order("created_at desc").Limit(limit).Pluck("id", &vids).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Table(constants.PublishRecordTableName).Where("created_at < ?", time.UnixMilli(latestTime)).Order("created_at desc").Limit(limit).Pluck("id", &vids).Error; err != nil {
 		r.log.Errorf("db error: %v", err)
 	}
 	videos, err := r.MGetVideoByIds(ctx, vids)

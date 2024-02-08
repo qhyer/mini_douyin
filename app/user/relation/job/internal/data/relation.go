@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"strconv"
 
 	"douyin/app/user/relation/common/event"
 	"douyin/common/ecode"
@@ -187,6 +188,97 @@ func (r *relationRepo) UpdateUserFollowerCount(ctx context.Context, userId int64
 	err := r.data.db.WithContext(ctx).Table(constants.RelationCountTable(userId)).FirstOrCreate(&userCnt, userCnt).Update("follower_count", gorm.Expr("follower_count + ?", incr)).Error
 	if err != nil {
 		r.log.Errorf("UpdateUserFollowerCount error(%v)", err)
+		return err
+	}
+	return nil
+}
+
+func (r *relationRepo) UpdateUserFollowTempCount(ctx context.Context, prodId int, userId int64, incr int64) error {
+	err := r.data.redis.HIncrBy(ctx, constants.UserFollowTempCountKey(prodId), strconv.FormatInt(userId, 10), incr).Err()
+	if err != nil {
+		r.log.Errorf("UpdateUserFollowTempCount error(%v)", err)
+		return err
+	}
+	return nil
+}
+
+func (r *relationRepo) UpdateUserFollowerTempCount(ctx context.Context, prodId int, userId int64, incr int64) error {
+	err := r.data.redis.HIncrBy(ctx, constants.UserFollowerTempCountKey(prodId), strconv.FormatInt(userId, 10), incr).Err()
+	if err != nil {
+		r.log.Errorf("UpdateUserFollowerTempCount error(%v)", err)
+		return err
+	}
+	return nil
+}
+
+func (r *relationRepo) GetUserFollowTempCount(ctx context.Context, procId int) (map[int64]int64, error) {
+	countMap, err := r.data.redis.HGetAll(ctx, constants.UserFollowTempCountKey(procId)).Result()
+	if err != nil {
+		r.log.Errorf("GetUserFollowTempCount error(%v)", err)
+		return nil, err
+	}
+	ret := make(map[int64]int64, len(countMap))
+	for k, v := range countMap {
+		userId, _ := strconv.ParseInt(k, 10, 64)
+		count, _ := strconv.ParseInt(v, 10, 64)
+		ret[userId] = count
+	}
+	return ret, nil
+}
+
+func (r *relationRepo) GetUserFollowerTempCount(ctx context.Context, procId int) (map[int64]int64, error) {
+	countMap, err := r.data.redis.HGetAll(ctx, constants.UserFollowerTempCountKey(procId)).Result()
+	if err != nil {
+		r.log.Errorf("GetUserFollowerTempCount error(%v)", err)
+		return nil, err
+	}
+	ret := make(map[int64]int64, len(countMap))
+	for k, v := range countMap {
+		userId, _ := strconv.ParseInt(k, 10, 64)
+		count, _ := strconv.ParseInt(v, 10, 64)
+		ret[userId] = count
+	}
+	return ret, nil
+}
+
+func (r *relationRepo) PurgeUserFollowTempCount(ctx context.Context, procId int) error {
+	err := r.data.redis.Del(ctx, constants.UserFollowTempCountKey(procId)).Err()
+	if err != nil {
+		r.log.Errorf("PurgeUserFollowTempCount error(%v)", err)
+		return err
+	}
+	return nil
+}
+
+func (r *relationRepo) PurgeUserFollowerTempCount(ctx context.Context, procId int) error {
+	err := r.data.redis.Del(ctx, constants.UserFollowerTempCountKey(procId)).Err()
+	if err != nil {
+		r.log.Errorf("PurgeUserFollowerTempCount error(%v)", err)
+		return err
+	}
+	return nil
+}
+
+func (r *relationRepo) BatchUpdateUserRelationStat(ctx context.Context, follow map[int64]int64, follower map[int64]int64) error {
+	err := r.data.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for userId, incr := range follow {
+			err := tx.Table(constants.RelationCountTable(userId)).Update("follow_count", gorm.Expr("follow_count + ?", incr)).Error
+			if err != nil {
+				r.log.Errorf("BatchUpdateUserRelationStat error(%v)", err)
+				return err
+			}
+		}
+		for userId, incr := range follower {
+			err := tx.Table(constants.RelationCountTable(userId)).Update("follower_count", gorm.Expr("follower_count + ?", incr)).Error
+			if err != nil {
+				r.log.Errorf("BatchUpdateUserRelationStat error(%v)", err)
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		r.log.Errorf("BatchUpdateUserRelationStat error(%v)", err)
 		return err
 	}
 	return nil

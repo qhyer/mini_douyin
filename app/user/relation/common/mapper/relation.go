@@ -1,11 +1,11 @@
 package mapper
 
 import (
-	do "douyin/app/user/relation/common/event"
+	"douyin/app/user/relation/common/event"
 	po "douyin/app/user/relation/common/model"
 )
 
-func RelationActionToPO(rel *do.RelationAction) (*po.Relation, error) {
+func RelationActionToPO(rel *event.RelationAction) (*po.Relation, error) {
 	if rel == nil {
 		return &po.Relation{}, nil
 	}

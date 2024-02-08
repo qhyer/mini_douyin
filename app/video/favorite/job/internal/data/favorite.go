@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"douyin/app/video/favorite/common/event"
@@ -155,7 +156,15 @@ func (r *favoriteRepo) DeleteFavorite(ctx context.Context, favoriteAction *event
 		}
 
 		// 异步更新视频获赞数和用户获赞数
-		b, err := favoriteAction.MarshalJson()
+		delta := calcVideoFavoritedCountDelta(favoriteAction.Type)
+		stat := &event.VideoFavoritedStat{
+			VideoId: favoriteAction.VideoId,
+			Delta:   delta,
+		}
+		b, err := stat.MarshalJson()
+		if err != nil {
+			return err
+		}
 		_, _, err = r.data.kafkaProducer.SendMessage(&sarama.ProducerMessage{
 			Topic: constants.UpdateVideoFavoritedCountTopic,
 			Key:   sarama.StringEncoder(constants.UpdateVideoFavoritedCountKafkaKey(favoriteAction.VideoId)),
@@ -184,19 +193,58 @@ func (r *favoriteRepo) DeleteFavorite(ctx context.Context, favoriteAction *event
 	return nil
 }
 
-func (r *favoriteRepo) BatchUpdateUserFavoriteCount(ctx context.Context, userIds []int64, incr []int64) error {
-	// TODO implement me
-	panic("implement me")
+func (r *favoriteRepo) BatchUpdateUserFavoriteCount(ctx context.Context, stats map[int64]int64) error {
+	tx := r.data.db.WithContext(ctx).Begin()
+	for userId, count := range stats {
+		err := tx.Table(constants.UserFavoriteVideoCountTableName(userId)).FirstOrCreate(&po.UserFavoriteCount{UserId: userId}, po.UserFavoriteCount{UserId: userId}).Update("favorite_count", gorm.Expr("favorite_count + ?", count)).Error
+		if err != nil {
+			tx.Rollback()
+			r.log.Errorf("BatchUpdateUserFavoriteCount error(%v)", err)
+			return err
+		}
+	}
+	err := tx.Commit().Error
+	if err != nil {
+		r.log.Errorf("BatchUpdateUserFavoriteCount error(%v)", err)
+		return err
+	}
+	return nil
 }
 
-func (r *favoriteRepo) BatchUpdateUserFavoritedCount(ctx context.Context, userIds []int64, incr []int64) error {
-	// TODO implement me
-	panic("implement me")
+func (r *favoriteRepo) BatchUpdateUserFavoritedCount(ctx context.Context, stats map[int64]int64) error {
+	tx := r.data.db.WithContext(ctx).Begin()
+	for userId, count := range stats {
+		err := tx.Table(constants.UserFavoriteVideoCountTableName(userId)).FirstOrCreate(&po.UserFavoriteCount{UserId: userId}, po.UserFavoriteCount{UserId: userId}).Update("favorited_count", gorm.Expr("favorited_count + ?", count)).Error
+		if err != nil {
+			tx.Rollback()
+			r.log.Errorf("BatchUpdateUserFavoritedCount error(%v)", err)
+			return err
+		}
+	}
+	err := tx.Commit().Error
+	if err != nil {
+		r.log.Errorf("BatchUpdateUserFavoritedCount error(%v)", err)
+		return err
+	}
+	return nil
 }
 
-func (r *favoriteRepo) BatchUpdateVideoFavoritedCount(ctx context.Context, videoIds []int64, incr []int64) error {
-	// TODO implement me
-	panic("implement me")
+func (r *favoriteRepo) BatchUpdateVideoFavoritedCount(ctx context.Context, stats map[int64]int64) error {
+	tx := r.data.db.WithContext(ctx).Begin()
+	for videoId, count := range stats {
+		err := tx.Table(constants.VideoFavoritedCountTableName(videoId)).FirstOrCreate(&po.VideoFavoritedCount{VideoId: videoId}, po.VideoFavoritedCount{VideoId: videoId}).Update("favorited_count", gorm.Expr("favorited_count + ?", count)).Error
+		if err != nil {
+			tx.Rollback()
+			r.log.Errorf("BatchUpdateVideoFavoritedCount error(%v)", err)
+			return err
+		}
+	}
+	err := tx.Commit().Error
+	if err != nil {
+		r.log.Errorf("BatchUpdateVideoFavoritedCount error(%v)", err)
+		return err
+	}
+	return nil
 }
 
 func (r *favoriteRepo) BatchCreateFavorite(ctx context.Context, favorites []*event.FavoriteAction) error {
@@ -217,4 +265,54 @@ func (r *favoriteRepo) delUserFavoriteListCache(ctx context.Context, userId int6
 		return err
 	}
 	return nil
+}
+
+func calcVideoFavoritedCountDelta(actionType event.FavoriteActionType) int64 {
+	if actionType == event.FavoriteActionAdd {
+		return 1
+	} else if actionType == event.FavoriteActionDelete {
+		return -1
+	}
+	return 0
+}
+
+func (r *favoriteRepo) UpdateVideoFavoritedTempCount(ctx context.Context, procId int, videoId int64, incr int64) error {
+	err := r.data.redis.HIncrBy(ctx, constants.VideoFavoritedStatTempCacheKey(procId), strconv.FormatInt(videoId, 10), incr).Err()
+	if err != nil {
+		r.log.Errorf("UpdateVideoFavoritedTempCount error(%v)", err)
+		return err
+	}
+	return nil
+}
+
+func (r *favoriteRepo) PurgeVideoFavoritedTempCount(ctx context.Context, procId int) error {
+	err := r.data.redis.Del(ctx, constants.VideoFavoritedStatTempCacheKey(procId)).Err()
+	if err != nil {
+		r.log.Errorf("PurgeVideoFavoritedTempCount error(%v)", err)
+		return err
+	}
+	return nil
+}
+
+func (r *favoriteRepo) GetVideoFavoritedCountFromCache(ctx context.Context, procId int) (map[int64]int64, error) {
+	m, err := r.data.redis.HGetAll(ctx, constants.VideoFavoritedStatTempCacheKey(procId)).Result()
+	if err != nil {
+		r.log.Errorf("GetVideoFavoritedCountFromCache error(%v)", err)
+		return nil, err
+	}
+	ret := make(map[int64]int64, len(m))
+	for k, v := range m {
+		vid, err := strconv.ParseInt(k, 10, 64)
+		if err != nil {
+			r.log.Errorf("GetVideoFavoritedCountFromCache error(%v)", err)
+			return nil, err
+		}
+		count, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			r.log.Errorf("GetVideoFavoritedCountFromCache error(%v)", err)
+			return nil, err
+		}
+		ret[vid] = count
+	}
+	return ret, nil
 }

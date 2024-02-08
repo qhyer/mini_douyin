@@ -3,7 +3,7 @@ package biz
 import (
 	"context"
 
-	do "douyin/app/video/favorite/common/event"
+	"douyin/app/video/favorite/common/event"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/sync/singleflight"
@@ -16,7 +16,7 @@ type FavoriteRepo interface {
 	GetFavoriteVideoIdListByUserId(ctx context.Context, userId int64) ([]int64, error)
 	IsUserFavoriteVideo(ctx context.Context, userId int64, videoId int64) (bool, error)
 	IsUserFavoriteVideoList(ctx context.Context, userId int64, videoIds []int64) ([]bool, error)
-	FavoriteVideo(ctx context.Context, fav *do.FavoriteAction) error
+	FavoriteVideo(ctx context.Context, fav *event.FavoriteAction) error
 	CountUserFavoriteByUserId(ctx context.Context, userId int64) (int64, error)
 	CountUserFavoritedByUserId(ctx context.Context, userId int64) (int64, error)
 	CountVideoFavoritedByVideoId(ctx context.Context, videoId int64) (int64, error)
@@ -34,8 +34,8 @@ func NewFavoriteUsecase(repo FavoriteRepo, logger log.Logger) *FavoriteUsecase {
 }
 
 // FavoriteAction 点赞视频
-func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, fav *do.FavoriteAction) error {
-	if fav.Type != do.FavoriteActionAdd && fav.Type != do.FavoriteActionDelete {
+func (uc *FavoriteUsecase) FavoriteAction(ctx context.Context, fav *event.FavoriteAction) error {
+	if fav.Type != event.FavoriteActionAdd && fav.Type != event.FavoriteActionDelete {
 		return ecode.ParamErr
 	}
 	err := uc.repo.FavoriteVideo(ctx, fav)

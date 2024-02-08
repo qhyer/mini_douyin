@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	do "douyin/app/user/relation/common/event"
+	"douyin/app/user/relation/common/event"
 
 	v1 "douyin/api/user/relation/service/v1"
 	"douyin/app/user/relation/service/internal/biz"
@@ -21,8 +21,8 @@ func NewRelationService(uc *biz.RelationUsecase) *RelationService {
 }
 
 func (s *RelationService) RelationAction(ctx context.Context, req *v1.RelationActionRequest) (*v1.RelationActionResponse, error) {
-	err := s.uc.RelationAction(ctx, &do.RelationAction{
-		Type:       do.RelationActionType(req.GetActionType()),
+	err := s.uc.RelationAction(ctx, &event.RelationAction{
+		Type:       event.RelationActionType(req.GetActionType()),
 		FromUserId: req.GetUserId(),
 		ToUserId:   req.GetToUserId(),
 	})

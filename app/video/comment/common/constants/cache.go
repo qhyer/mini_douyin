@@ -22,3 +22,7 @@ var CommentInfoCacheKey = func(commentId int64) string {
 }
 
 const CommentInfoCacheExpiration = 3 * time.Minute
+
+var CommentStatTempCacheKey = func(procId int) string {
+	return fmt.Sprintf("COMMENT_STAT_TEMP_%d", procId)
+}
