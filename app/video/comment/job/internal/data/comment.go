@@ -31,7 +31,7 @@ func NewCommentRepo(data *Data, logger log.Logger) biz.CommentRepo {
 
 func (r *commentRepo) UpdateVideoCommentCount(ctx context.Context, videoId int64, incr int64) error {
 	comCnt := po.CommentCount{VideoId: videoId}
-	err := r.data.db.WithContext(ctx).Table(constants.CommentCountTableName(videoId)).FirstOrCreate(&comCnt, comCnt).Update("comment_count", gorm.Expr("comment_count + ?", incr)).Error
+	err := r.data.db.WithContext(ctx).Table(constants.CommentCountTableName(videoId)).FirstOrCreate(&comCnt, comCnt).Where("video_id = ?", videoId).Update("comment_count", gorm.Expr("comment_count + ?", incr)).Error
 	if err != nil {
 		r.log.Errorf("UpdateVideoCommentCount error(%v)", err)
 		return err
@@ -43,7 +43,7 @@ func (r *commentRepo) BatchUpdateVideoCommentCount(ctx context.Context, stats ma
 	tx := r.data.db.WithContext(ctx).Begin()
 	for vid, cnt := range stats {
 		comCnt := po.CommentCount{VideoId: vid}
-		err := tx.Table(constants.CommentCountTableName(vid)).FirstOrCreate(&comCnt, comCnt).Update("comment_count", gorm.Expr("comment_count + ?", cnt)).Error
+		err := tx.Table(constants.CommentCountTableName(vid)).FirstOrCreate(&comCnt, comCnt).Where("video_id = ?", vid).Update("comment_count", gorm.Expr("comment_count + ?", cnt)).Error
 		if err != nil {
 			r.log.Errorf("BatchUpdateVideoCommentCount error(%v)", err)
 			tx.Rollback()

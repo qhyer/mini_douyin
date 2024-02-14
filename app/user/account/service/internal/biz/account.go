@@ -10,7 +10,7 @@ import (
 
 type AccountRepo interface {
 	GetUserInfoByUserId(ctx context.Context, userId int64, toUserId int64) (*do.User, error)
-	MGetUserInfoByUserId(ctx context.Context, userId int64, toUserIds []int64) ([]*do.User, error)
+	MGetUserInfoByUserId(ctx context.Context, toUserIds []int64) ([]*do.User, error)
 	GetFollowListByUserId(ctx context.Context, userId int64, toUserId int64) ([]*do.User, error)
 	GetFollowerListByUserId(ctx context.Context, userId int64, toUserId int64) ([]*do.User, error)
 	GetFriendListByUserId(ctx context.Context, userId int64) ([]*do.User, error)
@@ -31,8 +31,8 @@ func (uc *AccountUsecase) GetUserInfoByUserId(ctx context.Context, userId int64,
 }
 
 // MGetUserInfoByUserId 获取用户的基本信息
-func (uc *AccountUsecase) MGetUserInfoByUserId(ctx context.Context, userId int64, toUserIds []int64) ([]*do.User, error) {
-	return uc.repo.MGetUserInfoByUserId(ctx, userId, toUserIds)
+func (uc *AccountUsecase) MGetUserInfoByUserId(ctx context.Context, toUserIds []int64) ([]*do.User, error) {
+	return uc.repo.MGetUserInfoByUserId(ctx, toUserIds)
 }
 
 // GetFollowListByUserId 获取用户的关注列表

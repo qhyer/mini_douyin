@@ -4,11 +4,12 @@ import (
 	account "douyin/api/user/account/service/v1"
 	passport "douyin/api/user/passport/service/v1"
 	do "douyin/app/user/account/common/entity"
+	"fmt"
 )
 
 func UserFromPassportDTO(u *passport.UserInfo) (*do.User, error) {
 	if u == nil {
-		return &do.User{}, nil
+		return &do.User{}, fmt.Errorf("UserFromPassportDTO: u is nil")
 	}
 	return &do.User{
 		ID:              u.GetId(),
@@ -20,7 +21,7 @@ func UserFromPassportDTO(u *passport.UserInfo) (*do.User, error) {
 }
 
 func UserFromPassportDTOs(us []*passport.UserInfo) ([]*do.User, error) {
-	var users []*do.User
+	users := make([]*do.User, 0, len(us))
 	for _, u := range us {
 		user, err := UserFromPassportDTO(u)
 		if err != nil {
@@ -33,7 +34,7 @@ func UserFromPassportDTOs(us []*passport.UserInfo) ([]*do.User, error) {
 
 func UserToDTO(u *do.User) (*account.User, error) {
 	if u == nil {
-		return &account.User{}, nil
+		return &account.User{}, fmt.Errorf("UserToDTO: u is nil")
 	}
 	return &account.User{
 		Id:              u.ID,
@@ -53,7 +54,7 @@ func UserToDTO(u *do.User) (*account.User, error) {
 }
 
 func UserToDTOs(us []*do.User) ([]*account.User, error) {
-	var users []*account.User
+	users := make([]*account.User, 0, len(us))
 	for _, u := range us {
 		user, err := UserToDTO(u)
 		if err != nil {

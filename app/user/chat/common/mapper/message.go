@@ -3,11 +3,12 @@ package mapper
 import (
 	dto "douyin/api/user/chat/service/v1"
 	do "douyin/app/user/chat/common/entity"
+	"fmt"
 )
 
 func MessageToDTO(msg *do.Message) (*dto.Message, error) {
 	if msg == nil {
-		return &dto.Message{}, nil
+		return &dto.Message{}, fmt.Errorf("msg is nil")
 	}
 	return &dto.Message{
 		Id:         msg.ID,
@@ -19,7 +20,7 @@ func MessageToDTO(msg *do.Message) (*dto.Message, error) {
 }
 
 func MessageToDTOs(msgs []*do.Message) ([]*dto.Message, error) {
-	var res []*dto.Message
+	res := make([]*dto.Message, 0, len(msgs))
 	for _, msg := range msgs {
 		d, err := MessageToDTO(msg)
 		if err != nil {

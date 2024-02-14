@@ -46,7 +46,7 @@ func (s *AccountService) GetUserInfoByUserId(ctx context.Context, req *v1.GetUse
 }
 
 func (s *AccountService) MGetUserInfoByUserId(ctx context.Context, req *v1.MGetUserInfoByUserIdRequest) (*v1.MGetUserInfoByUserIdResponse, error) {
-	us, err := s.uc.MGetUserInfoByUserId(ctx, req.GetUserId(), req.GetToUserIds())
+	us, err := s.uc.MGetUserInfoByUserId(ctx, req.GetToUserIds())
 	if err != nil {
 		err := ecode.ConvertErr(err)
 		return &v1.MGetUserInfoByUserIdResponse{

@@ -50,19 +50,19 @@ func (s *CommentService) CommentAction() {
 	}
 	defer partitionConsumer.Close()
 	for message := range partitionConsumer.Messages() {
-		commentAct := event.CommentAction{}
+		commentAct := &event.CommentAction{}
 		err := commentAct.UnmarshalJson(message.Value)
 		if err != nil {
 			s.log.Errorf("CommentAction UnmarshalJson error: %v", err)
 			return
 		}
 		if commentAct.Type == event.CommentActionPublish {
-			err := s.uc.CreateComment(context.Background(), &commentAct)
+			err := s.uc.CreateComment(context.Background(), commentAct)
 			if err != nil {
 				s.log.Errorf("PublishComment error: %v", err)
 			}
 		} else if commentAct.Type == event.CommentActionDelete {
-			err := s.uc.DeleteComment(context.Background(), &commentAct)
+			err := s.uc.DeleteComment(context.Background(), commentAct)
 			if err != nil {
 				s.log.Errorf("DeleteComment error: %v", err)
 			}

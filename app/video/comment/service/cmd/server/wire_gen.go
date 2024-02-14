@@ -26,10 +26,11 @@ import (
 func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
 	db := data.NewOrm(confData)
 	client := data.NewRedis(confData)
+	syncProducer := data.NewKafka(confData)
 	clientv3Client := server.NewEtcdCli(registry)
 	discovery := server.NewDiscovery(clientv3Client)
 	seqClient := data.NewSeqClient(discovery, logger)
-	dataData, cleanup, err := data.NewData(confData, db, client, logger, seqClient)
+	dataData, cleanup, err := data.NewData(confData, db, client, logger, syncProducer, seqClient)
 	if err != nil {
 		return nil, nil, err
 	}

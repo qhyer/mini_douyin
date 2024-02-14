@@ -25,10 +25,10 @@ func VideoFromPublishDTO(d *publishDTO.VideoInfo) (*do.Video, error) {
 }
 
 func VideoFromPublishDTOs(dtos []*publishDTO.VideoInfo) ([]*do.Video, error) {
-	if dtos == nil {
-		return []*do.Video{}, nil
-	}
 	videos := make([]*do.Video, 0, len(dtos))
+	if dtos == nil {
+		return videos, nil
+	}
 	for _, d := range dtos {
 		v, err := VideoFromPublishDTO(d)
 		if err != nil {

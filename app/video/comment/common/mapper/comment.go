@@ -12,7 +12,7 @@ import (
 
 func CommentFromPO(c *po.Comment) (*do.Comment, error) {
 	if c == nil {
-		return &do.Comment{}, nil
+		return &do.Comment{}, fmt.Errorf("comment is nil")
 	}
 	return &do.Comment{
 		ID: c.ID,
@@ -41,7 +41,7 @@ func CommentFromPOs(c []*po.Comment) ([]*do.Comment, error) {
 
 func CommentToPO(c *do.Comment) (*po.Comment, error) {
 	if c == nil {
-		return &po.Comment{}, nil
+		return &po.Comment{}, fmt.Errorf("comment is nil")
 	}
 	return &po.Comment{
 		ID:        c.ID,
@@ -53,10 +53,10 @@ func CommentToPO(c *do.Comment) (*po.Comment, error) {
 }
 
 func CommentToPOs(c []*do.Comment) ([]*po.Comment, error) {
-	if c == nil {
-		return []*po.Comment{}, nil
-	}
 	res := make([]*po.Comment, 0, len(c))
+	if c == nil {
+		return res, fmt.Errorf("comment is nil")
+	}
 	for _, v := range c {
 		if v == nil {
 			continue
@@ -74,7 +74,7 @@ func CommentToPOs(c []*do.Comment) ([]*po.Comment, error) {
 
 func CommentToDTO(comment *do.Comment) (*v1.CommentInfo, error) {
 	if comment == nil {
-		return &v1.CommentInfo{}, nil
+		return &v1.CommentInfo{}, fmt.Errorf("comment is nil")
 	}
 	return &v1.CommentInfo{
 		Id: comment.ID,
@@ -89,10 +89,10 @@ func CommentToDTO(comment *do.Comment) (*v1.CommentInfo, error) {
 }
 
 func CommentToDTOs(comments []*do.Comment) ([]*v1.CommentInfo, error) {
-	if comments == nil {
-		return []*v1.CommentInfo{}, nil
-	}
 	res := make([]*v1.CommentInfo, 0, len(comments))
+	if comments == nil {
+		return res, fmt.Errorf("comments is nil")
+	}
 	for _, v := range comments {
 		if v == nil {
 			continue
@@ -108,7 +108,7 @@ func CommentToDTOs(comments []*do.Comment) ([]*v1.CommentInfo, error) {
 
 func ParseCommentFromCommentAction(commentAction *event.CommentAction) (*do.Comment, error) {
 	if commentAction == nil {
-		return &do.Comment{}, nil
+		return &do.Comment{}, fmt.Errorf("commentAction is nil")
 	}
 	return &do.Comment{
 		ID:      commentAction.ID,
@@ -122,10 +122,10 @@ func ParseCommentFromCommentAction(commentAction *event.CommentAction) (*do.Comm
 }
 
 func ParseCommentFromCommentActions(commentActions []*event.CommentAction) ([]*do.Comment, error) {
-	if commentActions == nil {
-		return []*do.Comment{}, nil
-	}
 	res := make([]*do.Comment, 0, len(commentActions))
+	if commentActions == nil {
+		return []*do.Comment{}, fmt.Errorf("commentActions is nil")
+	}
 	for _, v := range commentActions {
 		if v == nil {
 			continue

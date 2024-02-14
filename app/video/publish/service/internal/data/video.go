@@ -222,7 +222,12 @@ func (r *videoRepo) setVideoCache(ctx context.Context, video *po.Video) {
 func (r *videoRepo) batchSetVideoCache(ctx context.Context, videos []*po.Video) {
 	pipe := r.data.redis.Pipeline()
 	for _, video := range videos {
-		pipe.Set(ctx, constants.VideoCacheKey(video.ID), video, constants.VideoCacheExpiration)
+		b, err := video.MarshalJson()
+		if err != nil {
+			r.log.Errorf("json marshal error: %v", err)
+			continue
+		}
+		pipe.Set(ctx, constants.VideoCacheKey(video.ID), b, constants.VideoCacheExpiration)
 	}
 	_, err := pipe.Exec(ctx)
 	if err != nil {

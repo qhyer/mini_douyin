@@ -4,11 +4,12 @@ import (
 	dto "douyin/api/user/passport/service/v1"
 	do "douyin/app/user/passport/common/entity"
 	po "douyin/app/user/passport/common/model"
+	"fmt"
 )
 
 func UserFromPO(u *po.User) (us *do.User, err error) {
 	if u == nil {
-		return &do.User{}, nil
+		return &do.User{}, fmt.Errorf("user is nil")
 	}
 	us = &do.User{
 		ID:                u.ID,
@@ -34,7 +35,7 @@ func UserFromPOs(us []*po.User) (dos []*do.User, err error) {
 
 func UserToPO(u *do.User) (us *po.User, err error) {
 	if u == nil {
-		return &po.User{}, nil
+		return &po.User{}, fmt.Errorf("user is nil")
 	}
 	us = &po.User{
 		ID:                u.ID,
@@ -46,7 +47,7 @@ func UserToPO(u *do.User) (us *po.User, err error) {
 
 func UserToDTO(u *do.User) (us *dto.UserInfo, err error) {
 	if u == nil {
-		return &dto.UserInfo{}, nil
+		return &dto.UserInfo{}, fmt.Errorf("user is nil")
 	}
 	us = &dto.UserInfo{
 		Id:              u.ID,

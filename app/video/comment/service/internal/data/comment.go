@@ -2,14 +2,13 @@ package data
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-
 	v1 "douyin/api/seq-server/service/v1"
 	do "douyin/app/video/comment/common/entity"
 	"douyin/app/video/comment/common/event"
 	constants2 "douyin/common/constants"
 	"douyin/common/ecode"
+	"encoding/json"
+	"errors"
 
 	"douyin/app/video/comment/common/constants"
 	"douyin/app/video/comment/common/mapper"
@@ -35,17 +34,17 @@ func NewCommentRepo(data *Data, logger log.Logger) biz.CommentRepo {
 }
 
 // CommentAction 发布/删除评论
-func (r *commentRepo) CommentAction(ctx context.Context, comment *event.CommentAction) error {
+func (r *commentRepo) CommentAction(ctx context.Context, comment *event.CommentAction) (*do.Comment, error) {
 	id, err := r.data.seqRPC.GetID(ctx, &v1.GetIDRequest{BusinessId: constants2.CommentBusinessId})
 	if err != nil || !id.GetIsOk() {
 		r.log.Errorf("seq rpc error: %v", err)
-		return ecode.GetSeqIdFailedErr
+		return nil, ecode.GetSeqIdFailedErr
 	}
 	comment.ID = id.GetID()
 	b, err := comment.MarshalJson()
 	if err != nil {
 		r.log.Errorf("CommentAction err:%v", err)
-		return err
+		return nil, err
 	}
 	_, _, err = r.data.kafka.SendMessage(&sarama.ProducerMessage{
 		Topic: constants.CommentActionTopic,
@@ -54,9 +53,14 @@ func (r *commentRepo) CommentAction(ctx context.Context, comment *event.CommentA
 	})
 	if err != nil {
 		r.log.Errorf("CommentAction err:%v", err)
-		return err
+		return nil, err
 	}
-	return nil
+	res, err := mapper.ParseCommentFromCommentAction(comment)
+	if err != nil {
+		r.log.Errorf("CommentAction err:%v", err)
+		return nil, err
+	}
+	return res, nil
 }
 
 // GetCommentListByVideoId 获取视频的评论列表

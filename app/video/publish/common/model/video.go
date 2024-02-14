@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"time"
 
 	"gorm.io/gorm"
@@ -15,4 +16,12 @@ type Video struct {
 	CreatedAt time.Time      `json:"created_at" gorm:"column:created_at;index:created_at_idx"`
 	UpdatedAt time.Time      `json:"updated_at" gorm:"column:updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"column:deleted_at"`
+}
+
+func (v *Video) MarshalJson() ([]byte, error) {
+	return json.Marshal(v)
+}
+
+func (v *Video) UnmarshalJson(data []byte) error {
+	return json.Unmarshal(data, v)
 }

@@ -95,7 +95,7 @@ func (r *accountRepo) GetUserInfoByUserId(ctx context.Context, userId int64, toU
 }
 
 // MGetUserInfoByUserId 批量获取用户信息（只获取基本信息）
-func (r *accountRepo) MGetUserInfoByUserId(ctx context.Context, userId int64, userIds []int64) ([]*do.User, error) {
+func (r *accountRepo) MGetUserInfoByUserId(ctx context.Context, userIds []int64) ([]*do.User, error) {
 	// 获取用户信息
 	users, err := r.batchGetUserInfoByUserIdFromPassportRPC(ctx, userIds)
 	if err != nil {
@@ -335,7 +335,7 @@ func (r *accountRepo) GetFollowListByUserId(ctx context.Context, userId int64, t
 	isFollows := make([]bool, 0, len(userIds))
 	// 获取用户信息
 	g.Go(func() error {
-		users, err = r.MGetUserInfoByUserId(ctx, userId, userIds)
+		users, err = r.MGetUserInfoByUserId(ctx, userIds)
 		if err != nil {
 			return err
 		}
@@ -404,7 +404,7 @@ func (r *accountRepo) GetFollowerListByUserId(ctx context.Context, userId int64,
 	isFollows := make([]bool, 0, len(userIds))
 	// 获取用户信息
 	g.Go(func() error {
-		users, err = r.MGetUserInfoByUserId(ctx, userId, userIds)
+		users, err = r.MGetUserInfoByUserId(ctx, userIds)
 		if err != nil {
 			return err
 		}
@@ -456,7 +456,7 @@ func (r *accountRepo) GetFriendListByUserId(ctx context.Context, userId int64) (
 		return nil, err
 	}
 	// 获取用户信息
-	users, err = r.MGetUserInfoByUserId(ctx, userId, userIds)
+	users, err = r.MGetUserInfoByUserId(ctx, userIds)
 	if err != nil {
 		r.log.Errorf("get friend list err: %v", err)
 		return nil, err
@@ -548,8 +548,8 @@ func (r *accountRepo) getUserFollowListFromCache(ctx context.Context, userId int
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
 			r.log.Errorf("memcached get user follow list err: %v", err)
-			return nil, err
 		}
+		return nil, err
 	}
 	users := make([]*do.User, 0, len(res.Value))
 	err = json.Unmarshal(res.Value, &users)
@@ -584,8 +584,8 @@ func (r *accountRepo) getUserFollowerListFromCache(ctx context.Context, userId i
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
 			r.log.Errorf("memcached get user follower list err: %v", err)
-			return nil, err
 		}
+		return nil, err
 	}
 	users := make([]*do.User, 0, len(res.Value))
 	err = json.Unmarshal(res.Value, &users)
@@ -620,8 +620,8 @@ func (r *accountRepo) getUserFriendListFromCache(ctx context.Context, userId int
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
 			r.log.Errorf("memcached get user friend list err: %v", err)
-			return nil, err
 		}
+		return nil, err
 	}
 	users := make([]*do.User, 0, len(res.Value))
 	err = json.Unmarshal(res.Value, &users)

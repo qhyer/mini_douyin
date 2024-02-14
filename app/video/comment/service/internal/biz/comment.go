@@ -10,11 +10,10 @@ import (
 	"golang.org/x/sync/singleflight"
 
 	"douyin/app/video/comment/common/constants"
-	"douyin/app/video/comment/common/mapper"
 )
 
 type CommentRepo interface {
-	CommentAction(ctx context.Context, comment *event.CommentAction) error
+	CommentAction(ctx context.Context, comment *event.CommentAction) (*do.Comment, error)
 	GetCommentListByVideoId(ctx context.Context, videoId int64) ([]*do.Comment, error)
 	CountCommentByVideoId(ctx context.Context, videoId int64) (int64, error)
 	MCountCommentByVideoId(ctx context.Context, videoIds []int64) ([]int64, error)
@@ -37,14 +36,9 @@ func NewCommentUsecase(repo CommentRepo, logger log.Logger) *CommentUsecase {
 // CommentAction 发布/删除评论
 func (u *CommentUsecase) CommentAction(ctx context.Context, comment *event.CommentAction) (res *do.Comment, err error) {
 	// TODO 发布评论过滤敏感词，返回过滤后的评论
-	err = u.repo.CommentAction(ctx, comment)
+	res, err = u.repo.CommentAction(ctx, comment)
 	if err != nil {
 		u.log.Errorf("CommentAction error(%v)", err)
-		return res, err
-	}
-	res, err = mapper.ParseCommentFromCommentAction(comment)
-	if err != nil {
-		u.log.Errorf("mapper.ParseCommentFromCommentAction error(%v)", err)
 		return res, err
 	}
 	return res, nil
