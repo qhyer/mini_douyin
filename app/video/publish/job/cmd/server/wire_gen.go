@@ -7,15 +7,16 @@
 package main
 
 import (
-	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/log"
-
 	"douyin/app/video/publish/job/internal/biz"
 	"douyin/app/video/publish/job/internal/conf"
 	"douyin/app/video/publish/job/internal/data"
 	"douyin/app/video/publish/job/internal/server"
 	"douyin/app/video/publish/job/internal/service"
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/log"
+)
 
+import (
 	_ "go.uber.org/automaxprocs"
 )
 

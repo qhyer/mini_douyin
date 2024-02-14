@@ -160,7 +160,7 @@ func (r *passportRepo) batchGetUserFromCache(ctx context.Context, keys []string)
 		pipe.Get(ctx, key)
 	}
 	results, err := pipe.Exec(ctx)
-	if err != nil {
+	if err != nil && !errors.Is(err, redis.Nil) {
 		return nil, keys, err
 	}
 	res = make([]*po.User, 0, len(keys))

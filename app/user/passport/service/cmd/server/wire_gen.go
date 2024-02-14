@@ -7,15 +7,16 @@
 package main
 
 import (
-	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/log"
-
 	"douyin/app/user/passport/service/internal/biz"
 	"douyin/app/user/passport/service/internal/conf"
 	"douyin/app/user/passport/service/internal/data"
 	"douyin/app/user/passport/service/internal/server"
 	"douyin/app/user/passport/service/internal/service"
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/log"
+)
 
+import (
 	_ "go.uber.org/automaxprocs"
 )
 

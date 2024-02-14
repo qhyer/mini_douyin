@@ -28,9 +28,10 @@ type FavoriteService struct {
 
 func NewFavoriteService(uc *biz.FavoriteUsecase, kafka sarama.Consumer, logger log.Logger) *FavoriteService {
 	s := &FavoriteService{
-		uc:    uc,
-		kafka: kafka,
-		log:   log.NewHelper(logger),
+		uc:     uc,
+		kafka:  kafka,
+		log:    log.NewHelper(logger),
+		statCh: make([]chan *event.VideoFavoritedStat, constants.VideoFavoritedCountSharding),
 	}
 	go s.FavoriteAction()
 	go s.FavoriteStat()

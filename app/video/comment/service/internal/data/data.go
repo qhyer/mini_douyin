@@ -35,11 +35,16 @@ type Data struct {
 }
 
 // NewData .
-func NewData(c *conf.Data, orm *gorm.DB, rds *redis.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(c *conf.Data, orm *gorm.DB, rds *redis.Client, logger log.Logger, s seq.SeqClient) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{db: orm, redis: rds, cacheFan: fanout.New(fanout.Worker(10), fanout.Buffer(10240))}, cleanup, nil
+	return &Data{
+		db:       orm,
+		redis:    rds,
+		cacheFan: fanout.New(fanout.Worker(10), fanout.Buffer(10240)),
+		seqRPC:   s,
+	}, cleanup, nil
 }
 
 func NewOrm(c *conf.Data) *gorm.DB {

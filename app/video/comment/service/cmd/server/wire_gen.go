@@ -7,15 +7,16 @@
 package main
 
 import (
-	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/log"
-
 	"douyin/app/video/comment/service/internal/biz"
 	"douyin/app/video/comment/service/internal/conf"
 	"douyin/app/video/comment/service/internal/data"
 	"douyin/app/video/comment/service/internal/server"
 	"douyin/app/video/comment/service/internal/service"
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/log"
+)
 
+import (
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -25,7 +26,10 @@ import (
 func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
 	db := data.NewOrm(confData)
 	client := data.NewRedis(confData)
-	dataData, cleanup, err := data.NewData(confData, db, client, logger)
+	clientv3Client := server.NewEtcdCli(registry)
+	discovery := server.NewDiscovery(clientv3Client)
+	seqClient := data.NewSeqClient(discovery, logger)
+	dataData, cleanup, err := data.NewData(confData, db, client, logger, seqClient)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -34,7 +38,6 @@ func wireApp(confServer *conf.Server, registry *conf.Registry, confData *conf.Da
 	commentService := service.NewCommentService(commentUsecase)
 	grpcServer := server.NewGRPCServer(confServer, commentService, logger)
 	httpServer := server.NewHTTPServer(confServer, commentService, logger)
-	clientv3Client := server.NewEtcdCli(registry)
 	registrar := server.NewRegistrar(clientv3Client)
 	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {

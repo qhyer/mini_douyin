@@ -77,6 +77,9 @@ func (r *relationRepo) GetFollowListByUserId(ctx context.Context, userId int64) 
 	}
 	ids := make([]int64, 0, len(relations))
 	for _, relation := range relations {
+		if relation.Attr&uint32(do.RelationAttrFollowing) != uint32(do.RelationAttrFollowing) {
+			continue
+		}
 		ids = append(ids, relation.ToUserId)
 	}
 	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
@@ -105,7 +108,10 @@ func (r *relationRepo) GetFollowerListByUserId(ctx context.Context, userId int64
 	}
 	ids := make([]int64, 0, len(relations))
 	for _, relation := range relations {
-		ids = append(ids, relation.FromUserId)
+		if relation.Attr&uint32(do.RelationFollowed) != uint32(do.RelationFollowed) {
+			continue
+		}
+		ids = append(ids, relation.ToUserId)
 	}
 	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
 		r.setUserFollowerListCache(ctx, userId, relations)
@@ -131,6 +137,12 @@ func (r *relationRepo) GetFriendListByUserId(ctx context.Context, userId int64) 
 	}
 	ids := make([]int64, 0, len(relations))
 	for _, relation := range relations {
+		if relation.Attr&uint32(do.RelationAttrFollowing) != uint32(do.RelationAttrFollowing) {
+			continue
+		}
+		if relation.Attr&uint32(do.RelationFollowed) != uint32(do.RelationFollowed) {
+			continue
+		}
 		ids = append(ids, relation.ToUserId)
 	}
 	err = r.data.cacheFan.Do(context.Background(), func(ctx context.Context) {
