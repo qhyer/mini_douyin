@@ -43,8 +43,8 @@ func (s *FavoriteService) FavoriteAction(ctx context.Context, req *v1.DouyinFavo
 	}, nil
 }
 
-// GetUserFavoriteVideoIdList 获取用户点赞视频列表
-func (s *FavoriteService) GetUserFavoriteVideoIdList(ctx context.Context, req *v1.GetUserFavoriteListRequest) (*v1.GetUserFavoriteListResponse, error) {
+// GetUserFavoriteVideoList 获取用户点赞视频列表
+func (s *FavoriteService) GetUserFavoriteVideoList(ctx context.Context, req *v1.GetUserFavoriteListRequest) (*v1.GetUserFavoriteListResponse, error) {
 	favoriteVideoIdList, err := s.uc.GetFavoriteVideoIdListByUserId(ctx, req.GetUserId())
 	if err != nil {
 		err := ecode.ConvertErr(err)

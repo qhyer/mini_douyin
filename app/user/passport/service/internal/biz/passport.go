@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	"douyin/common/ecode"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/crypto/bcrypt"
@@ -60,7 +61,7 @@ func (u *PassportUsecase) VerifyPassword(ctx context.Context, user *do.User) (ve
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(us.EncryptedPassword), []byte(user.Password))
 	if err != nil {
-		return false, 0, err
+		return false, 0, ecode.WrongPasswordErr
 	}
 	return true, us.ID, nil
 }

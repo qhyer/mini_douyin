@@ -548,10 +548,8 @@ func (r *accountRepo) getUserFollowListFromCache(ctx context.Context, userId int
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
 			r.log.Errorf("memcached get user follow list err: %v", err)
-		} else {
-			r.log.Debugf("memcached get user follow list err: %v", err)
+			return nil, err
 		}
-		return nil, err
 	}
 	users := make([]*do.User, 0, len(res.Value))
 	err = json.Unmarshal(res.Value, &users)
@@ -586,8 +584,8 @@ func (r *accountRepo) getUserFollowerListFromCache(ctx context.Context, userId i
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
 			r.log.Errorf("memcached get user follower list err: %v", err)
+			return nil, err
 		}
-		return nil, err
 	}
 	users := make([]*do.User, 0, len(res.Value))
 	err = json.Unmarshal(res.Value, &users)
@@ -622,8 +620,8 @@ func (r *accountRepo) getUserFriendListFromCache(ctx context.Context, userId int
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
 			r.log.Errorf("memcached get user friend list err: %v", err)
+			return nil, err
 		}
-		return nil, err
 	}
 	users := make([]*do.User, 0, len(res.Value))
 	err = json.Unmarshal(res.Value, &users)

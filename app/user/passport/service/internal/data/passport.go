@@ -2,8 +2,10 @@ package data
 
 import (
 	"context"
+	"douyin/common/ecode"
 	"encoding/json"
 	"errors"
+	"gorm.io/gorm"
 
 	seq "douyin/api/seq-server/service/v1"
 	"douyin/app/user/passport/common/constants"
@@ -47,6 +49,9 @@ func (r *passportRepo) CreateUser(ctx context.Context, user *do.User) error {
 	}
 	err = r.data.db.WithContext(ctx).Table(constants.PassportTableName).Create(poUser).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return ecode.UserAlreadyExistErr
+		}
 		r.log.Errorf("create user err: %v", err)
 	}
 	return err
@@ -56,6 +61,9 @@ func (r *passportRepo) CreateUser(ctx context.Context, user *do.User) error {
 func (r *passportRepo) GetUserByName(ctx context.Context, name string) (*do.User, error) {
 	user := &po.User{}
 	if err := r.data.db.WithContext(ctx).Table(constants.PassportTableName).Where("name = ?", name).First(user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ecode.UserNotExistErr
+		}
 		r.log.Errorf("get user from db err: %v", err)
 		return nil, err
 	}
@@ -103,11 +111,7 @@ func (r *passportRepo) GetUserById(ctx context.Context, id int64) (*do.User, err
 
 // MGetUserById 批量通过id获取用户
 func (r *passportRepo) MGetUserById(ctx context.Context, ids []int64) ([]*do.User, error) {
-	keys := make([]string, 0, len(ids))
-	for _, id := range ids {
-		keys = append(keys, constants.UserCacheKey(id))
-	}
-	users, missed, err := r.batchGetUserFromCache(ctx, keys)
+	users, missed, err := r.batchGetUserFromCache(ctx, ids)
 	if err != nil {
 		r.log.Errorf("batch get user cache err: %v", err)
 		return nil, err
@@ -154,25 +158,29 @@ func (r *passportRepo) getUserFromCache(ctx context.Context, key string) (*po.Us
 }
 
 // 批量从缓存中获取用户
-func (r *passportRepo) batchGetUserFromCache(ctx context.Context, keys []string) (res []*po.User, missed []string, err error) {
+func (r *passportRepo) batchGetUserFromCache(ctx context.Context, ids []int64) (res []*po.User, missed []int64, err error) {
+	keys := make([]string, 0, len(ids))
+	for _, id := range ids {
+		keys = append(keys, constants.UserCacheKey(id))
+	}
 	pipe := r.data.redis.Pipeline()
 	for _, key := range keys {
 		pipe.Get(ctx, key)
 	}
 	results, err := pipe.Exec(ctx)
 	if err != nil && !errors.Is(err, redis.Nil) {
-		return nil, keys, err
+		return nil, ids, err
 	}
 	res = make([]*po.User, 0, len(keys))
-	missed = make([]string, 0, len(keys))
+	missed = make([]int64, 0, len(keys))
 	for i, result := range results {
 		if errors.Is(result.Err(), redis.Nil) {
-			missed = append(missed, keys[i])
+			missed = append(missed, ids[i])
 			continue
 		}
 		user := &po.User{}
 		if err := json.Unmarshal([]byte(result.(*redis.StringCmd).Val()), user); err != nil {
-			missed = append(missed, keys[i])
+			missed = append(missed, ids[i])
 			continue
 		}
 		res = append(res, user)

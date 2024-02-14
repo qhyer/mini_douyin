@@ -7,7 +7,6 @@ import (
 )
 
 type Comment struct {
-	gorm.Model
 	ID        int64          `json:"id" gorm:"primaryKey"`
 	UserId    int64          `json:"user_id"  gorm:"column:user_id"`
 	VideoId   int64          `json:"video_id" gorm:"column:video_id;index:video_id_created_at_idx,priority:1"`
