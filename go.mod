@@ -22,6 +22,7 @@ require (
 	go.etcd.io/etcd/client/v3 v3.5.10
 	go.mongodb.org/mongo-driver v1.13.1
 	go.uber.org/automaxprocs v1.5.3
+	go.uber.org/mock v0.4.0
 	golang.org/x/crypto v0.18.0
 	golang.org/x/net v0.20.0
 	golang.org/x/sync v0.6.0

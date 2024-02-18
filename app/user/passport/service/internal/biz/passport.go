@@ -35,8 +35,6 @@ func NewPassportUseCase(repo PassportRepo, logger log.Logger) *PassportUsecase {
 
 // CreateUser 创建用户
 func (u *PassportUsecase) CreateUser(ctx context.Context, user *do.User) (uid int64, err error) {
-	uid = int64(0)
-	user.ID = uid
 	pwd := []byte(user.Password)
 	hashedPassword, err := bcrypt.GenerateFromPassword(pwd, bcrypt.DefaultCost)
 	if err != nil {

@@ -319,8 +319,10 @@ func (r *accountRepo) GetFollowListByUserId(ctx context.Context, userId int64, t
 			r.log.Errorf("get follow relation err: %v", err)
 			return nil, err
 		}
-		for i, user := range users {
-			user.IsFollow = rel[i]
+		for i := range users {
+			if i < len(rel) {
+				users[i].IsFollow = rel[i]
+			}
 		}
 		return users, nil
 	}
@@ -388,8 +390,8 @@ func (r *accountRepo) GetFollowerListByUserId(ctx context.Context, userId int64,
 			r.log.Errorf("get follower relation err: %v", err)
 			return nil, err
 		}
-		for i, user := range users {
-			user.IsFollow = rel[i]
+		for i := range users {
+			users[i].IsFollow = rel[i]
 		}
 		return users, nil
 	}

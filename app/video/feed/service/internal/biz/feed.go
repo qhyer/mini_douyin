@@ -2,7 +2,6 @@ package biz
 
 import (
 	"context"
-
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/sync/singleflight"
@@ -30,7 +29,7 @@ type FeedUsecase struct {
 }
 
 func NewFeedUsecase(repo FeedRepo, logger log.Logger) *FeedUsecase {
-	return &FeedUsecase{repo: repo, log: log.NewHelper(logger)}
+	return &FeedUsecase{repo: repo, log: log.NewHelper(logger), sf: &singleflight.Group{}}
 }
 
 // GetPublishedVideoByUserId 获取用户发布视频列表
@@ -60,7 +59,9 @@ func (uc *FeedUsecase) GetPublishedVideoByUserId(ctx context.Context, userId, to
 		// 获取作者信息
 		var uids []int64
 		for _, video := range videoList {
-			uids = append(uids, video.User.ID)
+			if video.User != nil {
+				uids = append(uids, video.User.ID)
+			}
 		}
 		authorList, err = uc.repo.MGetUserInfoByUserId(ctx, toUserId, uids)
 		if err != nil {
@@ -73,9 +74,13 @@ func (uc *FeedUsecase) GetPublishedVideoByUserId(ctx context.Context, userId, to
 		uc.log.Errorf("g.Wait error(%v)", err)
 		return nil, err
 	}
-	for i, video := range videoList {
-		video.IsFavorite = isFavoriteList[i]
-		video.User = authorList[i]
+	for i := range videoList {
+		if i < len(isFavoriteList) {
+			videoList[i].IsFavorite = isFavoriteList[i]
+		}
+		if i < len(authorList) {
+			videoList[i].User = authorList[i]
+		}
 	}
 
 	return videoList, nil
@@ -108,7 +113,9 @@ func (uc *FeedUsecase) GetPublishedVideoByLatestTimeAndUserId(ctx context.Contex
 		// 获取作者信息
 		var uids []int64
 		for _, video := range videoList {
-			uids = append(uids, video.User.ID)
+			if video.User != nil {
+				uids = append(uids, video.User.ID)
+			}
 		}
 		authorList, err = uc.repo.MGetUserInfoByUserId(ctx, userId, uids)
 		if err != nil {
@@ -121,9 +128,13 @@ func (uc *FeedUsecase) GetPublishedVideoByLatestTimeAndUserId(ctx context.Contex
 		uc.log.Errorf("g.Wait error(%v)", err)
 		return nil, err
 	}
-	for i, video := range videoList {
-		video.IsFavorite = isFavoriteList[i]
-		video.User = authorList[i]
+	for i := range videoList {
+		if i < len(isFavoriteList) {
+			videoList[i].IsFavorite = isFavoriteList[i]
+		}
+		if i < len(authorList) {
+			videoList[i].User = authorList[i]
+		}
 	}
 
 	return videoList, nil
@@ -178,9 +189,13 @@ func (uc *FeedUsecase) GetUserFavoriteVideoListByUserId(ctx context.Context, use
 		uc.log.Errorf("g.Wait error(%v)", err)
 		return nil, err
 	}
-	for i, video := range videoList {
-		video.IsFavorite = isFavoriteList[i]
-		video.User = authorList[i]
+	for i := range videoList {
+		if i < len(isFavoriteList) {
+			videoList[i].IsFavorite = isFavoriteList[i]
+		}
+		if i < len(authorList) {
+			videoList[i].User = authorList[i]
+		}
 	}
 
 	return videoList, nil
